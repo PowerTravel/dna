@@ -1,0 +1,1944 @@
+% \iffalse meta-comment
+%
+% Copyright (C) 2014 by Diego Sejas <diego.mathematician@gmail.com>
+% 
+% This program is free software: you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by the
+% Free Software Foundation, either version 3 of the License, or (at your
+% option) any later version.
+% 
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+% Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License along
+% with this program.  If not, see <http://www.gnu.org/licenses/>.
+% 
+% \fi
+% 
+% \iffalse
+%
+%<package>\NeedsTeXFormat{LaTeX2e}
+%<package>\ProvidesPackage{mgltex}[/2014/11/22 v2.0 Embed MGL scripts in LaTeX documents]
+% 
+%<*driver>
+\documentclass{ltxdoc}
+\usepackage{color}
+\usepackage[comments]{mgltex}
+\EnableCrossrefs
+\CodelineIndex
+\RecordChanges
+\begin{document}
+  \DocInput{mgltex.dtx}
+\end{document}
+%</driver>
+% \fi
+% 
+% \CheckSum{1297}
+% 
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+% 
+% \changes{v1.0}{2014/09/27}{Initial version}
+% \changes{v.2.0}{2014/11/15}{Possible bugfix by adding \texttt{\textbackslash expandafter} to commands to ignore/write lines of MGL code}
+% \changes{v.2.0}{2014/11/15}{Add environment \texttt{mglsignature} that adds a commentary every MGL script}
+% \changes{v.2.0}{2014/11/15}{Eliminate line ignoring commands to create more elegant scripts, due to the a new command that adds comments to the scripts}
+% 
+% \GetFileInfo{mgltex.sty}
+% 
+% \DoNotIndex{\def,\bgroup,\egroup,\newcommand,\newenvironment,\\,\@onlypreamble,\@undefined,\@vobeyspaces,\list}
+% \DoNotIndex{\if,\else,\fi,\begingroup,\endgroup,\end,\edef,\xdef,\gdef,\scapechar,\active,\arabic,\catcode,\bfseries}
+% \DoNotIndex{\@flushglue,\@for,\@ifnextchar,\@makeother,\{,\},\^,\ ,\AtBeginDocument,\AtEndDocument,\centering}
+% \DoNotIndex{\closein,\closeout,\csname,\endcsname,\CurrentOption,\DeclareGraphicsExtensions,\define@key,\DeclareOption}
+% \DoNotIndex{\detokenize,\do,\dospecials,\endlinechar,\endlist,\escapechar,\ExecuteOptions,\expandafter,\footnotesize}
+% \DoNotIndex{\framebox,\Gin@extensions,\Huge,\ifeof,\IfFileExists,\ifx,\immediate,\include,\includegraphics,\item,\itemsep}
+% \DoNotIndex{\itshape,\jobname,\labelsep,\leftskip,\let,\long,\mbox,\newcounter,\newread,\newtoks,\newwrite,\noexpand}
+% \DoNotIndex{\obeyspaces,\openin,\openout,\PackageError,\PackageWarning,\parfillskip,\parindent,\parskip}
+% \DoNotIndex{\PassOptionsToPackage,\ProcessOptions,\read,\relax,\RequirePackage,\rightskip,\setcounter,\setkeys,\setlength}
+% \DoNotIndex{\space,\stepcounter,\string,\TeX,\the,\vbox,\verbatim@font,\write,\z@,\z@skip,\newif,\PackageInfo,\today}
+% \DoNotIndex{\obeylines,\or\ifcase,\small}
+% 
+% \title{The \textsf{\mglTeX} package\thanks{This document corresponds to \textsf{\mglTeX}~\fileversion, dated \filedate.}}
+% \author{Diego Sejas Viscarra\\\texttt{diego.mathematician@gmail.com}}
+% 
+% \maketitle
+% 
+% \begin{abstract}
+%   \noindent MathGL is a fast and efficient library by Alexey Balakin for the creation of high-quality publication-ready scientific graphics. Although it defines interfaces for many programming languages, it also implements its own programming language, called \emph{MGL}, which can be used independently. With the package \textsf{\mglTeX}, MGL scripts can be embedded within any \LaTeX{} document, and the corresponding images are automatically created and included.
+
+% This manual documents the use of the commands and environments of~\mglTeX.
+% \end{abstract}
+% 
+% \section{Introduction}
+% MathGL is a fast and efficient library by Alexey Balakin for the creation of high-quality publication-ready scientific graphics. It implements more than $50$ different types of graphics for 1d, 2d and 3d large sets of data. It supports exporting images to bitmap formats (PNG, JPEG, BMP, etc.), or vector formats (EPS, \TeX, SVG, etc.), or 3d image formats (STL, OBJ, XYZ, etc.), and even its own 3d format, MGLD. MathGL also defines its own vector font specification format, and supports UTF-16 encoding with \TeX-like symbol parsing. It supports various kinds of transparency and lighting, textual formula evaluation, arbitrary curvilinear coordinate systems, loading of subroutines from .dll or .so libraries, and many other useful features.
+% 
+% MathGL has interfaces for a wide variety of programming languages, such as C/C++, Fortran, Python, Octave, Pascal, Forth, and many others, but it also defines its own scripting language, called \emph{MGL}, which can be used to generate graphics independently of any programming language. The \textsf{\mglTeX} package adds support to embed MGL code inside \LaTeX{} documents, which is automatically extracted and executed, and the resulting images are included in the document.
+% 
+% Besides the obvious advantage of having available all the useful features of MathGL, \textsf{\mglTeX} facilitates the maintenance of your document, since both code for text and code for graphics are contained in a single file.
+% 
+% \section{Usage}
+% \noindent The simplest way to load \textsf{\mglTeX} to a \LaTeX{} document is to write the command
+% \begin{center}
+%   |\usepackage{mgltex}|
+% \end{center}
+% in the preamble. Alternatively, one can pass a number of options to the package by means of the syntax
+% \begin{center}
+% |\usepackage|\oarg{options list}|{mgltex}|,  
+% \end{center}
+% where \meta{options list} is a comma-separated list that can contains one or more of the following options:
+% \begin{itemize}
+%   \item |draft|: The generated images won't be included in the document. This option is useful when fast compilation of the document is needed.
+%   \item |final|: This overrides the |draft| option.
+%   \item |on|: To create the MGL scripts and corresponding images of the document every time \LaTeX{} is run.
+%   \item |off|: To avoid creating the MGL scripts and corresponding images of the document, but still try to include the images.
+%   \item |comments|: To allow the contents of the |mglcomment| environments to be shown in the \LaTeX{} document.
+%   \item |nocomments|: To not show the contents of the |mglcomment| environments in the \LaTeX{} document.
+%   \item |png|, |jpg|, |jpeg|: To export images to the corresponding bitmap format.
+%   \item |eps|, |epsz|: To export to uncompressed/compressed EPS format as primitives.
+%   \item |bps|, |bpsz|: To export to uncompressed/compressed EPS format as bitmap.
+%   \item |pdf|: To export to 3D PDF format.
+%   \item |tex|: To export to \LaTeX{}/\emph{tikz} document.
+% \end{itemize}
+% It must be noted that the options |on| and |off| are exclusive, in the sense that if one specifies both of them, only the last one will be used. Likewise, the options that specify the format to save the graphics are exclusive.
+% 
+% Observe the option |off| is useful to save compilation time of a document. For example, if the graphics of an article are in final version, instead of compilling them over and over again every time \LaTeX{} runs, they can be created only once with the |on| option, and then only included (but not recompiled) with the |off| option.
+% 
+% The are two ways to compile a document with \textsf{\mglTeX}: The first way is to run
+% \begin{center}
+%   |latex --shell-escape |\meta{document}
+% \end{center}
+% twice, since the first run will extract the MGL code, execute it and include some of the resulting graphics, while the second run will include the remaining graphics; the second way is to run |latex |\meta{document} to extract the MGL code, then execute the generated scripts with the program |mglconv| (which comes with MathGL), and execute |latex |\meta{document} once more to include the graphics.
+% 
+% \subsection{Environments for MGL code embedding}
+% \DescribeEnv{mgl}\noindent The main environment defined by \textsf{\mglTeX} is |mgl|. It extracts its contents to a general script, called \meta{document}.mgl, where \meta{document} stands for the name of the \LaTeX{} file being compiled; this script is compiled, and the corresponding image is included. Its syntax is:
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mgl}|\oarg{key-val list}\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mgl}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% Here, \meta{key-val list} accepts the same optional arguments as the |\includegraphics| command from the \textsf{graphicx} package, plus an additional one, |imgext|, which can be used to specify the extension to save the graphic. The \meta{MGL code} doesn't need to contain any specific instruction to create the image, since \textsf{\mglTeX} takes care of that.
+% 
+% \DescribeEnv{mgladdon} This environment adds its contents to the general script \meta{document}.mgl, but it doesn't produce any image. It doesn't require any kind of arguments.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mgladdon}|\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mgladdon}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglcode} This is the same as the |mgl| environment, but the corresponding code is written \emph{verbatim} to a separate script, whose name is specified as mandatory argument. It accepts the same optional arguments as |mgl|.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglcode}|\oarg{key-val list}\marg{script\_name}\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglcode}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglscript} The code within |mglscript| is written verbatim to a script whose name is specified as mandatory argument, but no image is produced. It is useful for creation of MGL scripts which can be later post-processed by another package, like \textsf{listings}.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglscript}|\marg{script\_name}\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglscript}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglfunc} This is used to define MGL functions within the general script \meta{document}.mgl. It takes one mandatory argument, which is the name of the function, plus one optional argument, which specifies the number of arguments of the function. The environment needs to contain only the body of the function, since the lines ``func \meta{function\_name} \meta{number of arguments}'' and ``return'' are appended automatically at the beginning and the end, respectively. The resulting code is written at the end of the general script, after the |stop| command, which is also written automatically.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglfunc}|\oarg{number of arguments}\marg{function\_name}\\[0.5em]
+%       \hss\meta{MGL function body}\hss\\[0.5em]
+%     |\end{mglfunc}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglcommon} This is used to create a common ``setup'' script that will be executed together with each of the other scripts. It is useful to define constants, parameters, etc. that will be available to every script. 
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglcommon}|\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglcommon}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% For example, one could make
+% \begin{verbatim}
+% \begin{mglcommon}
+% define gravity 9.81 # [m/s^2]
+% \end{mglcommon}
+% \end{verbatim}
+% to make the constant \emph{gravity} available to every script.
+% 
+% Observe this environment should be used only to define constants, parameters and things like that, but not graphical objects like axis or grids, because every image created with the |mgl| environment clears every graphical object before creating the image.\footnote{This problem occurs only with the \texttt{mgl} environment, so you could use \texttt{mglcommon} to create many graphics with the same axis, grid, etc., with environments like \texttt{mglcode}, but in that case the best option is to use the \texttt{mglsetup} environment together with the \texttt{\textbackslash{}mglplot} command.}
+% 
+% \DescribeEnv{mglsignature} This environment is used to declare a signature (or commentary) that will be included at the beginning of every script generated by \mglTeX. It is verbatim-like environment, so no \LaTeX{} cammand will be executed, but copied literally. However, the default signature is ``This script was generated from \meta{document}.mgl on date \meta{today}''.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglsignature}|\\[0.5em]
+%       \hss\meta{Signature for MGL scripts}\hss\\[0.5em]
+%     |\end{mglsignature}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglcomment} This environment is used to embed commentaries in the \LaTeX{} document. The commentary won't appear in the case of the user passing the option |nocomments| to the package, but it will be written \emph{verbatim} is the user passes the option |comments|.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglcomment}|\\[0.5em]
+%       \hss\meta{Commentary}\hss\\[0.5em]
+%     |\end{mglcomment}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% In the case of the user allowing commentaries, this will result in the appearance of the following commentary in the \LaTeX{} document:
+% \begin{center}
+% \makeatletter
+% \verbatim@font
+% \makeatother
+% <------------------ MGL comment ------------------>\\
+% \meta{Commentary}\\
+% <------------------ MGL comment ------------------>\\
+% \end{center}
+% 
+% \subsection{Fast creation of graphics}
+% \noindent\textsf{\mglTeX} defines a convenient way to work with many graphics that have exactly the same settings (for example, same angles of rotation, same type of grid, etc.): instead of writing repetitive code every time it's needed, it can be stored in memory with the |mglsetup| environment, and then can be used when needed with the |\mglplot| command.
+% 
+% \DescribeEnv{mglsetup} This environment stores its contents in memory for later use. It accepts one optional argument, which is a keyword (name) to be associated to the corresponding block of code, so different blocks of code can be stored with different names.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglsetup}|\oarg{keyword}\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglsetup}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeMacro{\mglplot} This command is used for fast generation of graphics with default settings, and can be used in parallel with the |mglsetup| environment. It accepts one mandatory argument which consists of MGL instructions, separated by the symbol ``:'', which can span through various text lines. It also accepts the same optional arguments as the |mgl| environment, plus an additional one, called |settings|, which can be used to specify a keyword used in a |mglsetup| environment. If the |settings| option is specified, the code in the mandatory argument will be appended to the block of code of the corresponding |mglsetup| environment.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglplot|\oarg{key-val list}\marg{MGL code}\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \subsection{Verbatim-like environments}
+% \DescribeEnv{mglblock}\noindent It writes its contents \emph{verbatim} to a file, whose name is given as mandatory argument, and then it also typesets its contents on the \LaTeX{} document, numbering each line of code.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglblock}|\marg{script\_name}\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglblock}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeEnv{mglverbatim} It typesets its contents to the \LaTeX{} document, numbering each line of code.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\begin{mglverbatim}|\\[0.5em]
+%       \hss\meta{MGL code}\hss\\[0.5em]
+%     |\end{mglverbatim}|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \subsection{Working with external scripts}
+% \noindent In case of having MGL scripts in their own files, \textsf{\mglTeX} can work with them without needing to transcript them to the \LaTeX{} document.
+% 
+% \DescribeMacro{\mglgraphics} This command takes one mandatory argument, which is the name of an external MGL script, which will be automatically executed, and the resulting image will be included. The same optional arguments as the |mgl| environment are accepted.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglgraphics|\oarg{key-val list}\marg{script\_name}\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeMacro{\mglinclude} This command takes one mandatory argument, which is the name of an external MGL script, which will be automatically transcript \emph{verbatim} on the \LaTeX{} document, and each line of code will be numerated.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglinclude|\marg{script\_name}\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \subsection{Additional commands}
+% \DescribeMacro{\mgldir}\noindent This command can be used to specify where \textsf{\mglTeX} should create the MGL scripts and corresponding images. This is useful, for example, to avoid a lot of scripts and images from polluting the current directory.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mgldir|\marg{directory}\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% This command must be used in the preamble of the document, since the first MGL script is created at the moment of the |\begin{document}| command; trying to use it somewhere else will issue an error. On the other hand, it is the responsibility of the user to create the \meta{directory}, since \textsf{\mglTeX} won't do it automatically.
+% 
+% \DescribeMacro{\mglquality} This command can be used to specify the quality for the graphics created with \mglTeX. An info message specifying the characteristics of the chosen quality is printed in the .log file.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglquality|\marg{quality}\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% The available qualities are described below:
+% \begin{center}
+%   \begin{tabular}{cl}
+%     \hline
+%     Quality & Description\\
+%     \hline
+%     \hline
+%     $0$ & No face drawing (fastest)\\
+%     \hline
+%     $1$ & No color interpolation (fast)\\
+%     \hline
+%     $2$ & High quality (normal)\\
+%     \hline
+%     $3$ & High quality with 3d primitives (not implemented yet)\\
+%     \hline
+%     $4$ & No face drawing, direct bitmap drawing (low memory usage)\\
+%     \hline
+%     $5$ & No color interpolation, direct bitmap drawing (low memory usage)\\
+%     \hline
+%     $6$ & High quality, direct bitmap drawing (low memory usage)\\
+%     \hline
+%     $7$ & High quality with 3d primitives, direct bitmap drawing (not implemented yet)\\
+%     \hline
+%     $8$ & Draw dots instead of primitives (extremely fast)\\
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeMacro{\mgltexon} This command has the same effect as the package option |on|, i.e., create all the scripts and corresponding graphics, but its effect is local, meaning that it work only from the point it is used on.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mgltexon|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \DescribeMacro{\mgltexoff} This command has the same effect as the package option |off|, i.e., DO NOT create the scripts and corresponding graphics, and include images anyway, but its effect is also local, meaning that it work only from the point it is used on.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mgltexoff|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% Observe the commands |\mgltexon| and |\mgltexoff| can be used to save compilation time of a document. For example, when writing an article, if the graphics of the first section are already in final version, instead of compilling them every time \LaTeX{} is called, they can be created only once, and then the section can be wrapped with |mgltexoff| and |mgltexon|, so the graphics do not get recompiled again (wasting time), but only included.
+% 
+% \DescribeMacro{\mglcomments} This command has the same effect as the package option |comments|, i.e., show all the commentaries contained int the |mglcomment| environments, but its effect is local, meaning that it work only from the point it is used on.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglcoments|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% \DescribeMacro{\mglnocomments} This command has the same effect as the package option |nocomments|, i.e., DO NOT show the contentsof the |mglcomment| environments, but its effect is also local, meaning that it work only from the point it is used on.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglnocomments|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% Observe the commands |\mglcomments| and |\mglnocomments| can be used to activate/deactivate commentaries on the document: just like \LaTeX{} commentaries, but with the possibilty of making them visible/invisible. This feature could be used, for example, to show remainders or commentaries for readers of test versions of an article.
+% 
+% \DescribeMacro{\mglTeX} This command just pretty-prints the name of the package.
+% \begin{center}
+%   \begin{tabular}{l}
+%     \hline\\[-0.75em]
+%     |\mglTeX|\\[0.25em]
+%     \hline
+%   \end{tabular}
+% \end{center}
+% 
+% \subsection{User-definable macros}
+% \noindent There are two macros that the user is allowed to modify:
+% 
+% \DescribeMacro{\mgltexsignature}
+% As an alternative to the |mglsignature| environment for declaring signatures, the user can manually redefine the signature macro |\mgltexsignature|, according to the following rules:
+% \begin{itemize}
+%   \item The positions of the comment signs for the MGL language have to be manually specified in the signature using the |\mglcomm| macro.
+%   \item The new-line character is declared as ``|^^J|''.
+%   \item A percent sign (|%|) has to be added at the end of every physical line of |\mgltexsignature|, otherwise an inelegant space at the beginning of every line will appear.
+%   \item Any \LaTeX{} command can be used in this case.
+% \end{itemize}
+% For example, the default signature:
+% \begin{quote}
+%   \mglcomm\\
+%   \mglcomm\ This script was generated from \meta{document}.mgl on date \meta{today}\\
+%   \mglcomm
+% \end{quote}
+% can be achieved with
+% \begin{verbatim}
+%   \def\mgltexsignature{%
+%     \mglcomm^^J%
+%     \mglcomm\ This script was generated from \jobname.mgl on date \today^^J%
+%     \mglcomm%
+%   }
+% \end{verbatim}
+% 
+% \DescribeMacro{\mglcommonscript}
+% It is the name for the common script that takes the contents of the |mglcommon| environment. For example, the default name of the script (``mgl\_common\_script'') is defined by doing
+% \begin{verbatim}
+%   \def\mglcommonscript{mgl_common_script}
+% \end{verbatim}
+% 
+% \subsection{Behavior of \textsf{\mglTeX}}
+% \noindent As a convenient feature, the environments |mglcode|, |mglscript| and |mglblock| will automatically check if they are being used to create different scripts with the same name, in which case \textsf{\mglTeX} will issue a warning; however, if one of these environments overwrite an external script (not embedded in the document), it won't be noticed. Likewise, the user will be warned if the environment |mglfunc| is being used to create different MGL functions with the same name.
+% 
+% When \textsf{\mglTeX} is unable to find a graphic that is supposed to include, instead of producing an error, it will warn the user about it, and will display a box in the corresponding position of the document, like the following one:
+% \begin{center}
+%   \framebox[10em]{
+%     \centering
+%     \bfseries\Huge
+%     \vbox{MGL\\image\\not\\found}
+%   }
+% \end{center}
+% Notice that the first time \LaTeX{} is executed, many of these boxes will appear in the document because the graphics from the MGL scripts are created, but not all are included (until \LaTeX{} is run for the second time).
+% \section{Warning for the user}
+% \mglTeX{} assummes that the |\begin{|\meta{environment}|}| and |\end{|\meta{environment}|}| commands will occupy their own physical line of \LaTeX{} code. So the correct form to use the environments is the following:
+% \begin{verbatim}
+%   \begin{<environment>}
+%     <contents of the environment>
+%   \end{<environment>}
+% \end{verbatim}
+% The following forms of use could cause problems:
+% \begin{verbatim}
+%   \begin{<environment>}<contents of the environment>\end{<environment>}
+% \end{verbatim}
+% \begin{verbatim}
+%   \begin{<environment>}<contents of the environment>
+%   \end{<environment>}
+% \end{verbatim}
+% \begin{verbatim}
+%   \begin{<environment>}
+%   <contents of the environment>
+%   \end{<environment>}<text>
+% \end{verbatim}
+% One of the reasons for this is that some of the environments in \mglTeX{} are programmed to ignore the empty space following the |\begin{|\meta{environment}|}|, which would cause an inelegant empty line in the script, so the first two incorrect forms would cause \mglTeX{} to ignore a complete line of code. The other reason is the method used to detect the |\end{|\meta{environment}|}| command, which could fail in the case of the third incorrect use.
+% \StopEventually{\PrintChanges\PrintIndex}
+% \section{Implementation}
+% \noindent This section documents the implementation of \mglTeX. Its purpose is to facilitate the comprehension and maintenance of the package.
+% \subsection{Initialization}
+% \noindent The \textsf{keyval} package is loaded to facilitate the declaration of \meta{key}=\meta{value} options for commands and environments; the \textsf{graphicx} package is loaded in order to manipulate and include the images created by MGL code.
+%    \begin{macrocode}
+
+\RequirePackage{keyval}
+\RequirePackage{graphicx}
+%    \end{macrocode}
+
+% We declare the options of the package. The first two are |draft| and |final|, which are passed directly to the \textsf{graphicx} package.
+%    \begin{macrocode}
+
+\DeclareOption{draft}{%
+  \PassOptionsToPackage{\CurrentOption}{graphicx}%
+}
+\DeclareOption{final}{%
+  \PassOptionsToPackage{\CurrentOption}{graphicx}%
+}
+%    \end{macrocode}
+% 
+% The next two options are |on| and |off|, where |on| indicates \mglTeX{} to create every script and every corresponding image every time \LaTeX{} is executed, while |off| tells not to do it, but to include the images anyway. First we declare a flag (boolean variable) |\@mgltex@on@| to know if the used passed the |on| or the |off| option.
+%    \begin{macrocode}
+\newif\if@mgltex@on@
+%    \end{macrocode}
+% If the user passes the option |on|, |\@mgltex@on@| is true, and the command |\mgl@write| (which takes care of writing code to the scripts) is the normal \LaTeX{} |\immediate\write| commands;
+% \changes{v.2.0}{2014/11/15}{Add package options \texttt{on} and \texttt{off}}
+%    \begin{macrocode}
+\DeclareOption{on}{%
+  \@mgltex@on@true%
+  \def\mgl@write#1#2{%
+    \immediate\write#1{#2}%
+  }
+}
+%    \end{macrocode}
+% if the user passes the option |off|, |\@mgltex@on@| is false, and the command |\mgl@write| does nothing (doesn't write to scripts).
+%    \begin{macrocode}
+\DeclareOption{off}{%
+  \@mgltex@on@false%
+  \def\mgl@write#1#2{}%
+}
+%    \end{macrocode}
+% The next options are |comments| and |nocomments|, where |comments| indicates \mglTeX{} to show the comments included inside |\mglcomments| environments, while |nocomments| tells not to do it. First we create a flag that will indicate which of these options is passed by the user.
+%    \begin{macrocode}
+\newif\if@mgl@comments@
+%    \end{macrocode}
+% If the user passes the option |comments|, |\@mgl@comments@| is true, and the |\mglcomments| environments print their contents;
+% \changes{v2.0}{2014/11/22}{Add package options \texttt{comments} and \texttt{nocomments}}
+%    \begin{macrocode}
+\DeclareOption{comments}{%
+  \@mgl@comments@true%
+}
+%    \end{macrocode}
+% if the user passes the option |nocomments|, |\@mgl@comments@| is false, and the |\mglcomments| environments won't print their contents.
+%    \begin{macrocode}
+\DeclareOption{nocomments}{%
+  \@mgl@comments@false%
+}
+%    \end{macrocode}
+% We then indicate the supported extensions to save the images created by the package, and the corresponding package options. The chosen extension is stored in the |\mgl@image@ext| macro for future use.
+%    \begin{macrocode}
+
+\DeclareGraphicsExtensions{%
+  .png,.eps,.jpg,.jpeg,.bps,.pdf,.epsz,.eps.gz,.bpsz,.bps.gz,.gif%
+}
+
+\DeclareOption{jpg}{\def\mgl@image@ext{.jpg}}
+\DeclareOption{jpeg}{\def\mgl@image@ext{.jpeg}}
+\DeclareOption{pdf}{\def\mgl@image@ext{.pdf}}
+\DeclareOption{png}{\def\mgl@image@ext{.png}}
+\DeclareOption{eps}{\def\mgl@image@ext{.eps}}
+\DeclareOption{epsz}{\def\mgl@image@ext{.eps.gz}}
+\DeclareOption{bps}{\def\mgl@image@ext{.bps}}
+\DeclareOption{bpsz}{\def\mgl@image@ext{.bps.gz}}
+\DeclareOption{gif}{\def\mgl@image@ext{.gif}}
+
+\DeclareOption{tex}{\def\mgl@image@ext{.tex}}
+%    \end{macrocode}
+% 
+% Other options produce an error message.
+%    \begin{macrocode}
+\DeclareOption*{\@unknownoptionerror}
+%    \end{macrocode}
+% 
+% The default options for the package are set to |final| and |eps|, then the options passed by the user are processed. 
+%    \begin{macrocode}
+
+\ExecuteOptions{final,on,nocomments,eps}
+\ProcessOptions*
+%    \end{macrocode}
+% 
+% Declare the \meta{key}=\meta{value} pairs for the |mgl| environment and companions. The pairs corresponding to the |\includegraphics| command are repeated, and saved in the |\graph@keys| macro; the new option is |imgext|, which can be used to overwrite the default extension chosen for the package. Notice that |imgext| can be any supported extension by MathGL but, of course, not all of them are supported by \LaTeX.
+%    \begin{macrocode}
+
+\define@key{mgl@keys}{bb}{\g@addto@macro{\graph@keys}{bb=#1,}}
+\define@key{mgl@keys}{bbllx}{\g@addto@macro{\graph@keys}{bbllx=#1,}}
+\define@key{mgl@keys}{bblly}{\g@addto@macro{\graph@keys}{bblly=#1,}}
+\define@key{mgl@keys}{bburx}{\g@addto@macro{\graph@keys}{bburx=#1,}}
+\define@key{mgl@keys}{bbury}{\g@addto@macro{\graph@keys}{bbury=#1,}}
+\define@key{mgl@keys}{natwidth}{\g@addto@macro{\graph@keys}{natwidth=#1,}}
+\define@key{mgl@keys}{natheight}{\g@addto@macro{\graph@keys}{natheight=#1,}}
+\define@key{mgl@keys}{hiresbb}{\g@addto@macro{\graph@keys}{hiresbb=#1,}}
+\define@key{mgl@keys}{viewport}{\g@addto@macro{\graph@keys}{viewport=#1,}}
+\define@key{mgl@keys}{trim}{\g@addto@macro{\graph@keys}{trim=#1,}}
+\define@key{mgl@keys}{angle}{\g@addto@macro{\graph@keys}{angle=#1,}}
+\define@key{mgl@keys}{origin}{\g@addto@macro{\graph@keys}{origin=#1,}}
+\define@key{mgl@keys}{width}{\g@addto@macro{\graph@keys}{width=#1,}}
+\define@key{mgl@keys}{height}{\g@addto@macro{\graph@keys}{height=#1,}}
+\define@key{mgl@keys}{totalheight}{\g@addto@macro{\graph@keys}{totalheight=#1,}}
+\define@key{mgl@keys}{keepaspectratio}{\g@addto@macro{\graph@keys}{keepaspectratio=#1,}}
+\define@key{mgl@keys}{scale}{\g@addto@macro{\graph@keys}{scale=#1,}}
+\define@key{mgl@keys}{clip}[true]{\g@addto@macro{\graph@keys}{clip=#1,}}
+\define@key{mgl@keys}{draft}[false]{\g@addto@macro{\graph@keys}{draft=#1,}}
+\define@key{mgl@keys}{type}{\g@addto@macro{\graph@keys}{type=#1,}}
+\define@key{mgl@keys}{ext}{\g@addto@macro{\graph@keys}{ext=#1,}}
+\define@key{mgl@keys}{read}{\g@addto@macro{\graph@keys}{read=#1,}}
+\define@key{mgl@keys}{command}{\g@addto@macro{\graph@keys}{command=#1,}}
+\define@key{mgl@keys}{imgext}{\def\mgl@image@ext{.#1}}
+%    \end{macrocode}
+
+% We do the same for the |\mglplot| command. The options for the |\includegraphics| command are repeated and stored in the |\graph@keys| macro; the new options are |imgext|, which is the same as the one for the |mgl| environment, and |setup|, which is used to specify a keyword associated to a block of MGL code stored by the |mglsetup| environment.
+%    \begin{macrocode}
+
+\define@key{mglplot@keys}{bb}{\g@addto@macro{\graph@keys}{bb=#1,}}
+\define@key{mglplot@keys}{bbllx}{\g@addto@macro{\graph@keys}{bbllx=#1,}}
+\define@key{mglplot@keys}{bblly}{\g@addto@macro{\graph@keys}{bblly=#1,}}
+\define@key{mglplot@keys}{bburx}{\g@addto@macro{\graph@keys}{bburx=#1,}}
+\define@key{mglplot@keys}{bbury}{\g@addto@macro{\graph@keys}{bbury=#1,}}
+\define@key{mglplot@keys}{natwidth}{\g@addto@macro{\graph@keys}{natwidth=#1,}}
+\define@key{mglplot@keys}{natheight}{\g@addto@macro{\graph@keys}{natheight=#1,}}
+\define@key{mglplot@keys}{hiresbb}{\g@addto@macro{\graph@keys}{hiresbb=#1,}}
+\define@key{mglplot@keys}{viewport}{\g@addto@macro{\graph@keys}{viewport=#1,}}
+\define@key{mglplot@keys}{trim}{\g@addto@macro{\graph@keys}{trim=#1,}}
+\define@key{mglplot@keys}{angle}{\g@addto@macro{\graph@keys}{angle=#1,}}
+\define@key{mglplot@keys}{origin}{\g@addto@macro{\graph@keys}{origin=#1,}}
+\define@key{mglplot@keys}{width}{\g@addto@macro{\graph@keys}{width=#1,}}
+\define@key{mglplot@keys}{height}{\g@addto@macro{\graph@keys}{height=#1,}}
+\define@key{mglplot@keys}{totalheight}{\g@addto@macro{\graph@keys}{totalheight=#1,}}
+\define@key{mglplot@keys}{keepaspectratio}{\g@addto@macro{\graph@keys}{keepaspectratio=#1,}}
+\define@key{mglplot@keys}{scale}{\g@addto@macro{\graph@keys}{scale=#1,}}
+\define@key{mglplot@keys}{clip}[true]{\g@addto@macro{\graph@keys}{clip=#1,}}
+\define@key{mglplot@keys}{draft}[false]{\g@addto@macro{\graph@keys}{draft=#1,}}
+\define@key{mglplot@keys}{type}{\g@addto@macro{\graph@keys}{type=#1,}}
+\define@key{mglplot@keys}{ext}{\g@addto@macro{\graph@keys}{ext=#1,}}
+\define@key{mglplot@keys}{read}{\g@addto@macro{\graph@keys}{read=#1,}}
+\define@key{mglplot@keys}{command}{\g@addto@macro{\graph@keys}{command=#1,}}
+\define@key{mglplot@keys}{imgext}{\def\mglplot@image@ext{.#1}}
+\define@key{mglplot@keys}{setup}{\def\mglplot@setup{#1}}
+%    \end{macrocode}
+
+% A special extension for images created with MathGL is ``.tex'', so we store it within a macro for future use.
+%    \begin{macrocode}
+
+\def\TeX@ext{.tex}
+%    \end{macrocode}
+% \subsection{Environments for MGL code embedding}
+% \begin{macro}{\mgl@include@image}
+% This is the command that will include graphics created by MGL code. We can't use |\includegraphics| directly for two reasons: first, MathGL has the capacity of creating graphics with \LaTeX{} commands (with the aid of the \textsf{tikz} package), in which case there is no image, but a ``.tex'' file, which has to be included; the second reason is that |\includegraphics| issues an error when the specified image doesn't exist, and remember that the first \LaTeX{} run only creates the images at the end of the document, but they cannot be included yet, so there would be a lot of errors in the process of compilation.
+%    \begin{macrocode}
+\def\mgl@include@image#1{%
+%    \end{macrocode}
+% If the extension of the graphics is ``.tex'',
+%    \begin{macrocode}
+  \ifx\mgl@image@ext\TeX@ext%
+%    \end{macrocode}
+% first check if the file exists;
+%    \begin{macrocode}
+    \IfFileExists{#1.tex}{%
+%    \end{macrocode}
+% if so, include it,
+%    \begin{macrocode}
+      \include{#1}%
+    }{%
+%    \end{macrocode}
+% otherwise use the command |\mgl@img@not@found| to create a warning.
+%    \begin{macrocode}
+      \mgl@img@not@found{#1}%
+    }%
+%    \end{macrocode}
+% If the extension of the graphics is not ``.tex'',
+%    \begin{macrocode}
+  \else%
+%    \end{macrocode}
+% we define the next action to be performed as warning that requested image doesn't exist. This is stored in the |\next@action| macro, and will be overwriten if the image is found.
+%    \begin{macrocode}
+  \def\next@action{\mgl@img@not@found{#1}}%
+%    \end{macrocode}
+% For every extension supported by \mglTeX{},
+%    \begin{macrocode}
+    \@for\img@ext:=\Gin@extensions\do{%
+%    \end{macrocode}
+% if the file with the current extension exists,
+%    \begin{macrocode}
+      \IfFileExists{#1\img@ext}{%
+%    \end{macrocode}
+% overwrite the |\next@action| macro so it uses the |\includegraphics| command to include the image, otherwise do nothing.
+%    \begin{macrocode}
+        \def\next@action{%
+          \expandafter\includegraphics\expandafter[\graph@keys]{#1}%
+        }%
+      }{}%
+    }%
+%    \end{macrocode}
+% Execute |\next@action|.
+%    \begin{macrocode}
+    \next@action%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgl@img@not@found}
+% \changes{v2.0}{2014/11/22}{Fixed incompatibility of command \texttt{\textbackslash{}mgl@img@not@found} with environment \texttt{tabular}}
+% When this command is called with the name of a MGL image as argument, it issues a package warning indicating that the MGL image can't be found, and creates the following box in the corresponding position:
+% \begin{center}
+% \framebox[10em]{%
+%   \centering%
+%   \bfseries\Huge%
+%   \vbox{MGL\\image\\not\\found}%
+% }%
+% \end{center}
+%    \begin{macrocode}
+\def\mgl@img@not@found#1{%
+  \PackageWarning{mgltex}{MGL image "#1" not found}%
+  \framebox[10em]{%
+    \centering%
+    \bfseries\Huge%
+    \begin{tabular}{c}MGL\\image\\not\\found\end{tabular}%
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{environment}{mgl}
+% This environment writes its contents to the main script \meta{document}.mgl.
+% 
+% First, declare a counter for numeration and naming of the images created from the main script \meta{document}.mgl.
+%    \begin{macrocode}
+
+\newcounter{mgl@image@no}
+%    \end{macrocode}
+% Create an output stream for the main script \meta{document}.mgl.
+%    \begin{macrocode}
+
+\newwrite\mgl@script
+%    \end{macrocode}
+% Open the main script at the beginning of the document (at the moment of the |\begin{document}| command).
+%    \begin{macrocode}
+\AtBeginDocument{%
+  \if@mgltex@on@%
+    \immediate\openout\mgl@script="\mgl@dir\jobname.mgl"%
+    \mglsignature@write\mgl@script%
+  \fi%
+}
+%    \end{macrocode}
+% At the end of the document (at the moment of the |\end{document}| command):
+%    \begin{macrocode}
+\AtEndDocument{%
+%    \end{macrocode}
+% write an empty line on the main script (just for elegance),
+%    \begin{macrocode}
+  \mgl@write\mgl@script{}%
+%    \end{macrocode}
+% write the MGL \emph{stop} command to stop the MathGL compiler.
+%    \begin{macrocode}
+  \mgl@write\mgl@script{stop}%
+%    \end{macrocode}
+% The |\mgl@func| is a buffer that contains instructions to write MGL functions declared with |mglfunc| environment. Here, we execute those instructions.
+%    \begin{macrocode}
+  \mgl@func%
+%    \end{macrocode}
+% Close the main script.
+%    \begin{macrocode}
+  \immediate\closeout\mgl@script%
+%    \end{macrocode}
+% Use the program |mglconv| (part of MathGL) to compile the main script.
+%    \begin{macrocode}
+  \mgl@write{18}{mglconv -n "\mgl@dir\jobname.mgl"}%
+}
+
+%    \end{macrocode}
+% \begin{macro}{\mgl}
+% The beginning of the |mgl| environment.
+%    \begin{macrocode}
+
+\newcommand\mgl[1][]{%
+%    \end{macrocode}
+% First, process the \meta{key}=\meta{value} options for the environment.
+%    \begin{macrocode}
+  \def\graph@keys{}%
+  \setkeys{mgl@keys}{#1}%
+%    \end{macrocode}
+% Now, make every ``special'' character (\textbackslash, \$, etc.) of category $13$ (other), i.e., make them common characters.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+%    \end{macrocode}
+% Add an end-line character at the end of every read line. This end-line character is declared active (category 12).
+%    \begin{macrocode}
+  \endlinechar`\^^M \catcode`\^^M\active%
+%    \end{macrocode}
+% Spaces characters are category 10; the spaces at the beginning of every read line are ignored.
+%    \begin{macrocode}
+  \catcode`\ =10%
+%    \end{macrocode}
+% Finally, the command that reads/writes each line of the contents of the environment is called.
+%    \begin{macrocode}
+  \mgl@write\mgl@script{quality \mgl@quality}%
+  \expandafter\mgl@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mgl}
+% Define a macro that contains the |\end{mgl}| command as text, so the end of the environment can be tested by comparison with it. From now on, we adopt the convention that the macro |\end@|\meta{environment} contains the |\end{|\meta{environment}|}| command as text.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1 \relax%
+  \xdef\end@mgl{\string\\end\string\{mgl\string\}}%
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\mgl@write@line}
+% This command reads each line from the |mgl| environment and writes it to the general script \meta{document}.mgl. We start by wrapping the new command with a \LaTeX{} group because we will change the code of the end-line character to ``active'' \emph{locally}, so we can indicate |\mgl@write@line| that its argument stretches until the end of the line.
+%    \begin{macrocode}
+\begingroup%
+%    \end{macrocode}
+
+% Declare the end-line character as active.
+%    \begin{macrocode}
+  \catcode`\^^M\active%
+%    \end{macrocode}
+% The command |\mgl@write@line| reads its argument until it finds the end-line character, i.e., it reads a complete line of text, which is MGL code in this case.
+%    \begin{macrocode}
+  \gdef\mgl@write@line#1^^M{%
+%    \end{macrocode}
+% The next action to be performed is write the read line of code to the main script \meta{document}.mgl and recursively call |\mgl@write@line|, so it reads the next line of text. These instructions are stored in the |\next@action| macro.
+%    \begin{macrocode}
+    \def\next@action{%
+      \mgl@write\mgl@script{#1}%
+      \mgl@write@line%
+    }%
+%    \end{macrocode}
+% The |\test@end@mgl| command test if the end of the |mgl| environment has been reached in the current line. If so, it overwrites the |\next@action| macro so it doesn't read the next line of text, but executes the |\end{mgl}| command (see bellow).
+%    \begin{macrocode}
+    \test@end@mgl{#1}%
+%    \end{macrocode}
+% Execute the |\next@action| macro.
+%    \begin{macrocode}
+    \next@action%
+  }%
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\test@end@mgl}
+% This command checks if its argument is equal to |\end@mgl|; if so, overwrites  the |\next@action| macro (see above) so that it executes the end of the |mgl| environment (|\end{mgl}|). Here, we adopt another convention: the |\test@end@|\meta{environment} checks if its argument is equal to |\end@|\meta{environment}, i.e., tests whether the |\end{|\meta{environment}|}| command has been reached, in which case, it executes that command.
+%    \begin{macrocode}
+\def\test@end@mgl#1{%
+  \edef\this@line{#1}%
+  \ifx\this@line\end@mgl%
+    \def\next@action{\end{mgl}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\endmgl}
+% The end of the environment is quite simple: the |mgl@image@no| counter is increased by one, then the MGL command to save the corresponding image is written; the name given to the image is ``\meta{document}-mgl-\meta{mgl@image@no}.\meta{mgl@image@ext}''; the MGL \emph{reset} command is written in the main script to clean the image and restart graphic parameters for the following image to be created. Finally, the |\mgl@include@image| command (see below) is called to include the image created.
+%    \begin{macrocode}
+\def\endmgl{%
+  \stepcounter{mgl@image@no}%
+  \mgl@write\mgl@script{%
+    write '\mgl@dir\jobname-mgl-\arabic{mgl@image@no}\mgl@image@ext'%
+  }%
+  \mgl@write\mgl@script{reset}%
+  \mgl@write\mgl@script{}%
+  \mgl@include@image{\mgl@dir\jobname-mgl-\arabic{mgl@image@no}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+% \begin{environment}{mgladdon}
+% This is just a modification of the |mgl| environment. First, we define the |\end@mgladdon| to contain the |\end{mgladdon}| command as text as specified above, then we redefined |\test@end@mgl| command to check for the end of the |mgladdon| environment instead of |mgl|, finally we call the |\mgl| command with no options. The end of |mgladdon| is defined to do nothing.
+%    \begin{macrocode}
+
+\bgroup%
+  \escapechar=-1\relax%
+  \xdef\end@mgladdon{\string\\end\string\{mgladdon\string\}}%
+\egroup%
+\newenvironment{mgladdon}{%
+  \def\test@end@mgl##1{%
+    \edef\this@line{##1}%
+    \ifx\this@line\end@mgladdon%
+      \def\next@action{\end{mgladdon}}%
+    \fi%
+  }%
+  \mgl[]%
+}{}
+%    \end{macrocode}
+% \end{environment}
+% \begin{environment}{mglcode}
+% This is like |mgl|, but it writes its contents to its own file, whose name is passed as mandatory argument.
+% \begin{macro}{\mgl@script@written}
+
+% The names of all the scripts written from the \LaTeX{} document will be stored in this macro, so we can later check if some script is being overwritten. This macro will be used in other environments.
+%    \begin{macrocode}
+\def\mgl@script@written{}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgl@out@stream}
+% Declare an output stream for MGL scripts other than the main one. This stream will be used in other environments.
+%    \begin{macrocode}
+\newwrite\mgl@out@stream
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglcode}
+% The beginning of the |mglcode| environment.
+%    \begin{macrocode}
+\newcommand\mglcode[2][]{%
+  \def\graph@keys{}%
+%    \end{macrocode}
+% Process the \meta{key}=\meta{value} options. These are the same for the |mgl| environment.
+%    \begin{macrocode}
+  \setkeys{mgl@keys}{#1}%
+%    \end{macrocode}
+% Test if a script with the same name is already created from the \LaTeX{} document. If so, a warning is issue, but we proceed anyway.
+%    \begin{macrocode}
+  \test@mgl@script@written{#2}%
+%    \end{macrocode}
+% Add the script's name to the |\mgl@script@written| macro.
+%    \begin{macrocode}
+  \xdef\mgl@script@written{\mgl@script@written#2,}%
+%    \end{macrocode}
+% Open the script for writing.
+%    \begin{macrocode}
+  \def\this@script{#2}%
+  \if@mgltex@on@%
+    \immediate\openout\mgl@out@stream=\mgl@dir\this@script.mgl%
+    \mglsignature@write\mgl@out@stream%
+  \fi%
+%    \end{macrocode}
+%   Here, we do the same changes of categories as in the |mgl| environment, except for the spaces, which in this case will be respected, even the ones at the beginning of each like, i.e., we will write each line \emph{verbatim}.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \obeyspaces%
+%    \end{macrocode}
+% Call the command that will write each line of the contents of the environment.
+%    \begin{macrocode}
+  \expandafter\mglcode@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\test@mgl@script@written}
+% The macro that checks is we are overwriting any script.
+%    \begin{macrocode}
+\def\test@mgl@script@written#1{%
+%    \end{macrocode}
+% For every script already written (whose name is stored in |\mgl@script@written|), check if the current script's name matches; if so, issue a warning telling we are overwriting, but proceed.
+%    \begin{macrocode}
+  \edef\this@script{#1}%
+  \@for\mgl@script@name:=\mgl@script@written\do{%
+    \ifx\this@script\mgl@script@name%
+      \PackageWarning{mgltex}{Overwriting MGL script "\this@script.mgl"}%
+    \fi%
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglcode@write@line}
+% This writes each line of the contents of the |mglcode| environment. However, contrary to the case of the |\mgl@write@line| command, it doesn't read line by line, but character by character, and stores each word in |\mgl@word| and each line in |\mgl@line|.
+%    \begin{macrocode}
+\newtoks\mgl@word
+\newtoks\mgl@line
+\def\mglcode@write@line#1{%
+%    \end{macrocode}
+% The next action (stored as |\next@action|) is to read the following character, unless overwritten later.
+%    \begin{macrocode}
+  \let\next@action\mglcode@write@line%
+%    \end{macrocode}
+% If the current character is an end-line character,
+%    \begin{macrocode}
+  \expandafter\if#1\^^M%
+%    \end{macrocode}
+% write the contents of |\mgl@line|, i.e., the current line, and clean |\mgl@word| and |\mgl@line|;
+%    \begin{macrocode}
+    \mgl@write\mgl@out@stream{\the\mgl@line}%
+    \mgl@word{}%
+    \mgl@line{}%
+%    \end{macrocode}
+% if the current character is a space, clean |\mgl@word|, but add the space to |\mgl@line|;
+%    \begin{macrocode}
+  \else\expandafter\if#1\space%
+    \mgl@word{}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+%    \end{macrocode}
+% otherwise, the current character is alphanumeric and is added both to |\mgl@word| and |\mgl@line|, and
+%    \begin{macrocode}
+  \else%
+    \mgl@word\expandafter{\the\mgl@word#1}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+%    \end{macrocode}
+% we test if the current word (|\mgl@word|) is |\end{mglcode}|, in which case, |\next@action| is overwritten to |\end{mglcode}|.
+%    \begin{macrocode}
+    \test@end@mglcode{\the\mgl@word}%
+  \fi\fi%
+%    \end{macrocode}
+% Finally, execute |\next@action|.
+%    \begin{macrocode}
+  \next@action%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\test@end@mglcode}
+% The |\test@end@mglcode| checks if it's argument is equal to |\end@mglcode|, in which case overwrites |\next@action| to |\end{mglcode}|.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1\relax%
+  \xdef\end@mglcode{\string\\end\string\{mglcode\string\}}%
+\endgroup%
+\def\test@end@mglcode#1{%
+  \edef\this@word{#1}%
+  \ifx\this@word\end@mglcode%
+    \def\next@action{\end{mglcode}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% 
+% \begin{macro}{\endmglcode}
+% The end of the |mglcode| environment. It closes the output stream |\mgl@out@stream|, and calls the \textsf{mglconv} program (part of MathGL) to execute the script. Finally, the |\mgl@include@image| command is used to include the image created.
+%    \begin{macrocode}
+\def\endmglcode{%
+  \immediate\closeout\mgl@out@stream%
+  \mgl@write{18}{%
+    mglconv "\mgl@dir\this@script.mgl" -s "\mgl@dir\mglcommonscript.mgl" -o "\mgl@dir\this@script\mgl@image@ext"%
+  }%
+  \mgl@include@image{\mgl@dir\this@script}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+% 
+% \begin{environment}{mglscript}
+% This is just a modification of the |mglcode| environment. First, we define the |\end@mglscript| macro; then we modify the |\test@end@mglcode| to check for |\end{mglscript}| instead of |\end{mglcode}|; finally, we call the |\mglcode| macro with the same mandatory argument as |mglscript|. The |\end{mglscript}| just closes the output stream |\mgl@out@stream|, but doesn't create nor includes any image.
+%    \begin{macrocode}
+
+\bgroup%
+  \escapechar=-1\relax%
+  \xdef\end@mglscript{\string\\end\string\{mglscript\string\}}%
+\egroup%
+\newenvironment{mglscript}[1]{%
+  \def\test@end@mglcode##1{%
+    \edef\this@word{##1}%
+    \ifx\this@word\end@mglscript%
+      \def\next@action{\end{mglscript}}%
+    \fi%
+  }%
+  \mglcode{#1}%
+}{%
+  \immediate\closeout\mgl@out@stream%
+}
+%    \end{macrocode}
+% \end{environment}
+% 
+% \begin{environment}{mglfunc}
+% This environment is used to create MGL functions in the main script \meta{document}.mgl.
+% \begin{macro}{\mglfunc@defined}
+% Within this macro we will store the names of the MGL functions already defined from the \LaTeX{} document, so that we can check if we are overwriting one of them
+%    \begin{macrocode}
+
+\def\mglfunc@defined{}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgl@func}
+% This is a buffer to store the instructions to write the MGL functions code when the |\end{document}| command is called. This is done this way, because the functions have to be after the \emph{stop} command from the MGL language, which stops the execution of the MGL compiler, so no code should be after the \emph{stop}, except for functions.
+%    \begin{macrocode}
+\def\mgl@func{}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglgunc}
+% The beginning of the |mglfunc| environment.
+%    \begin{macrocode}
+
+\newcommand\mglfunc[2][0]{%
+%    \end{macrocode}
+% First, check if a function with the current name is already defined, in which case we issue a warning, but proceed anyway.
+%    \begin{macrocode}
+  \test@mglfunc@defined{#2}%
+%    \end{macrocode}
+% Add the name of the current function to the list of functions defined.
+%    \begin{macrocode}
+  \g@addto@macro{\mglfunc@defined}{#2,}%
+%    \end{macrocode}
+% \end{macro}
+% Here we do the same changes of categories as in the |mgl| environment.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \catcode`\ =10%
+%    \end{macrocode}
+% Write an empty line in the main script just for elegance (and to visually separate different functions, too).
+%    \begin{macrocode}
+  \g@addto@macro{\mgl@func}{\mgl@write\mgl@script{}}%
+%    \end{macrocode}
+% Write the heading of the function.
+%    \begin{macrocode}
+  \g@addto@macro{\mgl@func}{\mgl@write\mgl@script{func '#2' #1}}%
+%    \end{macrocode}
+% Call the command that will write each line of the contents of the environment.
+%    \begin{macrocode}
+  \expandafter\mglfunc@write@line%
+}
+%    \end{macrocode}
+% \begin{macro}{\test@mglfunc@defined}
+% This command tests if a function with a given name---given as argument---is already defined from the \LaTeX{} document; if so, a warning will be issued indicating multiple definitions for the same function, but we will proceed anyway.
+%    \begin{macrocode}
+\def\test@mglfunc@defined#1{%
+  \def\this@func{#1}%
+  \@for\mglfunc@name:=\mglfunc@defined\do{%
+    \ifx\this@func\mglfunc@name%
+      \PackageWarning{\mgl@name}{MGL function "#1" has multiple definitions}%
+    \fi%
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% We declare \emph{locally} the end-line character as active.
+%    \begin{macrocode}
+\begingroup%
+  \catcode`\^^M\active%
+%    \end{macrocode}
+% \begin{macro}{\mglfunc@write@line}
+% This is the command that reads each line of code of the |mglfunc| environment, and stores in the buffer |\mgl@func| the instructions to write each of these lines.
+%    \begin{macrocode}
+  \gdef\mglfunc@write@line#1^^M{%
+%    \end{macrocode}
+% The next action (|\next@action|) is to store in the buffer the instruction to write the current line, and then call recursively the |\mglfunc@write@line| command, unless overwritten below.
+%    \begin{macrocode}
+    \def\next@action{%
+      \g@addto@macro{\mgl@func}{\mgl@write\mgl@script{#1}}%
+      \expandafter\mglfunc@write@line%
+    }%
+%    \end{macrocode}
+% Check for the end of the |mglfunc| environment, in which case, |\next@action| is redefined to be |\end{mglfunc}|.
+%    \begin{macrocode}
+    \test@end@mglfunc{#1}%
+%    \end{macrocode}
+% Execute |\next@action|.
+%    \begin{macrocode}
+    \next@action%
+  }%
+%    \end{macrocode}
+% \end{macro}
+%    \begin{macrocode}
+\endgroup
+%    \end{macrocode}
+% \begin{macro}{\end@mglfunc}
+% \begin{macro}{\test@end@mglfunc}
+% By now, we already know now these two commands work.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1 \relax%
+  \xdef\end@mglfunc{\string\\end\string\{mglfunc\string\}}%
+\endgroup
+\def\test@end@mglfunc#1{%
+  \edef\this@line{#1}%
+  \ifx\this@line\end@mglfunc%
+    \def\next@action{\end{mglfunc}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\endmglfunc}
+% Just stores in the buffer the instruction that closes the MGL function with the \emph{return} command.
+%    \begin{macrocode}
+\def\endmglfunc{%
+  \g@addto@macro{\mgl@func}{\mgl@write\mgl@script{return}}%
+}
+
+% \begin{environment}{mglcommon}
+% Writes its contents to a common script that will be executed together with each of the other scripts. It is useful to define constants ---for example--- that will be available to all other scripts.
+% \begin{macro}{\mglcommonscript}
+% \changes{v2.0}{2014/11/22}{Add \texttt{\backslash{}mglcommonscript} user-definable macro}
+% We define a macro to store the name of the setup script that will contain common code to all other scripts. The default name is \emph{common\_script}.mgl.
+%    \begin{macrocode}
+
+\def\mglcommonscript{mgl_common_script}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mglcommon}
+% We already know the purpose of this macro.
+%    \begin{macrocode}
+\bgroup%
+  \escapechar=-1\relax%
+  \xdef\end@mglcommon{\string\\end\string\{mglcommon\string\}}%
+\egroup%
+%    \end{macrocode}
+% \end{macro}
+% 
+% The |mglcommon| environment redefines the |\test@end@mglcode| so it detects the |\end{mglcommon}| command instead, and uses the |\mglcode| to create the common script.
+%    \begin{macrocode}
+\newenvironment{mglcommon}{%
+  \def\test@end@mglcode##1{%
+    \edef\this@word{##1}%
+    \ifx\this@word\end@mglcommon%
+      \def\next@action{\end{mglcommon}}%
+    \fi%
+  }%
+  \mglcode{\mglcommonscript}%
+}{%
+  \mgl@write\mgl@out@stream{quality \mgl@quality}%
+  \immediate\closeout\mgl@out@stream%
+}
+%    \end{macrocode}
+% This environment can be used only in the preamble.
+%    \begin{macrocode}
+\@onlypreamble\mglcommon
+%    \end{macrocode}
+% \end{environment}
+% \begin{environment}{mglsignature}
+% This environment is used to declare signature text that will be written as comment on every script generated by \mglTeX.
+% \begin{macro}{\mglcomm}
+% We store the comment sign for MGL in this macro. For that, we need to declare \emph{locally} the symbol ``\#'' as one of category $12$.
+%    \begin{macrocode}
+\bgroup
+  \catcode`#=12
+  \gdef\mglcomm{#}
+\egroup
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgltexsignature}
+% \changes{v2.0}{2014/11/22}{Add \texttt{\textbackslash{}mgltexsignature} user-definable macro}
+% The buffer where the signature will be stored. Here, we declare a default signature.
+%    \begin{macrocode}
+\def\mgltexsignature{%
+  \mglcomm^^J%
+  \mglcomm\space This file was autogenerated from the document \jobname.tex on date \today^^J%
+  \mglcomm%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglsignature}
+% The beginning of the |mglsignature| environment.
+%    \begin{macrocode}
+\newcommand\mglsignature{%
+%    \end{macrocode}
+% Delete |\mgltexsignature| contents.
+%    \begin{macrocode}
+  \def\mgltexsignature{}%
+%    \end{macrocode}
+% We do the same changes of category as in the |mglcode| environment.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \@vobeyspaces%
+%    \end{macrocode}
+% Call the command that will store each line of the signature in the |\mgltexsignature| macro.
+%    \begin{macrocode}
+  \expandafter\mglsignature@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mglsignature}
+% We already know the purpose of this command.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1 \relax%
+  \xdef\end@mglsignature{\string\\end\string\{mglsignature\string\}}%
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglsignature@write@line}
+% This command stores each line of the signature in the |\mgltexsignature| buffer.
+%    \begin{macrocode}
+\begingroup%
+%   \catcode`\\=0%
+  \catcode`\^^M\active%
+  \gdef\mglsignature@write@line#1^^M{%
+%    \end{macrocode}
+% Unless overwritten later, the next action (|\next@action|) is to store the current line of the signature in the |\mgltexsignature| buffer, ending with a new-line character, and call |\mglsignature@write@line| recursively.
+%    \begin{macrocode}
+    \def\next@action{%
+      \g@addto@macro{\mgltexsignature}{\mglcomm\space#1^^J}
+      \mglsignature@write@line%
+    }%
+%    \end{macrocode}
+% We check if the current line is |\end{mglsignature}|, in which case, overwrite |\next@action| to that command.
+%    \begin{macrocode}
+    \test@end@mglsignature{#1}%
+%    \end{macrocode}
+% Execute |\next@action|.
+%    \begin{macrocode}
+    \next@action%
+  }%
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\test@end@mglsignature}
+% We already know the purpose of this command.
+%    \begin{macrocode}
+\def\test@end@mglsignature#1{%
+  \edef\this@line{#1}%
+  \ifx\this@line\end@mglsignature%
+    \def\next@action{\end{mglsignature}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\endmglsignature}
+% The end of the |mglsignature| environment. It just adds a comment sign to |\mgltexsignature| for elegance.
+%    \begin{macrocode}
+\def\endmglsignature{%
+  \g@addto@macro{\mgltexsignature}{\mglcomm}
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglsignature@write}
+% It takes care of writing the signature to the output stream which is passed as its argument.
+%    \begin{macrocode}
+\def\mglsignature@write#1{\mgl@write#1{\mgltexsignature}}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+% \begin{environment}{mglcomment}
+% \changes{v2.0}{2014/11/22}{Add the |mglcomment| environment.}
+% An environment to contain multiline comments that won't be printed to the document nor to any script in the case of the user passes the option |nocomments| to the package, and it'll print the comments if the |comments| option is passed to the package.
+% 
+% \begin{macro}{\mglcomment}
+% The beginning of the |mglcomment| environment. Here, we change categories of special characters (like \#, \@, etc.) and indicate to obey lines and spaces.
+%    \begin{macrocode}
+
+\def\mglcomment{%
+  \let\do\@makeother\dospecials%
+  \obeylines%
+  \@vobeyspaces%
+  \verbatim@font%
+  \small%
+%    \end{macrocode}
+% Call the command that will ignore all the commentary.
+%    \begin{macrocode}
+  \mgl@comment%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgl@comment}
+% This command reads everything up to the |\end{mglcomment}| and ignores it if the |nocomments| option is passed to the package, or prints it otherwise. (We use the trick to consider everything up to the |\end{mglcomment}| the argument of |\mgl@comment|.)
+%    \begin{macrocode}
+\begingroup%
+%    \end{macrocode}
+% We do some adequate changes of code locally, so that \texttt{\textbackslash}, \texttt{\{} and \texttt{\}} are special, and \texttt{\textbar}, \texttt{[} and \texttt{]} take their functions, respectively.
+%    \begin{macrocode}
+  \catcode`|=0\catcode`[= 1\catcode`]=2\catcode`\{=12\catcode`\}=12\catcode`\\=12%
+%    \end{macrocode}
+% Define |\mgl@comment| to do nothing with its argument if the |nocomments| option has been passed to the package; otherwise, if the |comments| options has been passed, it will print the commentary, with delimiters to indicate where it starts and where it ends. Then call the end of the environment.
+%    \begin{macrocode}
+  |gdef|mgl@comment#1\end{mglcomment}[%
+    |if@mgl@comments@%
+      |begin[center]%
+        <------------------ MGL comment ------------------>%
+        #1%
+        <------------------ MGL comment ------------------>%
+      |end[center]%
+    |fi%
+    |end[mglcomment]]%
+|endgroup%
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\endmglcomment}
+% The end of the environment; it does nothing.
+%    \begin{macrocode}
+\def\endmglcomment{}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+
+% \subsection{Fast creation of graphics}
+% \begin{environment}{mglsetup}
+% This environment is used to store lines of code that need to be repeated many times. Later, the |\mglplot| command (see below) uses this lines of code without the need to repeat them.
+% \begin{macro}{\mglsetup@defined}
+% A macro to list the names of all the setups already defined.
+%    \begin{macrocode}
+
+\def\mglsetup@defined{}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglsetup}
+% The beginning of the |mglsetup| environment. It accepts one optional argument, which is a name (keyword) to be associated to the block of code.
+%    \begin{macrocode}
+\newcommand\mglsetup[1][generic]{%
+%    \end{macrocode}
+% Test if there already exists a setup with the current name; if so, issue a warning of redefinition of the setup, but proceed anyway.
+%    \begin{macrocode}
+  \test@mglsetup@defined{#1}%
+%    \end{macrocode}
+% Add the name of the current setup to |\mglsetup@defined|.
+%    \begin{macrocode}
+  \g@addto@macro{\mglsetup@defined}{#1,}%
+%    \end{macrocode}
+% Define a new buffer which will contain the instructions to write the contents of the environment when the |\mglplot|. command is used. If the |mglsetup| environment is called like |\mglsetup\oarg{\meta{keyword}}|, the buffer will be called |\mgl@setup@\meta{keyword}|; if no name is given, use ``generic'' as keyword.
+%    \begin{macrocode}
+  \expandafter\def\csname mgl@setup@#1\endcsname{\mgl@write\mgl@script{}}%
+  \expandafter\def\csname mgl@setup@#1\endcsname{\mgl@write\mgl@script{quality \mgl@quality}}%
+%    \end{macrocode}
+% Here, we do the same changes of category for special characters as we did in the |mgl| environment.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \catcode`\ =10%
+%    \end{macrocode}
+% Call the command that will store in the buffer the instructions to write the lines of MGL code.
+%    \begin{macrocode}
+  \expandafter\mglsetup@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\test@mglsetup@defined}
+% For every name stored in |\mglsetup@defined|, check if its argument (the name of the current setup) matches, in which case we will issue a warning, but proceed.
+%    \begin{macrocode}
+\def\test@mglsetup@defined#1{%
+  \def\this@setup{#1}%
+  \@for\mglsetup@name:=\mglsetup@defined\do{%
+    \ifx\this@mglsetup\mglsetup@name%
+      \PackageWarning{\mgl@name}{Redefining "#1" setup for \noexpand\mglplot}%
+    \fi%
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglsetup@write@line}
+% This works exactly as the |\mgl@write@line|, but instead of writing directly to a script, it stores the writing instructions in the buffer.
+%    \begin{macrocode}
+\begingroup%
+  \catcode`\^^M\active%
+  \gdef\mglsetup@write@line#1^^M{%
+    \def\next@action{%
+      \expandafter\g@addto@macro\csname mgl@setup@\this@setup\endcsname{%
+        \mgl@write\mgl@script{#1}%
+      }%
+      \expandafter\mglsetup@write@line%
+    }%
+    \test@end@mglsetup{#1}%
+    \next@action%
+  }%
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mglsetup}
+% \begin{macro}{\test@end@mglsetup}
+% We already know how these two macros work
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1 \relax%
+  \xdef\end@mglsetup{\string\\end\string\{mglsetup\string\}}%
+\endgroup
+\def\test@end@mglsetup#1{%
+  \edef\this@line{#1}%
+  \ifx\this@line\end@mglsetup%
+    \def\next@action{\end{mglsetup}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\endmglsetup}
+% The end of the |mglsetup| environment. It does nothing.
+%    \begin{macrocode}
+\def\endmglsetup{}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+
+% \begin{macro}{\mglplot}
+% This macro uses the blocks of code stored by |mglsetup| environments to complete the code contained in its mandatory argument.
+% 
+% If there is an optional argument, make |\@mglplot| process it, otherwise pass no argument to |\@mglplot|.
+%    \begin{macrocode}
+
+\def\mglplot{%
+  \@ifnextchar[{\@mglplot}{\@mglplot[]}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@mglplot}
+% This command receives one mandatory argument, but enclosed between brackets; so it receives the optional argument of |\mglplot|.
+%    \begin{macrocode}
+\def\@mglplot[#1]{%
+%    \end{macrocode}
+% Unless overwritten by the user with the |setup=\meta{setup}| option,  the default setup is ``generic''; initialize the |\graph@keys| macro; process the \meta{key}=\meta{value} pairs passed by the user; increase the counter |mgl@image@no| for numbering and naming of images.
+%    \begin{macrocode}
+  \def\mglplot@setup{generic}%
+  \def\graph@keys{}%
+  \setkeys{mglplot@keys}{#1}%
+  \stepcounter{mgl@image@no}%
+%    \end{macrocode}
+% If the given setup is undefined, issue a package error; otherwise, execute the buffer of the setup, which will write the contents of the corresponding |mglsetup| blocks to the general script.
+%    \begin{macrocode}
+  \ifx\csname mgl@setup@\mglplot@setup\endcsname\@undefined%
+    \PackageError{\mgl@name}{Setup "\mglplot@setup" undefined}{}%
+  \else%
+    \csname mgl@setup@\mglplot@setup\endcsname%
+  \fi%
+%    \end{macrocode}
+% Call |\@@mglplot| (see below).
+%    \begin{macrocode}
+  \@@mglplot%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\@@mglplot}
+% This command writes its argument verbatim to the main script, then writes the command to save the corresponding image, and the \emph{reset} command to prepare MathGL for the next image; finally, it uses the |\mgl@include@image| to include the corresponding graphics in the document.
+%    \begin{macrocode}
+\long\def\@@mglplot#1{%
+  \mgl@write\mgl@script{\detokenize{#1}}%
+  \mgl@write\mgl@script{%
+    write '\mgl@dir\jobname-mgl-\arabic{mgl@image@no}\mgl@image@ext'%
+  }%
+  \mgl@write\mgl@script{reset}%
+  \mgl@include@image{\mgl@dir\jobname-mgl-\arabic{mgl@image@no}}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsection{Verbatim-like environments}
+% \begin{macro}{mgl@verb@line@no}
+% \noindent We create a counter to number the lines of code in verbatim-like environments.
+%    \begin{macrocode}
+
+\newcounter{mgl@verb@line@no}
+%    \end{macrocode}
+% \end{macro}
+% \begin{environment}{mglverbatim}
+% This environment writes its contents \emph{verbatim} to the \LaTeX{} document, numbering each line of code.
+% \begin{macro}{\mglverbatim}
+% The beginning of the |mglverbatim| environment.
+%    \begin{macrocode}
+
+\def\mglverbatim{%
+%    \end{macrocode}
+% Initialize the counter for lines of code.
+%    \begin{macrocode}
+  \setcounter{mgl@verb@line@no}{0}%
+%    \end{macrocode}
+% We use the list environment to set the numeration of the lines of code that will be written to the \LaTeX{} document as items of the list. We also set the separation between lines of code, the indentation of the line, and some other length parameters.
+%    \begin{macrocode}
+  \list{\itshape\footnotesize\arabic{mgl@verb@line@no}.}{}%
+  \setlength{\labelsep}{1em}%
+  \itemsep\z@skip%
+  \leftskip\z@skip\rightskip\z@skip%
+  \parindent\z@\parfillskip\@flushglue\parskip\z@skip%
+%    \end{macrocode}
+% We do the same changes of categories as in the |mglcode| environment.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \obeyspaces%
+%    \end{macrocode}
+% use verbatim font.
+%    \begin{macrocode}
+  \verbatim@font%
+%    \end{macrocode}
+% Call the command that will write each line of the contents of the environment.
+%    \begin{macrocode}
+  \expandafter\mglverbatim@ignore@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglverbatim@ignore@line}
+% This command ignores the first line of the |verbatim| environment, which is an empty line.
+%    \begin{macrocode}
+\def\mglverbatim@ignore@line#1{%
+  \expandafter\mglverbatim@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglverbatim@write@line}
+% Reads the contents of the |mglverbatim| character by character, and stores words in the |\mgl@word| buffer and lines in the |\mgl@line| buffer, just like the |mglcode| environment did.
+%    \begin{macrocode}
+\def\mglverbatim@write@line#1{%
+%    \end{macrocode}
+% Unless overwritten later, the next action (|\next@action|) is recursively call |\mglverbatim@write@line|.
+%    \begin{macrocode}
+  \let\next@action\mglverbatim@write@line%
+%    \end{macrocode}
+% If the character read is an end-line character,
+%    \begin{macrocode}
+  \expandafter\if#1\^^M%
+%    \end{macrocode}
+% increase the line of code counter, write the line contained in |\mgl@line| as an item of the |list| environment, and clean |\mgl@word| and |\mgl@line|;
+%    \begin{macrocode}
+    \stepcounter{mgl@verb@line@no}%
+    \item\mbox{\the\mgl@line}%
+    \mgl@word{}%
+    \mgl@line{}%
+%    \end{macrocode}
+% if the character is a space, clean |\mgl@wors|, but add the space to |\mgl@line|;
+%    \begin{macrocode}
+  \else\expandafter\if#1\space%
+    \mgl@word{}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+%    \end{macrocode}
+% otherwise, the character is aphanumeric, so add it to the |\mgl@word| and |\mgl@line| buffers, and check if |\mgl@word| is |\end{mglverbatim}|, in which case overwrite |\next@action| to be that command.
+%    \begin{macrocode}
+  \else%
+    \mgl@word\expandafter{\the\mgl@word#1}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+    \test@end@mglverbatim{\the\mgl@word}%
+  \fi\fi%
+  \next@action%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mglverbatim}
+% \begin{macro}{\test@end@mglverbatim}
+% We already know the purpose of these macros.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1\relax%
+  \xdef\end@mglverbatim{\string\\end\string\{mglverbatim\string\}}%
+\endgroup%
+\def\test@end@mglverbatim#1{%
+  \edef\this@word{#1}%
+  \ifx\this@word\end@mglverbatim%
+    \def\next@action{\end{mglverbatim}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%    \begin{macrocode}
+%    \end{macrocode}
+% \begin{macro}{\endmglverbaim}
+% The end of the |mglverbatim| environment. It just closes the |list| environment.
+%    \begin{macrocode}
+\def\endmglverbatim{\endlist}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+% \begin{environment}{mglblock}
+% This environment writes its contents to a script, whose name is passed as mandatory argument, ad then it also writes its contents to the \LaTeX{} document, numbering each line.
+% \begin{macro}{\mglblock}
+% The beginning of the |mglblock environment|.
+%    \begin{macrocode}
+
+\def\mglblock#1{%
+%    \end{macrocode}
+% Check if the script already exists, in which case we issue a warning, but proceed anyway.
+%    \begin{macrocode}
+  \test@mgl@script@written{#1}%
+%    \end{macrocode}
+% Add the name of the script to the list of scripts written.
+%    \begin{macrocode}
+  \xdef\mgl@script@written{\mgl@script@written#1,}%
+%    \end{macrocode}
+% We make the same changes of categories as in the |mglcode| environment.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \obeyspaces%
+%    \end{macrocode}
+% Open the output stream for the current script.
+%    \begin{macrocode}
+  \def\this@script{#1}%
+  \if@mgltex@on@%
+    \immediate\openout\mgl@out@stream="\mgl@dir\this@script.mgl"%
+    \mglsignature@write\mgl@out@stream%
+  \fi%
+%    \end{macrocode}
+% Call the command that will write each line of the contents of the environment.
+%    \begin{macrocode}
+  \expandafter\mglblock@write@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglblock@write@line}
+% This macro reads characater by character the code inside |mglblock|, and uses the |\mgl@word| and |\mgl@line| buffers to store words and lines of codes, just like we did with the |mglcode| environment.
+%    \begin{macrocode}
+\def\mglblock@write@line#1{%
+%    \end{macrocode}
+% The next action (|\next@action|) is set to recursively call |\mglblock@write@line|, unless it is overwritten later.
+%    \begin{macrocode}
+  \let\next@action\mglblock@write@line%
+%    \end{macrocode}
+% If the read character is an end-line character, write the contents of |\mgl@line| to the script, and the clean |\mgl@word| and |\mgl@line|;
+%    \begin{macrocode}
+  \expandafter\if#1\^^M%
+    \mgl@write\mgl@out@stream{\the\mgl@line}%
+    \mgl@word{}%
+    \mgl@line{}%
+%    \end{macrocode}
+% if the read character if a space, clean |\mgl@word|, but add the space to |\mgl@line|;
+%    \begin{macrocode}
+  \else\expandafter\if#1\space%
+    \mgl@word{}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+%    \end{macrocode}
+% otherwise, the character is alphnumeric, and should be added to |\mgl@word| and |\mgl@line|, and we test if |\mgl@word| is |\end{mglblock}|, in which case, we overwrite |\next@action| to that command.
+%    \begin{macrocode}
+  \else%
+    \mgl@word\expandafter{\the\mgl@word#1}%
+    \mgl@line\expandafter{\the\mgl@line#1}%
+    \test@end@mglblock{\the\mgl@word}%
+  \fi\fi%
+%    \end{macrocode}
+% Execute |\next@action|.
+%    \begin{macrocode}
+  \next@action%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\end@mglblock}
+% \begin{macro}{\test@end@mglblock}
+% We already know the purpose of these macros.
+%    \begin{macrocode}
+\begingroup%
+  \escapechar=-1\relax%
+  \xdef\end@mglblock{\string\\end\string\{mglblock\string\}}%
+\endgroup%
+\def\test@end@mglblock#1{%
+  \edef\this@word{#1}%
+  \ifx\this@word\end@mglblock%
+    \def\next@action{\end{mglblock}}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \begin{macro}{\mgl@in@stream}
+% We create an input stream to read from MGL scripts.
+%    \begin{macrocode}
+\newread\mgl@in@stream
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\endmglblock}
+% The end of the |mglblock| environment.
+%    \begin{macrocode}
+\def\endmglblock{%
+%    \end{macrocode}
+% Close the output stream.
+%    \begin{macrocode}
+  \immediate\closeout\mgl@out@stream%
+%    \end{macrocode}
+% Open the input stream.
+%    \begin{macrocode}
+  \immediate\openin\mgl@in@stream="\mgl@dir\this@script.mgl"%
+%    \end{macrocode}
+% Here, we use the |list| environment to set the numeration of the lines of code that will be written to the \LaTeX{} document as items of the list. We also set the separation between lines of code, the indentation of the line, and some other lenght parameters.
+%    \begin{macrocode}
+  \begingroup%
+  \list{\itshape\footnotesize\arabic{mgl@verb@line@no}.}{}%
+  \setlength{\labelsep}{1em}%
+  \itemsep\z@skip%
+  \leftskip\z@skip\rightskip\z@skip%
+  \parindent\z@\parfillskip\@flushglue\parskip\z@skip%
+%    \end{macrocode}
+% Use the verbatim font, and obey spaces, including spaces at the beggining of the line.
+%    \begin{macrocode}
+  \verbatim@font%
+  \@vobeyspaces%
+%    \end{macrocode}
+% Call the command that will write the lines of code to the \LaTeX{} document.
+%    \begin{macrocode}
+  \mglblock@read@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglblock@read@line}
+% This command reads lines of code from the input stream and writes them as items of the |list| environment.
+%    \begin{macrocode}
+\def\mglblock@read@line{%
+%    \end{macrocode}
+% Increase the line counter.
+%    \begin{macrocode}
+  \stepcounter{mgl@verb@line@no}%
+%    \end{macrocode}
+% Read a line from the input stream.
+%    \begin{macrocode}
+  \read\mgl@in@stream to \this@line%
+%    \end{macrocode}
+% If the end of file has been reached, define |\next@action| to close the input stream, and en the |list| environment;
+%    \begin{macrocode}
+  \ifeof\mgl@in@stream%
+    \def\next@action{%
+      \immediate\closein\mgl@in@stream%
+      \endlist%
+      \endgroup%
+    }%
+%    \end{macrocode}
+% otherwise, |\next@action| is write the read line as an item of the |list| environment, and recursively call |\mglblock@read@line|.
+%    \begin{macrocode}
+  \else%
+    \def\next@action{%
+      \item\mbox{\this@line}%
+      \mglblock@read@line%
+    }%
+  \fi%
+%    \end{macrocode}
+% Execute |\next@action|.
+%    \begin{macrocode}
+  \next@action%
+}
+%    \end{macrocode}
+% \end{macro}
+% \end{environment}
+% \subsection{Working with external scripts}
+% \begin{macro}{\mglgraphics}
+% This command allows to generate and include graphics from a external (not embedded) script.
+%    \begin{macrocode}
+
+\newcommand\mglgraphics[2][]{%
+%    \end{macrocode}
+%   Initialize |\graph@keys|, which will contain the \meta{key}=\meta{value} options for the |\includegraphics|command.
+%    \begin{macrocode}
+  \def\graph@keys{}%
+%    \end{macrocode}
+% Process the \meta{key}=\meta{value} options passed by the user.
+%    \begin{macrocode}
+  \setkeys{mgl@keys}{#1}%
+%    \end{macrocode}
+% Execute the program |mglconv| (included in MathGL) to compile the corresponding script.
+%    \begin{macrocode}
+  \mgl@write{18}{mglconv "\mgl@dir#2.mgl" -s "\mgl@dir\mglcommonscript.mgl" -o "\mgl@dir#2\mgl@image@ext"}
+%    \end{macrocode}
+% Include the generated image with the |\mgl@include@image| command.
+%    \begin{macrocode}
+  \mgl@include@image{\mgl@dir#2}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglinclude}
+% This command copies verbatim the contents of an external script, and numerates each line of code.
+%    \begin{macrocode}
+
+\def\mglinclude#1{%
+%    \end{macrocode}
+% Initialize the line counter.
+%    \begin{macrocode}
+  \setcounter{mgl@verb@line@no}{0}%
+%    \end{macrocode}
+% Open the script in the input stream.
+%    \begin{macrocode}
+  \immediate\openin\mgl@in@stream="\mgl@dir#1.mgl"%
+%    \end{macrocode}
+% Here, we use the |list| environment to numerate each line of code as an item. We also set some length parameters.
+%    \begin{macrocode}
+  \begingroup%
+  \list{\itshape\footnotesize\arabic{mgl@verb@line@no}.}{}%
+  \setlength{\labelsep}{1em}%
+  \itemsep\z@skip%
+  \leftskip\z@skip\rightskip\z@skip%
+  \parindent\z@\parfillskip\@flushglue\parskip\z@skip%
+%    \end{macrocode}
+% We do the same changes of category as in the |mglcode| environment, and set the font to verbatim font.
+%    \begin{macrocode}
+  \let\do\@makeother \dospecials%
+  \endlinechar`\^^M \catcode`\^^M\active%
+  \@vobeyspaces%
+  \verbatim@font%
+%    \end{macrocode}
+% We (re)use the |\mglblock@read@line| command to numerate and write each line of code.
+%    \begin{macrocode}
+  \mglblock@read@line%
+}
+%    \end{macrocode}
+% \end{macro}
+% \subsection{Additional commands}
+% \begin{macro}{\mgldir}
+% A command to specify a directory to write the scripts and create the images.
+% First, we create a macro that will store the specified directory for later use.
+%    \begin{macrocode}
+
+\def\mgl@dir{}
+%    \end{macrocode}
+% The command |\mgldir| is the only way to modify |\mgl@dir|. This is done so the user won't be able to modify the default directory, dangerously altering the internal behavior of the package.
+%    \begin{macrocode}
+\def\mgldir#1{%
+  \def\mgl@dir{#1}%
+}
+%    \end{macrocode}
+% Declare |\mgldir| so that it can only be used in the preamble. This is because the main script \meta{document}.mgl is opened at the moment of the |\begin{document}| instruction.
+%    \begin{macrocode}
+\@onlypreamble\mgldir
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgl@quality}
+% We define a macro to store the quality.
+%    \begin{macrocode}
+\def\mgl@quality{2}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglquality}
+% This is used to define the quality for MGL graphics.
+%    \begin{macrocode}
+\def\mglquality#1{%
+%    \end{macrocode}
+% Write the quality command to a setup script.
+%    \begin{macrocode}
+  \def\mgl@quality{#1}%
+  \if@mgltex@on@%
+    \immediate\openout\mgl@out@stream="\mgl@dir\mglcommonscript.mgl"%
+    \mgl@write\mgl@out@stream{quality #1}%
+    \immediate\closeout\mgl@out@stream%
+%    \end{macrocode}
+% Print an info message about the corresponding quality, or a warning if the quality doesn't exist.
+%    \begin{macrocode}
+    \ifcase#1
+      \PackageInfo{mgltex}{Quality 0: No face drawing (fastest)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 1: No color interpolation (fast)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 2: High quality (normal)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 3: High quality with 3d primitives (not implemented yet)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 4: No face drawing, direct bitmap drawing (low memory usage)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 5: No color interpolation, direct bitmap drawing (low memory usage)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 6: High quality, direct bitmap drawing (low memory usage)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 7: High quality with 3d primitives, direct bitmap drawing (not implemented yet)}%
+    \or%
+      \PackageInfo{mgltex}{Quality 8: Draw dots instead of primitives (extremely fast)}%
+    \else%
+      \PackageWarning{mgltex}{Quality #1 not available. Using default (2)}%
+    \fi%
+  \else%
+    \PackageWarning{mgltex}{mglTeX is off, quality changes won't have effect}%
+  \fi%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgltexon}
+% \changes{v.2.0}{2014/11/15}{Add the command \texttt{\textbackslash mgltexon}}
+% Has the same effect as the package option |on|, but its effect is local, meaning that works only from the point this command is called on.
+%    \begin{macrocode}
+
+\def\mgltexon{
+  \@mgltex@on@true
+  \def\mgl@write##1##2{%
+    \immediate\write##1{##2}%
+  }
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mgltexoff}
+% \changes{v.2.0}{2014/11/15}{Add the command \texttt{\textbackslash mgltexoff}}
+% Has the same effect as the package option |off|, but its effect is local.
+%    \begin{macrocode}
+\def\mgltexoff{%
+  \@mgltex@on@false
+  \def\mgl@write##1##2{}%
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglcomments}
+% \changes{v2.0}{2014/11/22}{Add the command \texttt{\textbackslash mglcomments}}
+% Has the same effect as the package option |comments|, but its effect is local, meaning that works only from the point this command is called on.
+%    \begin{macrocode}
+
+\def\mglcomments{
+  \@mgl@comments@true
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglnocomments}
+% \changes{v2.0}{2014/11/22}{Add the command \texttt{\textbackslash mglnocomments}}
+% Has the same effect as the package option |off|, but its effect is local.
+%    \begin{macrocode}
+\def\mglnocomments{%
+  \@mgl@comments@false
+}
+%    \end{macrocode}
+% \end{macro}
+% \begin{macro}{\mglTeX}
+% Just pretty-prints the name of the package.
+%    \begin{macrocode}
+
+\def\mglTeX{mgl\TeX}
+%    \end{macrocode}
+% \end{macro}
+
+
+% \Finale
