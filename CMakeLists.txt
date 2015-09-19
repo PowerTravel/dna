@@ -3,9 +3,10 @@ project (DNA)
 
 add_executable(dna
 	src/main.cpp
+	src/Chain.cpp
+	src/Sphere.cpp
+	src/Spring.cpp
 )
-
-#find_package(OpenGL REQUIRED)
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )
     message( FATAL_ERROR "Please select another Build Directory !" )
@@ -19,12 +20,13 @@ endif()
 
 
 ## Compile dependancies ## 
-add_subdirectory(external)
+#add_subdirectory(external)
+#add_subdirectory(external/eigen-3.2.5)
 
 ## Include Directories @@
 include_directories(
 	external/eigen-3.2.5
-#	include
+	include
 )
 
 ## LINK TO LIBRARIES ##
@@ -36,18 +38,14 @@ include_directories(
 #	GLEW
 #	${GLEW_LIBRARIES}
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
-#target_link_libraries(dna
-	#${OPENGL_LIBRARY}
-	#${GLFW_LIBS}
-	#${GLEW_LIBS}
-	#assimp
+#find_package(OpenMP)
+#if (OPENMP_FOUND)
+#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+#	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#endif()
+target_link_libraries(dna
 	#openmp
-#)
+)
 
 
 
