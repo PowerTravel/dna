@@ -7,9 +7,11 @@ int main(int argc, char* argv[])
 {
 
 	/* Generate a chain or load chain configuration from file */
-	Chain polymer = Chain();
+	Chain polymer = Chain(2);
 
 	Eigen::VectorXd p = polymer.getPos();
+
+	polymer.update(0.1);
 
 	for(int i = 0; i<p.size(); i++)
 	{

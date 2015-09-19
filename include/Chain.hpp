@@ -12,7 +12,6 @@ class Chain
 	public:
 		Chain(int N = 10 );
 		virtual ~Chain();
-
 		
 		void update(double dt = 0.01);
 

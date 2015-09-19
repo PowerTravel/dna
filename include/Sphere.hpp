@@ -12,6 +12,8 @@ class Sphere
 
 		Eigen::Vector3d getPos();
 		Eigen::Vector3d getVel();
+
+		void move(Eigen::Vector3d dx);
 	private:
 	
 		Eigen::Vector3d _x; 	// Position

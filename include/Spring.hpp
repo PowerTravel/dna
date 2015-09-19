@@ -7,12 +7,13 @@ class Spring{
 		virtual ~Spring();
 
 		double getForce( double dx, double dv);
+		double getSpeed( double dx );
 
 	private:
 
 		double _k  = 1.0; // Spring Constant
 		double _xi = 0.1; // Damping Coefficient
-		double _a  = 1.0; // Rest lenght;
+		double _a  = 1.0; // Rest lenght
 
 };
 

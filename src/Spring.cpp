@@ -11,9 +11,13 @@ Spring::~Spring()
 {
 
 }
-		
-		
+	
 double Spring::getForce( double dx, double dv )
 {
-	return 0;
+	return _k*(dx-_a) - _xi*dv;
+}
+
+double Spring::getSpeed( double dx )
+{
+	return (_k/_xi)*(dx-_a);
 }

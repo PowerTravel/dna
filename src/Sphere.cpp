@@ -26,3 +26,9 @@ Eigen::Vector3d Sphere::getVel()
 {
 	return _v;
 }
+
+void Sphere::move(Eigen::Vector3d dx)
+{
+	_x += dx;
+}
+
