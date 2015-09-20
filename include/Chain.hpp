@@ -23,6 +23,7 @@ class Chain
 		// Returns potential and kinetic energy of the system
 		Eigen::Vector2d getEnergy();
 
+		void printChain();
 
 	private:
 		int _N;

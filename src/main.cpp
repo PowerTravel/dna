@@ -3,6 +3,8 @@
 
 #include "Chain.hpp"
 
+// Vice Värd  070 6699467
+
 int main(int argc, char* argv[])
 {
 
@@ -11,7 +13,11 @@ int main(int argc, char* argv[])
 
 	Eigen::VectorXd p = polymer.getPos();
 
+	polymer.printChain();
 	polymer.update(0.1);
+	polymer.update(0.1);
+	polymer.update(0.1);
+	polymer.printChain();
 
 	for(int i = 0; i<p.size(); i++)
 	{

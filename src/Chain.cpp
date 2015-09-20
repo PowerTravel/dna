@@ -44,23 +44,23 @@ void Chain::update(double dt)
 	for(int i = 0; i<_N-1; i++)
 	{
 		Eigen::Vector3d dx = _links[i+1].getPos() - _links[i].getPos();
-		Eigen::Vector3d dv = _links[i+1].getVel() - _links[i].getVel();
+		//Eigen::Vector3d dv = _links[i+1].getVel() - _links[i].getVel();
 		//F(i) =_spring[i].getForce( dx.norm(), dv.norm() );
 		
-		F(i) =_spring[i].getSpeed( dx.norm());
+		F(i) =_spring[i].getSpeed( dx.norm() );
 		direction.segment(3*i,3) = dx/dx.norm();
 	}
 	
-		
-	for(int i = 0; i<_N-1; i++)
+
+	// Move the first and last particle	
+	_links[0].move(dt*F(0)*direction.segment(0,3));
+	_links[_N-1].move(-dt*F(_N-2)*direction.segment(_N-2,3));
+	
+	Eigen::Vector3d dx = dt*F(0)*direction.segment(0,3);
+	for(int i = 1; i<_N-1; i++)
 	{
-		if(	i == 0  )
-		{
-			std::cout << "Continue at Chain.cpp:59 calculating forces" << std::endl;
-			Eigen::Vector3d dx = dt*F(i)*direction.segment(3*i,3);
-			_links[0].move(dx);
-		}
-		
+		Eigen::Vector3d dx = dt*F(i)*direction.segment(3*i,3);
+		_links[i].move(dx);
 	}
 
 }
@@ -89,4 +89,13 @@ Eigen::VectorXd Chain::getVel()
 	}
 	return ret;
 
+}
+
+void Chain::printChain()
+{
+	std::cout << "==Printing Chain==" << std::endl;
+	for(int i=0; i<_N; i++)
+	{
+		std::cout << _links[i].getPos().transpose() << std::endl;
+	}
 }
