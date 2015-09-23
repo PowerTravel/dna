@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <Eigen/Dense>
+#include <map>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -10,7 +11,9 @@ class Chain
 {
 
 	public:
-		Chain(int N = 10 );
+		// 
+		Chain(std::map<int, int> m)
+		Chain()
 		virtual ~Chain();
 		
 		void update(double dt = 0.01);
@@ -25,10 +28,16 @@ class Chain
 
 		void printChain();
 
+		// Generera kedjan i en spatial haschmap
+		void generateGlobule(int N);
 	private:
+
 		int _N;
 		std::vector<Sphere> _links;
 		std::vector<Spring> _spring;
+
+
+		int spatial_hash_key_fun(int x, int y, int z, int max);
 };
 
 #endif // CHAIN_HPP
