@@ -2,9 +2,14 @@
 #define CHAIN_HPP
 
 
+
 #ifndef MAX_GRID_SIZE
 #define MAX_GRID_SIZE 1000
 #endif // MAX_GRID_SIZE
+
+#ifndef NR_OF_DIRECTIONS
+#define NR_OF_DIRECTIONS 6
+#endif // NR_OF_DIRECTIONS
 
 #include <vector>
 #include <Eigen/Dense>
@@ -12,6 +17,8 @@
 #include <ctime>
 #include <map>
 #include <string>
+#include <memory>
+#include <vector>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -38,12 +45,23 @@ class Chain
 		void generateGlobule(int N);
 	private:
 
+		struct knot{
+			int start;
+			int len;
+		};
+
 		struct link{
+			link(){
+				nr=0;
+				pos = Eigen::Vector3d(0,0,0);
+			};
+			link(int n, Eigen::Vector3d p)
+			{
+				nr = n;
+				pos = p;
+			};
 			int nr;
 			Eigen::Vector3d pos;
-			link* _prev;
-			link* _next;
-			bool knot;
 		};
 
 		static std::default_random_engine _generator;
@@ -54,23 +72,23 @@ class Chain
 		std::vector<Sphere> _links;
 		std::vector<Spring> _spring;
 
-		std::map<int, int> _globule;
+		//std::map<int, link*> _globule_map;
+		std::vector< link > _globule;
+		std::vector< knot > _knots;
 
 		int hash_fun(Eigen::Vector3d x);
 
 		Eigen::Vector3d int_to_coord(int i);
 		int coord_to_int(Eigen::Vector3d pos);
 
-		Eigen::VectorXd get_stepping_PDF(Eigen::Vector3d pos);
+		link getNextLink(std::map<int,int>& m);
+		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
-		Eigen::Vector3d getNewPos(Eigen::Vector3d pos);
+		Eigen::Vector3d nextLink(Eigen::VectorXd F);
 
-		int _knots;
-		int knot_length;
+		int print_char(char c, double i, double N, double printed_dots, double tot_dots);
 
-		int print_dots(double i, double N, double printed_dots, double tot_dots);
-
-		struct Dir{
+		struct DirMapConstructor{
 			static std::map<int, std::string> int_to_dir_map()
 			{
 				std::map<int, std::string> m;

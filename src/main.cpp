@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	
 	//Simulate the chain 
 	Chain c = Chain();
-	c.generateGlobule(100000);
+	c.generateGlobule(2000);
 
 	 //Print data to file 
 	
