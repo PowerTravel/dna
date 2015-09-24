@@ -50,8 +50,10 @@ target_link_libraries(dna
 
 
  #set compiler flags
+#list( APPEND CMAKE_CXX_FLAGS 
+#	"-std=c++0x ${CMAKE_CXX_FLAGS} -g")
 list( APPEND CMAKE_CXX_FLAGS 
-	"-std=c++0x ${CMAKE_CXX_FLAGS} -g")
+	"-std=c++11 ${CMAKE_CXX_FLAGS} -g")
 
 install(TARGETS dna DESTINATION bin)
 
