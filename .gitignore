@@ -29,7 +29,7 @@
 
 #Folders
 _build
-external/NotUsed/
+NotUsed/
 
 #random
 *.swp
