@@ -4,7 +4,7 @@
 
 
 #ifndef MAX_GRID_SIZE
-#define MAX_GRID_SIZE 1000
+#define MAX_GRID_SIZE 10000
 #endif // MAX_GRID_SIZE
 
 #ifndef NR_OF_DIRECTIONS
@@ -85,8 +85,6 @@ class Chain
 		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
 		Eigen::Vector3d nextLink(Eigen::VectorXd F);
-
-		int print_char(char c, double i, double N, double printed_dots, double tot_dots);
 
 		struct DirMapConstructor{
 			static std::map<int, std::string> int_to_dir_map()

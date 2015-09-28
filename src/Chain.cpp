@@ -65,8 +65,8 @@ void Chain::printChain()
 
 void Chain::generateGlobule(int N)
 {
-//	std::cout <<  "["<< std::setw(3) << 0 << "%] "
-//				<<"Generating Globule with " << N << " links:" << std::flush;
+	std::cout <<  "["<< std::setw(3) << 0 << "%] "
+				<<"Generating Globule with " << N << " links:" << std::flush;
 
 	// Make sure not to reallocate the _globule vector while g_map is active
 	std::map<int, int >  g_map = std::map<int, int >();
@@ -80,50 +80,37 @@ void Chain::generateGlobule(int N)
 
 	int dots = 0;
 	double percent = 0;
-//	std::cout << _globule[0].pos.transpose()  << std::endl;
+	//std::cout << std::endl<< _globule[0].pos.transpose() << std::endl;
 	for(int i = 1; i<N; i++)
 	{
-	/*
+		/*
 		if( i-1 == floor(N*percent) )
 		{
 			percent += 0.01;
 			std::cout << "\r"<< "["<< std::setw(3) <<  percent*100 << "%] "
 						<<"Generating Globule with " << N << " links:" << std::flush;
 		}
-	*/	
+		*/
 		_globule[i] = getNextLink(g_map);
-		//std::cout << _globule[i].pos.transpose() << std::endl;
 
 		g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos);
+	//	std::cout << _globule[i].pos.transpose() << std::endl;
 	}
-//	std::cout << std::endl;
-//	std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
-//	std::cout << _knots.size() << " knots, "<< std::endl;
-	//std::cout << ((double) _knots.size()) / ((double) N) << " knots per link ratio" << std::endl;
-	if(_knots.size() != 0)
-	{
-		std::cout << _knots[0].start << " " << _knots[0].len << std::endl; 
-		generateGlobule(N);
-	}else{
-		std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
-	
-	}
-}
+	std::cout << std::endl;
+//	for(int i = 0; i<_globule.size(); i++)
+//	{
+//		std::cout << _globule[i].pos.transpose() << std::endl;
+//	}
+	std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
 
-int Chain::print_char(char c, double i, double N, double printed_dots, double tot_dots)
-{
-	if(i == floor( (printed_dots+1) * N / (tot_dots+1) ))
-	{
-		std::cout << c <<std::flush;
-		return printed_dots+1;
-	}
-	return printed_dots;
+	
 }
 
 Chain::link Chain::getNextLink(std::map<int,int>& m)
 {
 	// Find the probability distribution for the different directions
 	Eigen::VectorXd f = get_stepping_PDF(m);
+	//std::cout << f.transpose() << std::endl;
 
 	// Convert it to a Cumulative Distribution function
 	Eigen::VectorXd F = PDF_to_CDF(f);

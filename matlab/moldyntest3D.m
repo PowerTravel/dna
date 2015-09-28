@@ -1,6 +1,6 @@
-clear
-steps = 100;
-dt=0.01;
+clear all
+steps = 1000;
+dt=0.001;
 pl = true;
 sim = true;
 checkFrac = false;
@@ -9,7 +9,7 @@ x = [0,0,0; 0,0,1; 1,0,1; 1,1,1; 0,1,1; 0,1,0; 1,1,0; 1,0,0 ;2,0,0; 2,0,1;
     2,1,1; 2,1,0; 2,1,1];
 S=10;
 x = gen(S);
-k  = 10;
+k  = 100;
 xi = 1;
 a  = 1;
 alpha = 1;
@@ -79,9 +79,22 @@ for i = 1:steps
         
         x_tmp(j,:) = x(j,:) + dtt*v_tmp(j,:);
     end
+    
+    fixpoints = zeros(4,3);
+    fixpoints(1,:) = x(1,:);
+    fixpoints(2,:) = x(N,:);
+    fixpoints(3,:) = v(1,:);
+    fixpoints(4,:) = v(N,:);
+    
     v = v_tmp;
+    
     x = x_tmp;
-
+    
+    x(1,:) = fixpoints(1,:);
+    x(N,:) = fixpoints(2,:);
+    v(1,:) = fixpoints(3,:);
+    v(N,:) = fixpoints(4,:);
+   
     sol(i,:,:) = x;
 end
 
@@ -98,7 +111,7 @@ end
         end
         axis([-S+center(1), S+center(1), -S+center(2), S+center(2), -S+center(3), S+center(3)])
 
-        pause(0.1);
+        pause(0.01);
         hold off
     end
     
