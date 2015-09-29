@@ -6,6 +6,7 @@ add_executable(dna
 	src/Chain.cpp
 	src/Sphere.cpp
 	src/Spring.cpp
+	src/RandomEngine.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

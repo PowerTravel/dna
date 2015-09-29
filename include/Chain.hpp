@@ -24,6 +24,7 @@
 #include <memory>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -50,6 +51,27 @@ class Chain
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 		
 		void print_knots();
+
+		double get_mean_squared_distance(int start, int end)
+		{
+			if(_globule.empty() || (start>=0 && end < _globule.size() ))
+			{
+				return 0.0;
+			}
+		
+			Eigen::Vector3d len = _globule[end].pos - _globule[start].pos;
+			return sqrt(len.norm());
+		}
+		
+		double get_mean_squared_distance()
+		{
+			if(_globule.empty())
+			{
+				return 0.0;
+			}
+			Eigen::Vector3d len = _globule.back().pos - _globule.front().pos;
+			return sqrt(len.norm());
+		}
 	private:
 
 		struct knot{
@@ -70,6 +92,8 @@ class Chain
 			int nr;
 			Eigen::Vector3d pos;
 		};
+
+		bool _verbose;
 
 		static std::default_random_engine _generator;
 		static std::map<int, std::string > _int_dir;

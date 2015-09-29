@@ -1,5 +1,4 @@
 #include "Chain.hpp"
-#include <iostream>
 #include <cmath>
 #include <iomanip>
 
@@ -10,10 +9,11 @@ std::map< std::string, int > Chain::_dir_int = Chain::DirMapConstructor::dir_to_
 
 Chain::Chain()
 {
-	
+	_verbose = false;
 }
 Chain::Chain(int seed)
 {
+	_verbose = false;
 	_generator = std::default_random_engine(seed);
 }
 
@@ -72,13 +72,17 @@ void Chain::print_knots()
 
 void Chain::generateGlobule(int N)
 {
+	_globule.clear();
+	_knots.clear();
+
+
 	_N = N;
 	_knots_check = 0;
-	/*
+	if(_verbose){
 	std::cout <<  "["<< std::setw(3) << 0 << "%] "
 				<<"Generating Globule with " << N << " links:" << std::flush;
+	}
 
-*/
 	// Make sure not to reallocate the _globule vector while g_map is active
 	std::map<int, int >  g_map = std::map<int, int >();
 	_globule = std::vector< link >(N); 
@@ -94,22 +98,26 @@ void Chain::generateGlobule(int N)
 	for(int i = 1; i<N; i++)
 	{
 		_n = i;
-	/*	
-		if( i-1 == floor(N*percent) )
+
+		if( (i-1 == floor(N*percent)) && _verbose )
 		{
 			percent += 0.01;
 			std::cout << "\r"<< "["<< std::setw(3) <<  percent*100 << "%] "
 						<<"Generating Globule with " << N << " links:" << std::flush;
 		}
-	*/	
+	
 		Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep(g_map);
 		_globule[i] = link(i, pos);
 
 		g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos - _globule[i-1].pos);
 	}
-	std::cout << std::endl;
-	std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
-	std::cout << _knots.size() << " knots with a combined length of " << _knots_check << " links" << std::endl;
+
+	if(_verbose)
+	{
+		std::cout << std::endl;
+		std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
+		std::cout << _knots.size() << " knots with a combined length of " << _knots_check << " links" << std::endl;
+	}
 
 	
 }
