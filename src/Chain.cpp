@@ -54,20 +54,15 @@ Eigen::VectorXd Chain::getVel()
 	return ret;
 }
 
-void Chain::printChain()
-{
-	std::cout << "==Printing Chain==" << std::endl;
-	for(int i=0; i<_N; i++)
-	{
-		std::cout << _links[i].getPos().transpose() << std::endl;
-	}
-}
 
 void Chain::generateGlobule(int N)
 {
+	_N = N;
+	/*
 	std::cout <<  "["<< std::setw(3) << 0 << "%] "
 				<<"Generating Globule with " << N << " links:" << std::flush;
 
+*/
 	// Make sure not to reallocate the _globule vector while g_map is active
 	std::map<int, int >  g_map = std::map<int, int >();
 	_globule = std::vector< link >(N); 
@@ -80,33 +75,30 @@ void Chain::generateGlobule(int N)
 
 	int dots = 0;
 	double percent = 0;
-	//std::cout << std::endl<< _globule[0].pos.transpose() << std::endl;
 	for(int i = 1; i<N; i++)
 	{
-		/*
+		_n = i;
+	/*	
 		if( i-1 == floor(N*percent) )
 		{
 			percent += 0.01;
 			std::cout << "\r"<< "["<< std::setw(3) <<  percent*100 << "%] "
 						<<"Generating Globule with " << N << " links:" << std::flush;
 		}
-		*/
-		_globule[i] = getNextLink(g_map);
+	*/	
+		Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep(g_map);
+		_globule[i] = link(i, pos);
 
-		g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos);
-	//	std::cout << _globule[i].pos.transpose() << std::endl;
+		g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos - _globule[i-1].pos);
 	}
 	std::cout << std::endl;
-//	for(int i = 0; i<_globule.size(); i++)
-//	{
-//		std::cout << _globule[i].pos.transpose() << std::endl;
-//	}
 	std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
 
 	
 }
 
-Chain::link Chain::getNextLink(std::map<int,int>& m)
+//Chain::link Chain::getNextLink(std::map<int,int>& m)
+Eigen::Vector3d Chain::getNextStep(std::map<int,int>& m)
 {
 	// Find the probability distribution for the different directions
 	Eigen::VectorXd f = get_stepping_PDF(m);
@@ -116,14 +108,12 @@ Chain::link Chain::getNextLink(std::map<int,int>& m)
 	Eigen::VectorXd F = PDF_to_CDF(f);
 
 	// Choose the next step acording to F
-	Eigen::Vector3d ns = nextLink(F);
-
-	// Return a link with the next step
-	link l = _globule[m.size()-1];
-	return link(l.nr+1, l.pos+ns);
+	Eigen::Vector3d ns = nextStep(F);
+	
+	return ns;
 }
 
-Eigen::Vector3d Chain::nextLink(Eigen::VectorXd F)
+Eigen::Vector3d Chain::nextStep(Eigen::VectorXd F)
 {
 	std::uniform_real_distribution<double> distribution(0.0,1.0);
 
@@ -149,8 +139,7 @@ Eigen::VectorXd Chain::get_stepping_PDF(std::map<int,int>& m)
 	// Porbability Distribution of sites
  	Eigen::VectorXd f = Eigen::VectorXd::Zero(NR_OF_DIRECTIONS);
 
-	link l = _globule[m.size()-1];
-
+	link l = _globule[_n-1];
 	// For the six different directions (up down all around)
 	int occupied = 0;
 	for(int j = 0; j<NR_OF_DIRECTIONS; j++)
@@ -181,21 +170,34 @@ Eigen::VectorXd Chain::get_stepping_PDF(std::map<int,int>& m)
 	// we have a knot
 	if(occupied == NR_OF_DIRECTIONS)
 	{
+		//std::cout << "knot: nr = " << l.nr;
+		std::cout << "WE HAVE A KNOT  " << std::endl;
 		if(_knots.empty())
 		{
 			knot k = {l.nr, 1};
 			_knots.push_back(k);
 		}else{
 			knot lk = _knots[_knots.size()-1];
-			if( lk.start+lk.len == l.nr )
+//			std::cout << lk.start+lk.len << "  " << l.nr << std::endl;
+			if( (lk.start+lk.len) == l.nr+1 )
 			{
 				_knots[_knots.size()-1].len++;
+				//std::cout << _knots[_knots.size()-1].len << std::endl;
 			}else{
 				knot k = {l.nr, 1};
 				_knots.push_back(k);
+				//std::cout << 1 << std::endl;
 			}
 		}
 	}
+/*
+	if(lel)
+	{
+		Eigen::VectorXd lal = f/f.sum();
+		//std::cout << lal.transpose() << std::endl;
+		lel = false;
+	}
+*/
 	return f/f.sum();
 }
 
@@ -282,3 +284,14 @@ int Chain::hash_fun(Eigen::Vector3d x)
 {
 	return x(0) + MAX_GRID_SIZE*x(1) +MAX_GRID_SIZE*MAX_GRID_SIZE*x(2);
 }
+		
+std::ostream& operator<<(std::ostream& os, const Chain& c)
+{
+	for(int i = 0; i<c._N; i++)
+	{
+		Eigen::Vector3d v = c._globule[i].pos;
+		os <<std::setw(PRINT_SPACING)<< v(0)<< " " <<std::setw(PRINT_SPACING) << v(1) <<" " << std::setw(PRINT_SPACING) << v(2) << " " << std::endl;	
+	}
+	return os;
+}
+

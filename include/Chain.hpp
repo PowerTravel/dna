@@ -11,6 +11,10 @@
 #define NR_OF_DIRECTIONS 6
 #endif // NR_OF_DIRECTIONS
 
+#ifndef PRINT_SPACING
+#define PRINT_SPACING 4
+#endif // PRINT_SPACING
+
 #include <vector>
 #include <Eigen/Dense>
 #include <random>
@@ -19,6 +23,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <fstream>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -39,10 +44,10 @@ class Chain
 		// Returns potential and kinetic energy of the system
 		Eigen::Vector2d getEnergy();
 
-		void printChain();
-
 		// Generera kedjan i en spatial haschmap
 		void generateGlobule(int N);
+		
+		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 	private:
 
 		struct knot{
@@ -69,6 +74,7 @@ class Chain
 		static std::map<std::string, int > _dir_int;
 
 		int _N;
+		int _n;
 		std::vector<Sphere> _links;
 		std::vector<Spring> _spring;
 
@@ -81,10 +87,11 @@ class Chain
 		Eigen::Vector3d int_to_coord(int i);
 		int coord_to_int(Eigen::Vector3d pos);
 
-		link getNextLink(std::map<int,int>& m);
+	//	link getNextLink(std::map<int,int>& m);
+		Eigen::Vector3d getNextStep(std::map<int,int>& m);
 		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
-		Eigen::Vector3d nextLink(Eigen::VectorXd F);
+		Eigen::Vector3d nextStep(Eigen::VectorXd F);
 
 		struct DirMapConstructor{
 			static std::map<int, std::string> int_to_dir_map()

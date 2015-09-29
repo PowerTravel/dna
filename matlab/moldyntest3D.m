@@ -1,15 +1,15 @@
 clear all
-steps = 1000;
-dt=0.001;
+steps = 100;
+dt=0.01;
 pl = true;
 sim = true;
 checkFrac = false;
 %Springs
 x = [0,0,0; 0,0,1; 1,0,1; 1,1,1; 0,1,1; 0,1,0; 1,1,0; 1,0,0 ;2,0,0; 2,0,1; 
     2,1,1; 2,1,0; 2,1,1];
-S=10;
+S=6;
 x = gen(S);
-k  = 100;
+k  = 1; 
 xi = 1;
 a  = 1;
 alpha = 1;
