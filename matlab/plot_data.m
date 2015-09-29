@@ -1,4 +1,4 @@
-system('../_build/dna 1000')
+system('../_build/dna 10000')
 
 data = load('globule_data.m');
 

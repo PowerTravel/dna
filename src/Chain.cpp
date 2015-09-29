@@ -54,10 +54,26 @@ Eigen::VectorXd Chain::getVel()
 	return ret;
 }
 
+void Chain::print_knots()
+{
+	int i =0;
+	int kn  = 0;
+	for(auto it =  _knots.begin(); it != _knots.end(); it++ )
+	{
+		std::cout << "Knot " << i << ":  start = " << it->start << ",  length = " << it->len << std::endl;
+		kn += it->len;
+		i++;
+	}
+	if(_knots_check != kn)
+	{
+		std::cerr << "wrong nr knots counterd. Error of: " << _knots_check - kn  << std::endl;
+	}
+}
 
 void Chain::generateGlobule(int N)
 {
 	_N = N;
+	_knots_check = 0;
 	/*
 	std::cout <<  "["<< std::setw(3) << 0 << "%] "
 				<<"Generating Globule with " << N << " links:" << std::flush;
@@ -93,6 +109,7 @@ void Chain::generateGlobule(int N)
 	}
 	std::cout << std::endl;
 	std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
+	std::cout << _knots.size() << " knots with a combined length of " << _knots_check << " links" << std::endl;
 
 	
 }
@@ -170,34 +187,23 @@ Eigen::VectorXd Chain::get_stepping_PDF(std::map<int,int>& m)
 	// we have a knot
 	if(occupied == NR_OF_DIRECTIONS)
 	{
-		//std::cout << "knot: nr = " << l.nr;
-		std::cout << "WE HAVE A KNOT  " << std::endl;
-		if(_knots.empty())
+		_knots_check++;	
+		if(!_knots.empty())
 		{
-			knot k = {l.nr, 1};
-			_knots.push_back(k);
-		}else{
-			knot lk = _knots[_knots.size()-1];
-//			std::cout << lk.start+lk.len << "  " << l.nr << std::endl;
-			if( (lk.start+lk.len) == l.nr+1 )
+			knot lk = _knots.back();
+			if( (lk.start+lk.len) == l.nr )
 			{
 				_knots[_knots.size()-1].len++;
-				//std::cout << _knots[_knots.size()-1].len << std::endl;
 			}else{
 				knot k = {l.nr, 1};
 				_knots.push_back(k);
-				//std::cout << 1 << std::endl;
 			}
+		}else{
+				knot k = {l.nr, 1};
+				_knots.push_back(k);
 		}
 	}
-/*
-	if(lel)
-	{
-		Eigen::VectorXd lal = f/f.sum();
-		//std::cout << lal.transpose() << std::endl;
-		lel = false;
-	}
-*/
+	
 	return f/f.sum();
 }
 

@@ -48,6 +48,8 @@ class Chain
 		void generateGlobule(int N);
 		
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
+		
+		void print_knots();
 	private:
 
 		struct knot{
@@ -81,6 +83,7 @@ class Chain
 		//std::map<int, link*> _globule_map;
 		std::vector< link > _globule;
 		std::vector< knot > _knots;
+		int _knots_check;
 
 		int hash_fun(Eigen::Vector3d x);
 

@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 	c.generateGlobule(N);
 
 	print_chain_to_file(c);
+	//c.print_knots();
 	 //Print data to file 
 	
 	return 0;
