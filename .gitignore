@@ -30,6 +30,7 @@
 #Folders
 _build
 NotUsed/
+saved/
 
 #random
 *.swp

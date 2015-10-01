@@ -62,7 +62,7 @@ class Chain
 			Eigen::Vector3d len = _globule[end].pos - _globule[start].pos;
 			return sqrt(len.norm());
 		}
-		
+
 		double get_mean_squared_distance()
 		{
 			if(_globule.empty())
@@ -72,7 +72,9 @@ class Chain
 			Eigen::Vector3d len = _globule.back().pos - _globule.front().pos;
 			return sqrt(len.norm());
 		}
+		int _redo;
 	private:
+
 
 		struct knot{
 			int start;

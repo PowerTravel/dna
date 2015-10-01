@@ -10,9 +10,11 @@ std::map< std::string, int > Chain::_dir_int = Chain::DirMapConstructor::dir_to_
 Chain::Chain()
 {
 	_verbose = false;
+	_redo = 0;
 }
 Chain::Chain(int seed)
 {
+	_redo = 0;
 	_verbose = false;
 	_generator = std::default_random_engine(seed);
 }
@@ -117,8 +119,14 @@ void Chain::generateGlobule(int N)
 		std::cout << std::endl;
 		std::cout << "RN = " << sqrt(_globule[N-1].pos.norm()) << "  N = "  << N << " N^(1/3) = " <<pow(N,1.0/3.0) << std::endl;
 		std::cout << _knots.size() << " knots with a combined length of " << _knots_check << " links" << std::endl;
+		std::cout << "That is " << ((double)_knots_check)/((double) N)*100 << " percent of total nr of links." << std::endl;
 	}
-
+	double knot_percent = ((double)_knots_check)/((double) N)*100;
+	if(knot_percent > 0.1)
+	{
+		_redo++;
+	//	generateGlobule(N);
+	}
 	
 }
 
