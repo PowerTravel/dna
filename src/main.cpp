@@ -59,10 +59,11 @@ void build_initial_state(int n)
 // linear
 void generate_end_to_end_plot()
 {
-	int nr_strides = 7;
-	int stride_len = 10;
-	double stride_growth = 2;
-	int samples_per_stride = 100;
+	int nr_strides = 3;
+	int stride_len = 100;
+	double stride_growth = 10;
+	int samples_per_stride = 50;
+	double interval = 1;
 	
 
 
@@ -71,12 +72,15 @@ void generate_end_to_end_plot()
 																	// Second column is the measured result, 
 																	// Third column is the variance
 																	// Fourth column is theoretical result
-	double percent = 0.0;
-	double plot_interval = 0.0001;
 
+
+
+	double increment = 1.f/(nr_strides*samples_per_stride);
+	const double plot_interval = interval * increment;
+	double percent = 0.0;
 	for(int i = 0; i<nr_strides; i++)
 	{
-		int N =floor((i+1)*stride_len);
+		int N =stride_len;
 		for(int j = 0; j<samples_per_stride; j++)
 		{
 			Chain c = Chain();
@@ -84,16 +88,17 @@ void generate_end_to_end_plot()
 			tmp(j) = c.get_mean_squared_distance();
 		
 			// writing progress to terminal
-			double p = ((double) (i*samples_per_stride + j))/((double) nr_strides*samples_per_stride);
-
-			if(p >= percent )
+			double p = (i*samples_per_stride + j) * increment;
+			if( (p > percent) )
 			{
 				percent += plot_interval;
-				double disp_percentage = (100.f/nr_strides) * percent*100.f;
-				std::cout << "\r"<< "["<< std::setw(6)  << std::setprecision(2)<< disp_percentage << std::fixed << "%] "
-					<<"Generating " << samples_per_stride <<" Globules with " << N << " links. Nr of retries = " << std::setw(3) <<c._redo << std::flush;
+				//double disp_percentage = 100*p;
+				double disp_percentage = 100*percent;
+				std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
+					<<"Generating " << samples_per_stride <<" Globules with " << N << " links. " <<  std::flush;
 			}
 		}
+
 		stride_len = stride_len * stride_growth;
 
 		// Nr of links

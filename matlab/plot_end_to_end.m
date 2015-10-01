@@ -8,7 +8,6 @@ measures = A(:,2);
 var_top = measures + A(:,3);
 var_bot = measures - A(:,3);
 theoretical = A(:,4);
-
 mean_slope = ( log(measures(N)/measures(1)) ) / log(n(N) / n(1))
 fitted = A(:,1).^mean_slope;
 theoretical_slope = ( theoretical(N) - theoretical(1) ) / (n(N) - n(1))

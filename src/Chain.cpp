@@ -4,24 +4,14 @@
 #include <iomanip>
 #include <ctime>
 
-std::default_random_engine Chain::_generator = std::default_random_engine(time(NULL));
 
-//std::map< int, std::string > Chain::_int_dir = Chain::DirMapConstructor::int_to_dir_map();
-//std::map< std::string, int > Chain::_dir_int = Chain::DirMapConstructor::dir_to_int_map();
+std::default_random_engine Chain::_generator = std::default_random_engine(time(NULL));
 
 Chain::Chain()
 {
-	_verbose = false;
+	_verbose =false;
 	_redo = 0;
 }
-/*
-Chain::Chain(int seed)
-{
-	_redo = 0;
-	_verbose = false;
-	_generator = std::default_random_engine(seed);
-}
-*/
 
 Chain::~Chain()
 {
@@ -36,9 +26,10 @@ void Chain::update(double dt)
 
 void Chain::generateGlobule(int N)
 {
+	const int walk_type = 0;
+
 	_globule.clear();
 	_knots.clear();
-
 
 	_N = N;
 	_knots_check = 0;
@@ -54,7 +45,6 @@ void Chain::generateGlobule(int N)
 	
 	// Start position
 	_globule[0] = link(0, Eigen::Vector3d(0,0,0));
-
 	g_map[hash_fun(_globule[0].pos)] = 0; // Start link has the unique identifier 0
 
 	int dots = 0;
@@ -69,11 +59,22 @@ void Chain::generateGlobule(int N)
 			std::cout << "\r"<< "["<< std::setw(3) <<  percent*100 << "%] "
 						<<"Generating Globule with " << N << " links:" << std::flush;
 		}
-	
-		Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep(g_map);
-		_globule[i] = link(i, pos);
 
-		g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos - _globule[i-1].pos);
+		if(walk_type == 0)
+		{
+			Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep(g_map);
+			_globule[i] = link(i, pos);
+
+			g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos - _globule[i-1].pos);
+		
+		}else if(walk_type == 1){
+		
+			Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep_random();
+			_globule[i] = link(i, pos);
+
+		}else if(walk_type == 2){
+				
+		}
 	}
 
 	if(_verbose)
@@ -90,6 +91,18 @@ void Chain::generateGlobule(int N)
 	//	generateGlobule(N);
 	}
 	
+}
+
+Eigen::Vector3d Chain::getNextStep_random()
+{
+	// Choose the next step acording to F
+	Eigen::VectorXd f = Eigen::VectorXd::Ones(6);
+	f = f / f.sum();
+	
+	Eigen::VectorXd F = PDF_to_CDF(f);
+	Eigen::Vector3d ns = nextStep(F);
+	
+	return ns;
 }
 
 //Chain::link Chain::getNextLink(std::map<int,int>& m)
@@ -279,3 +292,17 @@ std::ostream& operator<<(std::ostream& os, const Chain& c)
 	return os;
 }
 
+double Chain::get_mean_squared_distance(int start, int end)
+{
+	if(_globule.empty() || ( (start<0) && (end >= _globule.size()) ))
+	{
+		return 0.0;
+	}
+
+	Eigen::Vector3d len = _globule[end].pos - _globule[start].pos;
+	return sqrt(len.norm());
+}
+double Chain::get_mean_squared_distance()
+{
+	return get_mean_squared_distance(0,_N-1);
+}
