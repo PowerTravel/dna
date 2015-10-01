@@ -11,14 +11,20 @@
 #define MEAN_SQUARE_DISTANCE "../data/meanSquareDistance.m"
 #endif // OUT_FILES
 
+/*
+ * 	Program dna
+ *	Generates a fractal globule and prints data to a file
+ */
+
 
 void generate_end_to_end_plot();
 void build_initial_state(int n);
 
-double plotPercentage(double i, double N, double percent);
+
 
 int main(int argc, char* argv[])
 {
+
 	int N = 1000000;
 	if(argc >= 2)
 	{
@@ -57,6 +63,8 @@ void generate_end_to_end_plot()
 	int stride_len = 10;
 	double stride_growth = 2;
 	int samples_per_stride = 100;
+	
+
 
 	Eigen::ArrayXd tmp = Eigen::ArrayXd::Zero(samples_per_stride);
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 4); // First column is the number of links used;
@@ -75,10 +83,8 @@ void generate_end_to_end_plot()
 			c.generateGlobule(N);
 			tmp(j) = c.get_mean_squared_distance();
 		
-		
 			// writing progress to terminal
 			double p = ((double) (i*samples_per_stride + j))/((double) nr_strides*samples_per_stride);
-			//std::cout << p <<" = " << i << " * " << nr_strides << " + " << j << " /( " << nr_strides << " * " << samples_per_stride << " )" << std::endl;
 
 			if(p >= percent )
 			{

@@ -15,16 +15,12 @@
 #define PRINT_SPACING 4
 #endif // PRINT_SPACING
 
-#include <vector>
 #include <Eigen/Dense>
+#include <vector>
 #include <random>
-#include <ctime>
 #include <map>
 #include <string>
-#include <memory>
-#include <vector>
 #include <fstream>
-#include <iostream>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -32,25 +28,25 @@ class Chain
 {
 	public:
 		Chain();
-		Chain(int seed);
+//		Chain(int seed);
 		virtual ~Chain();
 		
 		void update(double dt = 0.01);
 
 		// Returns position of all the links
-		Eigen::VectorXd getPos();
+//		Eigen::VectorXd getPos();
 		// Returns Velocity of all the links
-		Eigen::VectorXd getVel();
+//		Eigen::VectorXd getVel();
 
 		// Returns potential and kinetic energy of the system
-		Eigen::Vector2d getEnergy();
+//		Eigen::Vector2d getEnergy();
 
 		// Generera kedjan i en spatial haschmap
 		void generateGlobule(int N);
 		
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 		
-		void print_knots();
+//		void print_knots();
 
 		double get_mean_squared_distance(int start, int end)
 		{
@@ -91,6 +87,7 @@ class Chain
 				nr = n;
 				pos = p;
 			};
+		
 			int nr;
 			Eigen::Vector3d pos;
 		};
@@ -98,13 +95,13 @@ class Chain
 		bool _verbose;
 
 		static std::default_random_engine _generator;
-		static std::map<int, std::string > _int_dir;
-		static std::map<std::string, int > _dir_int;
+//		static std::map<int, std::string > _int_dir;
+//		static std::map<std::string, int > _dir_int;
 
 		int _N;
 		int _n;
-		std::vector<Sphere> _links;
-		std::vector<Spring> _spring;
+//		std::vector<Sphere> _links;
+//		std::vector<Spring> _spring;
 
 		//std::map<int, link*> _globule_map;
 		std::vector< link > _globule;
@@ -121,7 +118,7 @@ class Chain
 		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
 		Eigen::Vector3d nextStep(Eigen::VectorXd F);
-
+/*
 		struct DirMapConstructor{
 			static std::map<int, std::string> int_to_dir_map()
 			{
@@ -147,6 +144,7 @@ class Chain
 				return m;
 			};
 		};
+*/		
 };
 
 #endif // CHAIN_HPP

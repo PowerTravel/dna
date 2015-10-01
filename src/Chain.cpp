@@ -1,24 +1,27 @@
 #include "Chain.hpp"
+#include <iostream>
 #include <cmath>
 #include <iomanip>
+#include <ctime>
 
 std::default_random_engine Chain::_generator = std::default_random_engine(time(NULL));
 
-std::map< int, std::string > Chain::_int_dir = Chain::DirMapConstructor::int_to_dir_map();
-std::map< std::string, int > Chain::_dir_int = Chain::DirMapConstructor::dir_to_int_map();
+//std::map< int, std::string > Chain::_int_dir = Chain::DirMapConstructor::int_to_dir_map();
+//std::map< std::string, int > Chain::_dir_int = Chain::DirMapConstructor::dir_to_int_map();
 
 Chain::Chain()
 {
 	_verbose = false;
 	_redo = 0;
 }
+/*
 Chain::Chain(int seed)
 {
 	_redo = 0;
 	_verbose = false;
 	_generator = std::default_random_engine(seed);
 }
-
+*/
 
 Chain::~Chain()
 {
@@ -29,47 +32,6 @@ Chain::~Chain()
 void Chain::update(double dt)
 {
 
-}
-
-Eigen::VectorXd Chain::getPos()
-{
-	Eigen::VectorXd ret = Eigen::VectorXd(3*_N);
-	int i = 0;
-	for(auto it = _links.begin(); it != _links.end(); it++ )
-	{
-		ret.segment(3*i,3) = it->getPos();
-		i++;
-	}
-
-	return ret;
-}
-
-Eigen::VectorXd Chain::getVel()
-{
-	Eigen::VectorXd ret = Eigen::VectorXd(3*_N);
-	int i = 0;
-	for(auto it = _links.begin(); it != _links.end(); it++ )
-	{
-		ret.segment(3*i,3) = it->getVel();
-		i++;
-	}
-	return ret;
-}
-
-void Chain::print_knots()
-{
-	int i =0;
-	int kn  = 0;
-	for(auto it =  _knots.begin(); it != _knots.end(); it++ )
-	{
-		std::cout << "Knot " << i << ":  start = " << it->start << ",  length = " << it->len << std::endl;
-		kn += it->len;
-		i++;
-	}
-	if(_knots_check != kn)
-	{
-		std::cerr << "wrong nr knots counterd. Error of: " << _knots_check - kn  << std::endl;
-	}
 }
 
 void Chain::generateGlobule(int N)
