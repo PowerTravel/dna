@@ -1,5 +1,6 @@
-#ifndef CHAIN_HPP
-#define CHAIN_HPP
+
+#ifndef RCHAIN_HPP
+#define RCHAIN_HPP
 
 
 
@@ -22,37 +23,28 @@
 #include <string>
 #include <fstream>
 
+
+#include <functional>
+
+
 #include "Sphere.hpp"
 #include "Spring.hpp"
-class Chain
+class RChain
 {
 	public:
-		Chain();
-		virtual ~Chain();
+		RChain();
+		virtual ~RChain();
 		
 		void update(double dt = 0.01);
 
-		// Generera kedjan i en spatial haschmap
-		void generateGlobule(int N);
+		void build(int N);
 		
 
 		double get_mean_squared_distance(int start, int end);
 		double get_mean_squared_distance();
 		
-		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
-		int _redo;
+		friend std::ostream& operator<<(std::ostream& os, const RChain& c);
 	private:
-
-
-		//Random Walk
-		Eigen::Vector3d getNextStep_random();
-		Eigen::Vector3d getNextStep_selfAvoiding();
-
-
-		struct knot{
-			int start;
-			int len;
-		};
 
 		struct link{
 			link(){
@@ -69,26 +61,27 @@ class Chain
 			Eigen::Vector3d pos;
 		};
 
-		bool _verbose;
-
 		static std::default_random_engine _generator;
 
 		int _N;
 		int _n;
 
-		std::vector< link > _globule;
-		std::vector< knot > _knots;
-		int _knots_check;
+		std::vector< link > _chain;
 
 		int hash_fun(Eigen::Vector3d x);
 
 		Eigen::Vector3d int_to_coord(int i);
 		int coord_to_int(Eigen::Vector3d pos);
 
-		Eigen::Vector3d getNextStep_globule(std::map<int,int>& m);
-		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
+		//Eigen::Vector3d getNextStep( std::function<Eigen::VectorXd()> CDF);
+	//	Eigen::Vector3d getNextStep( std::function<void (double*)> CDF);
+		Eigen::Vector3d getNextStep( );
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
-		Eigen::Vector3d nextStep(Eigen::VectorXd F);
+	
+		int foo();
+
+
+		void random_walk(double*);
 };
 
-#endif // CHAIN_HPP
+#endif // RCHAIN_HPP

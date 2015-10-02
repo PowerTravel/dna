@@ -9,7 +9,6 @@ std::default_random_engine Chain::_generator = std::default_random_engine(time(N
 
 Chain::Chain()
 {
-	_verbose =false;
 	_redo = 0;
 }
 
@@ -27,6 +26,7 @@ void Chain::update(double dt)
 void Chain::generateGlobule(int N)
 {
 	const int walk_type = 0;
+	_verbose =false;
 
 	_globule.clear();
 	_knots.clear();
@@ -62,7 +62,7 @@ void Chain::generateGlobule(int N)
 
 		if(walk_type == 0)
 		{
-			Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep(g_map);
+			Eigen::Vector3d pos =_globule[i-1].pos +  getNextStep_globule(g_map);
 			_globule[i] = link(i, pos);
 
 			g_map[hash_fun(_globule[i].pos)] = coord_to_int(_globule[i].pos - _globule[i-1].pos);
@@ -106,7 +106,7 @@ Eigen::Vector3d Chain::getNextStep_random()
 }
 
 //Chain::link Chain::getNextLink(std::map<int,int>& m)
-Eigen::Vector3d Chain::getNextStep(std::map<int,int>& m)
+Eigen::Vector3d Chain::getNextStep_globule(std::map<int,int>& m)
 {
 	// Find the probability distribution for the different directions
 	Eigen::VectorXd f = get_stepping_PDF(m);
@@ -129,15 +129,17 @@ Eigen::Vector3d Chain::nextStep(Eigen::VectorXd F)
 	int i = 0;
 
 	// What happens if rand_nr is exactly 0?
-	while( true  )
+	//while( true  )
+	while(  F(i)<rand_nr )//&& !( rand_nr <= F(i+1) ) )
 	{
-		if((rand_nr > F(i)) && ( rand_nr <= F(i+1) ))
-		{
-			break;
-		}
+	//	if((rand_nr > F(i)) && ( rand_nr <= F(i+1) ))
+	//	{
+	//		return int_to_coord(i);
+	//	}
 		i++;	
 	}
-	return int_to_coord(i);
+	std::cout << "i="<<i<<"  F(i)="<<F(i) << "  RandNr="<< rand_nr << std::endl;
+			return int_to_coord(i);
 }
 
 Eigen::VectorXd Chain::get_stepping_PDF(std::map<int,int>& m)

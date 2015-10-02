@@ -10,7 +10,7 @@ var_bot = measures - A(:,3);
 theoretical = A(:,4);
 mean_slope = ( log(measures(N)/measures(1)) ) / log(n(N) / n(1))
 fitted = A(:,1).^mean_slope;
-theoretical_slope = ( theoretical(N) - theoretical(1) ) / (n(N) - n(1))
+theoretical_slope = log(theoretical(N)/theoretical(1))  / log(n(N)/ n(1))
 
 figure(1)
 l2 = loglog(n, var_top, 'xk');
@@ -25,10 +25,10 @@ l3 = loglog(n, var_bot, 'xk');
 l4 = loglog(n, measures, 'k');
 l5 = loglog(n, theoretical);
 
-title('Mean distance 100 samples per data-point');
-xlabel('log Nr of links');
-ylabel('log Mean distance');
-legend([l4, l5], {'Measured data','theoretical'});
+%title('Mean distance 100 samples per data-point');
+%xlabel('log Nr of links');
+%ylabel('log Mean distance');
+%legend([l4, l5], {'Measured data','theoretical'});
 
-annotation('textbox', [.2 .8 .1 .1], 'String', ...
-                    ['average slope of measured data is: ',num2str(mean_slope)]);
+%annotation('textbox', [.2 .8 .1 .1], 'String', ...
+%                    ['average slope of measured data is: ',num2str(mean_slope)]);
