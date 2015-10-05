@@ -12,6 +12,12 @@
 #define MEAN_SQUARE_DISTANCE "../data/meanSquareDistance.m"
 #endif // OUT_FILES
 
+#ifndef THEORETICAL_SLOPES
+#define PHANTOM_SLOPE 1/2.f
+#define SAW_SLOPE 3/(2.f+3.f)
+#define GLOBULE_SLOPE 1/3.f
+#endif // THEORETICAL_SLOPES
+
 /*
  * 	Program dna
  *	Generates a fractal globule and prints data to a file
@@ -32,11 +38,9 @@ int main(int argc, char* argv[])
 		N = atoi(argv[1]);
 	}
 	
-//	build_initial_state(N);
+	build_initial_state(N);
 
-
-	generate_end_to_end_plot();
-
+	//generate_end_to_end_plot();
 
 	return 0;
 }
@@ -44,7 +48,7 @@ int main(int argc, char* argv[])
 void build_initial_state(int n)
 {
 	RChain c = RChain();
-	c.build(n);
+	c.build(n,RChain::ChainType::SAW);
 
 	// Print to file
 	std::ofstream file;
@@ -59,20 +63,27 @@ void build_initial_state(int n)
 // linear
 void generate_end_to_end_plot()
 {
-	int nr_strides = 3;
+
+	// PARAMETERS
+	int nr_strides = 10;
 	int stride_len = 100;
-	double stride_growth = 3;
+	double stride_growth = 1.5;
 	int samples_per_stride = 100;
 	double interval = 1;
+	double theoretical_slope = SAW_SLOPE;
+	RChain::ChainType type = RChain::ChainType::SAW;
 	
 
 
-	Eigen::ArrayXd tmp = Eigen::ArrayXd::Zero(samples_per_stride);
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 4); // First column is the number of links used;
+	//Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 4); // First column is the number of links used;
 																	// Second column is the measured result, 
 																	// Third column is the variance
 																	// Fourth column is theoretical result
-	Eigen::ArrayXd average = Eigen::VectorXd::Zero(samples_per_stride);
+	Eigen::ArrayXd nr_links        = Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd mean_distance   = Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd variance        = Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd theoretical     = Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd log_slope_error = Eigen::VectorXd::Zero(nr_strides);
 
 
 	double increment = 1.f/(nr_strides*samples_per_stride);
@@ -81,132 +92,48 @@ void generate_end_to_end_plot()
 	for(int i = 0; i<nr_strides; i++)
 	{
 		int N =stride_len;
+		Eigen::ArrayXd tmp = Eigen::ArrayXd::Zero(samples_per_stride);
 		for(int j = 0; j<samples_per_stride; j++)
 		{
 			RChain c = RChain();
-			c.build(N);
+			c.build(N, type);
 			tmp(j) = c.get_mean_squared_distance();
-		
-			// writing progress to terminal
+
+		// writing progress to terminal
+		// ****************************
 			double p = (i*samples_per_stride + j) * increment;
 			if( (p > percent) )
 			{
 				percent += plot_interval;
-				//double disp_percentage = 100*p;
-				double disp_percentage = 100*percent;
+				double disp_percentage = 100*(percent+plot_interval);
 				std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
 					<<"Generating " << samples_per_stride <<" Globules with " << N << " links. " <<  std::flush;
+				if(disp_percentage >= 100)
+				{}
 			}
+		// ****************************
 		}
 
 		stride_len = stride_len * stride_growth;
-
-		// Nr of links
-		result(i,0) = N;
-		// Average
-		result(i,1) = tmp.sum()/((double) samples_per_stride);
-		// Variance
-		tmp = tmp - result(i,1);
+		nr_links(i) = N;
+        mean_distance(i) = tmp.sum()/((double) samples_per_stride);
+		tmp = tmp - mean_distance(i);
 		tmp = tmp*tmp;
-		result(i,2) = tmp.sum() / (N-1);
-
-		// Theoretical
-		result(i,3) = pow(N,1/2.0f);
+		variance(i) = tmp.sum() / (N-1);
+        theoretical(i) = pow(N, theoretical_slope);
 	}
-	std::cout <<"Done!" << std::endl;
+	std::cout << std::endl;
 
-	std::cout << " Mean =  " << result.block(0,1,nr_strides, 1).transpose() << std::endl;
-	// Writing to file
-	std::ofstream file;
-	file.open(MEAN_SQUARE_DISTANCE, std::fstream::out | std::fstream::trunc);
-	if(file.is_open())
-	{
-		file << result << std::endl;
-	}else{
-		std::cerr << "Failed to open " << std::string(MEAN_SQUARE_DISTANCE) << std::endl;
-	}
-	file.close();
-	std::cout <<  "Data saved to " << MEAN_SQUARE_DISTANCE << std::endl;
-}
-
-/*
-void build_initial_state(int n)
-{
-	Chain c = Chain();
-	c.generateGlobule(n);
-	//c.print_knots();
-
-	// Print to file
-	std::ofstream file;
-	file.open(INITIAL_STATE, std::fstream::out | std::fstream::trunc);
-	if(file.is_open())
-	{
-		file << c << std::endl;
-	}
-	file.close();
-}
-
-// linear
-void generate_end_to_end_plot()
-{
-	int nr_strides = 3;
-	int stride_len = 100;
-	double stride_growth = 10;
-	int samples_per_stride = 50;
-	double interval = 1;
+	log_slope_error = ((mean_distance / theoretical).abs()).log();
 	
-
-
-	Eigen::ArrayXd tmp = Eigen::ArrayXd::Zero(samples_per_stride);
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 4); // First column is the number of links used;
-																	// Second column is the measured result, 
-																	// Third column is the variance
-																	// Fourth column is theoretical result
-
-
-
-	double increment = 1.f/(nr_strides*samples_per_stride);
-	const double plot_interval = interval * increment;
-	double percent = 0.0;
-	for(int i = 0; i<nr_strides; i++)
-	{
-		int N =stride_len;
-		for(int j = 0; j<samples_per_stride; j++)
-		{
-			Chain c = Chain();
-			c.generateGlobule(N);
-			tmp(j) = c.get_mean_squared_distance();
-		
-			// writing progress to terminal
-			double p = (i*samples_per_stride + j) * increment;
-			if( (p > percent) )
-			{
-				percent += plot_interval;
-				//double disp_percentage = 100*p;
-				double disp_percentage = 100*percent;
-				std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
-					<<"Generating " << samples_per_stride <<" Globules with " << N << " links. " <<  std::flush;
-			}
-		}
-
-		stride_len = stride_len * stride_growth;
-
-		// Nr of links
-		result(i,0) = N;
-		// Average
-		result(i,1) = tmp.sum()/((double) samples_per_stride);
-		// Variance
-		tmp = tmp - result(i,1);
-		tmp = tmp*tmp;
-		result(i,2) = tmp.sum() / (N-1);
-
-		// Theoretical
-		result(i,3) = pow(N,1/3.0f);
-	}
-	std::cout <<"Done!" << std::endl;
-
-
-	// Writing to file
+	// Writing data to file 
+	// ****************************
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 5);
+	result.block(0,0,nr_strides,1) = nr_links;
+	result.block(0,1,nr_strides,1) = mean_distance;
+	result.block(0,2,nr_strides,1) = variance;
+	result.block(0,3,nr_strides,1) = theoretical;
+	result.block(0,4,nr_strides,1) = log_slope_error;
 	std::ofstream file;
 	file.open(MEAN_SQUARE_DISTANCE, std::fstream::out | std::fstream::trunc);
 	if(file.is_open())
@@ -217,5 +144,6 @@ void generate_end_to_end_plot()
 	}
 	file.close();
 	std::cout <<  "Data saved to " << MEAN_SQUARE_DISTANCE << std::endl;
+	// *****************************
 }
-*/
+

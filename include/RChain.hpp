@@ -5,7 +5,7 @@
 
 
 #ifndef MAX_GRID_SIZE
-#define MAX_GRID_SIZE 10000
+#define MAX_GRID_SIZE 1000
 #endif // MAX_GRID_SIZE
 
 #ifndef NR_OF_DIRECTIONS
@@ -32,12 +32,18 @@
 class RChain
 {
 	public:
+		enum ChainType{
+			PHANTOM,
+			SAW,
+			FG
+		};
+
 		RChain();
 		virtual ~RChain();
 		
 		void update(double dt = 0.01);
 
-		void build(int N);
+		void build(int N, ChainType c = FG);
 		
 
 		double get_mean_squared_distance(int start, int end);
@@ -45,6 +51,7 @@ class RChain
 		
 		friend std::ostream& operator<<(std::ostream& os, const RChain& c);
 	private:
+
 
 		struct link{
 			link(){
@@ -63,25 +70,28 @@ class RChain
 
 		static std::default_random_engine _generator;
 
+		ChainType _ct;
 		int _N;
 		int _n;
 
 		std::vector< link > _chain;
+		std::map<long long,int> _grid;
 
-		int hash_fun(Eigen::Vector3d x);
+		long long hash_fun(Eigen::Vector3d x);
 
 		Eigen::Vector3d int_to_coord(int i);
-		int coord_to_int(Eigen::Vector3d pos);
+
 
 		//Eigen::Vector3d getNextStep( std::function<Eigen::VectorXd()> CDF);
 	//	Eigen::Vector3d getNextStep( std::function<void (double*)> CDF);
-		Eigen::Vector3d getNextStep( );
+		Eigen::Vector3d getNextStep();
+
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
 	
-		int foo();
 
-
-		void random_walk(double*);
+		Eigen::VectorXd get_pdf();
+		Eigen::VectorXd fractal_globule();
+		Eigen::VectorXd self_avoiding();
 };
 
 #endif // RCHAIN_HPP
