@@ -1,9 +1,9 @@
-clear all
+% This program checks if we have an increase in error as the number
+% of links increases. fit1.a should be horizontal
+B = load('../data/meanSquareDistance.m');
 
-A = load('../data/meanSquareDistance.m');
-
-ydata  = A(:,5);
-xdata = log(A(:,1));
+ydata  = B(:,5);
+xdata = log(B(:,1));
 
 f = fittype('a*x+b');
 fit1 = fit(xdata,ydata,f,'StartPoint',[1 1]);

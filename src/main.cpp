@@ -26,21 +26,25 @@
 
 void generate_end_to_end_plot();
 void build_initial_state(int n);
+void get_average_radious_of_gyration(int N);
 
 
 
 int main(int argc, char* argv[])
 {
-
-	int N = 10;
-	if(argc >= 2)
+	if(argc == 3)
 	{
-		N = atoi(argv[1]);
+		int N = atoi(argv[2]);
+		if(argv[1][0] == 'i')
+		{
+			build_initial_state(N);
+		}else if( argv[1][0] == 'r'){
+			get_average_radious_of_gyration(N);
+		}
+	}else{
+		generate_end_to_end_plot();
 	}
-	
-	build_initial_state(N);
 
-	//generate_end_to_end_plot();
 
 	return 0;
 }
@@ -49,7 +53,6 @@ void build_initial_state(int n)
 {
 	RChain c = RChain();
 	c.build(n,RChain::ChainType::SAW);
-
 	// Print to file
 	std::ofstream file;
 	file.open(INITIAL_STATE, std::fstream::out | std::fstream::trunc);
@@ -60,31 +63,56 @@ void build_initial_state(int n)
 	file.close();
 }
 
+void get_average_radious_of_gyration(int N)
+{
+	int tests = 100;
+
+	double mean = 0;
+	Eigen::ArrayXd arr = Eigen::ArrayXd::Zero(tests);
+	double var = 0;
+
+	for(int i=0; i<tests; i++)
+	{
+		RChain c = RChain();
+		c.build(N , RChain::ChainType::PHANTOM);
+		arr(i) =  c.get_rad_of_gyr();
+	}
+	mean = arr.sum()/((double) tests);	
+	
+	for(int i=0; i<tests; i++)
+	{
+		double ax =(mean - arr(i));
+		var += ax*ax; 
+	}
+	var = var/((double)N);
+	std::cout << "Rad = " << mean << "  stdavvikelse = " << sqrt(var) << std::endl; 
+}
+
 // linear
 void generate_end_to_end_plot()
 {
 
 	// PARAMETERS
-	int nr_strides = 10;
-	int stride_len = 100;
-	double stride_growth = 1.5;
+	int nr_strides = 40;
+	int stride_len = 10;
+	double stride_growth = 1.1;
 	int samples_per_stride = 100;
+
 	double interval = 1;
 	double theoretical_slope = SAW_SLOPE;
 	RChain::ChainType type = RChain::ChainType::SAW;
 	
 
+	// Result arrays for mean distance
+	Eigen::ArrayXd nr_links        		= Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd mean_distance   		= Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd mean_distance_var    = Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd theoretical     		= Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd log_slope_error 		= Eigen::VectorXd::Zero(nr_strides);
 
-	//Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 4); // First column is the number of links used;
-																	// Second column is the measured result, 
-																	// Third column is the variance
-																	// Fourth column is theoretical result
-	Eigen::ArrayXd nr_links        = Eigen::VectorXd::Zero(nr_strides);
-	Eigen::ArrayXd mean_distance   = Eigen::VectorXd::Zero(nr_strides);
-	Eigen::ArrayXd variance        = Eigen::VectorXd::Zero(nr_strides);
-	Eigen::ArrayXd theoretical     = Eigen::VectorXd::Zero(nr_strides);
-	Eigen::ArrayXd log_slope_error = Eigen::VectorXd::Zero(nr_strides);
-
+	// Result arrays for mean Radious of gyration
+	Eigen::ArrayXd rad_gyration    		= Eigen::VectorXd::Zero(nr_strides);
+	Eigen::ArrayXd rad_gyration_var   	= Eigen::VectorXd::Zero(nr_strides);
 
 	double increment = 1.f/(nr_strides*samples_per_stride);
 	const double plot_interval = interval * increment;
@@ -92,12 +120,12 @@ void generate_end_to_end_plot()
 	for(int i = 0; i<nr_strides; i++)
 	{
 		int N =stride_len;
-		Eigen::ArrayXd tmp = Eigen::ArrayXd::Zero(samples_per_stride);
+		Eigen::ArrayXd distance_tmp = Eigen::ArrayXd::Zero(samples_per_stride);
 		for(int j = 0; j<samples_per_stride; j++)
 		{
 			RChain c = RChain();
 			c.build(N, type);
-			tmp(j) = c.get_mean_squared_distance();
+			distance_tmp(j) = c.get_mean_squared_distance();
 
 		// writing progress to terminal
 		// ****************************
@@ -108,18 +136,16 @@ void generate_end_to_end_plot()
 				double disp_percentage = 100*(percent+plot_interval);
 				std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
 					<<"Generating " << samples_per_stride <<" Globules with " << N << " links. " <<  std::flush;
-				if(disp_percentage >= 100)
-				{}
 			}
 		// ****************************
 		}
 
 		stride_len = stride_len * stride_growth;
 		nr_links(i) = N;
-        mean_distance(i) = tmp.sum()/((double) samples_per_stride);
-		tmp = tmp - mean_distance(i);
-		tmp = tmp*tmp;
-		variance(i) = tmp.sum() / (N-1);
+        mean_distance(i) = distance_tmp.sum()/((double) samples_per_stride);
+		distance_tmp = distance_tmp - mean_distance(i);
+		distance_tmp = distance_tmp*distance_tmp;
+		mean_distance_var(i) = distance_tmp.sum() / (N-1);
         theoretical(i) = pow(N, theoretical_slope);
 	}
 	std::cout << std::endl;
@@ -131,7 +157,7 @@ void generate_end_to_end_plot()
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(nr_strides, 5);
 	result.block(0,0,nr_strides,1) = nr_links;
 	result.block(0,1,nr_strides,1) = mean_distance;
-	result.block(0,2,nr_strides,1) = variance;
+	result.block(0,2,nr_strides,1) = mean_distance_var;
 	result.block(0,3,nr_strides,1) = theoretical;
 	result.block(0,4,nr_strides,1) = log_slope_error;
 	std::ofstream file;

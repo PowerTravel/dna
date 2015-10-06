@@ -45,9 +45,8 @@ class RChain
 
 		void build(int N, ChainType c = FG);
 		
-
-		double get_mean_squared_distance(int start, int end);
 		double get_mean_squared_distance();
+		double get_rad_of_gyr();
 		
 		friend std::ostream& operator<<(std::ostream& os, const RChain& c);
 	private:
@@ -75,15 +74,12 @@ class RChain
 		int _n;
 
 		std::vector< link > _chain;
-		std::map<long long,int> _grid;
+		std::map<long long,bool> _grid;
 
 		long long hash_fun(Eigen::Vector3d x);
-
 		Eigen::Vector3d int_to_coord(int i);
 
 
-		//Eigen::Vector3d getNextStep( std::function<Eigen::VectorXd()> CDF);
-	//	Eigen::Vector3d getNextStep( std::function<void (double*)> CDF);
 		Eigen::Vector3d getNextStep();
 
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);

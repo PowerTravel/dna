@@ -28,7 +28,7 @@ void RChain::build(int N, ChainType c)
 	_ct = c;
 
 	_chain = std::vector< link >();
-	_grid = std::map<long long,int>();
+	_grid = std::map<long long,bool>();
 	
 	// Start position
 	_chain.push_back(link(0, Eigen::Vector3d(0,0,0)));
@@ -38,11 +38,11 @@ void RChain::build(int N, ChainType c)
 	{
 		_n = i;
 		Eigen::Vector3d pos =_chain.back().pos + getNextStep();
-		
+//		std::cout << "position " << pos.transpose() << " Chosen" << std::endl;	
 		_chain.push_back(link(i, pos));
-		_grid[hash_fun(pos)] = 1;
+		_grid[hash_fun(pos)] = true;
 	}
-	std::cout <<_grid.size() <<" - " << _chain.size() << " = " << ((int)_grid.size()) - ((int) _chain.size()) << std::endl;
+	//std::cout <<_grid.size() <<" - " << _chain.size() << " = " << ((int)_grid.size()) - ((int) _chain.size()) << std::endl;
 }
 
 Eigen::Vector3d RChain::getNextStep(  )
@@ -95,8 +95,8 @@ Eigen::VectorXd RChain::get_pdf()
 
 Eigen::VectorXd RChain::self_avoiding()
 {
-	double A = 10000;
-	double epsilon = 0.0001;
+	double A = 1000000;
+	double eps = 0.0001;
 	// Porbability Distribution of sites
  	Eigen::VectorXd f = Eigen::VectorXd::Zero(NR_OF_DIRECTIONS);
 
@@ -114,7 +114,8 @@ Eigen::VectorXd RChain::self_avoiding()
 			f(j) = A;
 		// else we set it to epsilon
 		}else{
-			f(j) = epsilon;
+		//	std::cout << site.transpose() << " is occupied." << std::endl;
+			f(j) = eps;
 		}
 	}
 
@@ -281,4 +282,21 @@ double RChain::get_mean_squared_distance()
 {
 	Eigen::Vector3d len = _chain.back().pos - _chain.front().pos;
 	return len.norm();
+}
+
+double RChain::get_rad_of_gyr()
+{
+	Eigen::Vector3d mean(0,0,0);
+	for(auto it = _chain.begin(); it != _chain.end(); it++)
+	{
+		mean += it->pos;
+	}
+	mean = mean/_N;
+	double var = 0;
+	for(auto it = _chain.begin(); it != _chain.end(); it++)
+	{	
+		Eigen::Vector3d v = it->pos - mean;
+		var += v.transpose() * v;;
+	}
+	return var/_N;
 }
