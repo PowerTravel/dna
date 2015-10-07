@@ -1,0 +1,86 @@
+%	CONFIGURATION SPECIFICATION
+%	This file sets the parameters for one or more simulations
+% 	The general structure of this config file is: PARAMETER : value
+%	A parameter-value combination must be on its own line.
+%
+%	Each PARAMETER is spelled with CAPITAL LETTERS and comes in three flavours:
+%		'The "RUN" parameter' 	marks the beginning of a new simulation.
+%		'Specific parameters'	are specific for each simulation. The type of 
+%								specific parameters needed is dictated by the 
+%								value of 'RUN'.
+%		'general parameters'	which are valied for for all types of simulations and
+%								takes on default values if the parameter is missing
+%
+%	Each PARAMETER has its own specific valid value.
+%	The values are given with small letters or numbers and comes in four flavours:
+%		'Specific values'		These values are keywords specific to the given
+%								parameter and are specified below.
+%		'Unsigned integer'		Which is just a positive integer
+%		'Float'					Wich is a decimal number
+%		'Boolean'				Which are the words 'true' or 'false'
+%
+% 	Comments start with a '%'
+%
+%	The program tries to check the validity of the config file and is pretty good at
+%	handeling errors but for simplicity any text line not following this specification
+%	is considered undefined behaviour.
+%
+% 	Below is a list of all PARAMETERS and their values:
+%	The general formula for this list is recursively 
+%	COMMAND: 'value' - explanation 	
+%
+%
+%	RUN: 'Specific Value' -  marks the start of a new simulation. 
+%		'Specific Value' for RUN is:
+%		* verify 	- Calculates values for the structure which can be verified 
+%					  against a theoretical value in order to verify the structure 
+%				 	  of the chain. 
+%
+%			'Specific Parameter' for 'RUN: verify' is:
+%			NR_STRIDES: 'Unsigned integer' 	- # datapoints
+%			STRIDE_LEN: 'Unsigned integer' 	- The size of first chain
+%			SAMPLES: 	'Unsigned integer' 	- # of samples for each stride.
+%			GROWTH: 	'Float' 			- The growth of each stride
+%	
+%		* visualize - Builds one chain which can be plotted in matlab
+%
+%			'Specific parameters' for 'RUN: visualize' is:
+%			SIZE:		'Unsigned integer' 	- The size of the chain
+%							
+%					
+%	Below are general parameters valid for any simulation	
+%
+%	TYPE: 'Specific value'	- What type of chain should be studied.
+%		'Specific Value' for TYPE is;
+%		* phantom		A self intersecting random walk
+% 		* saw			A self-avoiding random walk
+%		* fg			A Fractal-Globule
+%		Default is 'phantom', will later change to 'fg' when it works
+%
+%	OUTFILE:	- Relative path to an output file in quotation marks. If file exists
+%				  it will be overwritten. 
+%			Directory must exist and have the .dna extention for saftey.
+%			Default is '../data/default_data.dna'
+%
+%	VERBOSE: 'Boolean'  - Tells if the program should print progress to terminal
+% 			Default is 'true'.
+%
+%	Below is a working example of verify and visualize
+
+RUN: verify
+ 	NR_STRIDES: 40
+	STRIDE_LEN: 10
+	GROWTH: 1.5
+	SAMPLES: 30
+
+	TYPE: phantom
+	OUTFILE: ../data/verify_data.dna
+	VERBOSE: true
+
+
+RUN: visualize
+	SIZE: 400
+	
+	TYPE: saw
+	OUTFILE: ../data/visualize_chain.dna  
+	VERBOSE: false

@@ -9,6 +9,8 @@ add_executable(dna
 	src/RandomEngine.cpp
 	src/RChain.cpp
 	src/ChainStatistics.cpp
+
+	src/ConfReader.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

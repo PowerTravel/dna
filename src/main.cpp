@@ -1,7 +1,7 @@
 #include <iostream>
 #include "RChain.hpp"
 #include "ChainStatistics.hpp"
-
+#include "ConfReader.hpp"
 
 /*
  * 	Program dna
@@ -28,8 +28,11 @@ int main(int argc, char* argv[])
 		}
 	}
 	*/
-	ChainStatistics cs = ChainStatistics();
-	cs.generate();
+	//ChainStatistics cs = ChainStatistics();
+	//cs.generate();
+	ConfReader cnf;
+	//cnf.read("../data/TESTCONF");
+	cnf.read();
 	return 0;
 }
 

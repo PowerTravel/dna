@@ -1,0 +1,24 @@
+
+% comment at beginning 1
+           % comment after whitespaces2
+	% comment after tab 3
+	      % comment after tab and whitespaces 4
+ 	% comment after whitespaces and tab 5
+
+
+       	   			    This is text after some tabs and whitespaces
+
+
+ aVALID This is a valid : COMMAND
+
+ b this is not a valid command
+
+  c here some % fuckery is going on
+
+   dVALID This is    a valid command with : COMMAND some comments afterward % this is a comment
+% lol
+	 eVALID e THIS IS A LOINE WITH NO SPACE BETWEEN:COMMAND AND THIS
+
+ f	this is a command with whitespace after :      
+
+	g this is a command  with nothing after :

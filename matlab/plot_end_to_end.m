@@ -41,7 +41,7 @@ l6 = loglog(n, fitted, 'g');
 title('Mean distance 100 samples per data-point');
 xlabel('log Nr of links');
 ylabel('log Mean distance');
-legend([l4, l5], {'Measured data','theoretical'});
+legend([l4, l6, l5], {'Measured data', 'Fitted slope','theoretical'});
 
 annotation('textbox', [.2 .8 .1 .1], 'String', ...
                     ['average slope of measured data is: ',num2str(mean_slope)]);
