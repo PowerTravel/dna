@@ -169,22 +169,6 @@ std::string ConfReader::isolate_first_word(std::string line)
 std::map<std::string , int> ConfReader::create_parameter_map()
 {
 	std::map<std::string, int> m;
-	// General
-	/*
-	m["RUN"] = PARAM_BIT_RUN;
-	m["TYPE"] = PARAM_BIT_TYPE;
-	m["OUTFILE"] = PARAM_BIT_OUTFILE;
-	m["VERBOSE"] = PARAM_BIT_VERBOSE;
-
-	// verify
-	m["NR_STRIDES"] = PARAM_BIT_NR_STRIDES;
-	m["STRIDE_LEN"] = PARAM_BIT_STRIDE_LEN;
-	m["GROWTH"] = PARAM_BIT_GROWTH;
-	m["SAMPLES"]= PARAM_BIT_SAMPLES;
-
-	// Visualize
-	m["SIZE"] = PARAM_BIT_SIZE;
-	*/
 	
 	m["RUN"] = MAP_TYPE;
 	m["TYPE"] = MAP_TYPE;

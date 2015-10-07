@@ -5,28 +5,20 @@
 #include <map>
 #include <vector>
 
-/*
-#define PARAM_BIT_RUN 1
-#define PARAM_BIT_TYPE 2
-#define PARAM_BIT_OUTFILE 4
-#define PARAM_BIT_VERBOSE 8
-#define PARAM_BIT_NR_STRIDES 16
-#define PARAM_BIT_STRIDE_LEN 32
-#define PARAM_BIT_GROWTH 64
-#define PARAM_BIT_SAMPLES 128
-#define PARAM_BIT_SIZE 256
-*/
 #ifndef PARAM_TYPES
 #define PARAM_TYPES
+
 #define UNSIGNED_INTEGER_TYPE 1
 #define DOUBLE_TYPE 2
 #define STRING_TYPE 3
 #define BOOL_TYPE 4
 #define MAP_TYPE 5
+
 #endif // PARAM_TYPES
 
 #ifndef VAL_BITS
 #define VAL_BITS
+
 // RUN
 #define VAL_BIT_VERIFY 1
 #define VAL_BIT_VISUALIZE 2
@@ -34,9 +26,7 @@
 #define VAL_BIT_PHANTOM 4
 #define VAL_BIT_SAW 8
 #define VAL_BIT_FG 16
-// VERBOSE
-#define VAL_BIT_TRUE 32
-#define VAL_BIT_FALSE 64
+
 #endif // VAL_BITS
 
 
