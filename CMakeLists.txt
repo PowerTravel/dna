@@ -8,6 +8,7 @@ add_executable(dna
 	src/Spring.cpp
 	src/RandomEngine.cpp
 	src/RChain.cpp
+	src/ChainStatistics.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

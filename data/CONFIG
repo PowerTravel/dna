@@ -1,0 +1,95 @@
+% 	This is a comment 
+%	This file sets the parameters for a simulation
+%	Every simulation starts with a RUN: declaration followed by what type of structure will be studied.
+%	Each parameter has a default value which will be used if nothing is specified here.
+%	Many tests can be specified but must start with a new RUN: command.
+%	Some parameters are general, others are simulation specific
+%
+% 	Below is a list of parameters:
+%	
+%	RUN:	marks the start of a new simulation. 
+%			Valid input is:
+%				- verify	Calculates values for the structure which can be verified against a theoretical value
+%							Simulation specific parameters for verify are NR_STRIDES STRIDE_LEN, GROWTH, SAMPLES
+%				- visualize Builds one chain which can be plotted in matlab for visualization
+%							Simulation specific parameter for visualize is SIZE
+%							
+%					
+%	Below are general parameters valid for any simulation	
+%
+%	TYPE:	What type of structure should be studied
+%			Valid input is:
+%				- phantom		A self intersecting random walk
+% 				- saw			A self-avoiding random walk
+%				- fg			A Fractal-Globule
+%			Default is a fractal globule
+%
+%	TESTS:	what type of data will be gathered. Some or all of the specifications can be used separated by a comma.
+%			Valid input is:
+% 				- dist			calculates end to end distance
+%				- rad_of_gyr 	calculates radious of gyration
+% 				- cm 			calculates Center of mass
+%			Default is all of them.
+%
+%	OUTFILE: Relative path to an output file in quotation marks. If file exists it will be overwritten. 
+%			Path must exist and have the .dna extention for saftey.
+%			Default is "../data/tests_data.dna"
+%
+%	VERBOSE: Should the program print progress terminal
+%			Valid inpit is:
+%				- true
+%				- false
+% 			Default is true.
+%
+%	Below are simulaion specifik parameters:
+%	
+%		verify:
+%		
+%	NR_STRIDES: Nr of tests with different chain lengths
+%			Valid input is: A positive integer
+%			Default is 40
+%	STRIDE_LEN: The size of first stride
+%			Valid input is: A positive integer
+%			Default is 10
+%	GROWTH: 	The growth of each stride
+%			Valid input is: A positive float
+%			Default is 1.5
+%	SAMPLES: 	The number of samples built on each stride
+%			Valid input is: A positive integer
+%			Default is 30
+%	
+%		visualize:
+%
+%	SIZE: The size of the chain to be built.
+%			Valid input is: A positive float between 1 and 100000
+%			Default is 100
+%
+%	Below is a working example of verify and visualize
+
+RUN: verify
+	TYPE: phantom
+	TESTS: dist, rad_of_gyr, cm
+	OUTFILE: "../data/verify_data.dna"
+	VERBOSE: true
+
+	NR_STRIDES: 40
+	STRIDE_LEN: 10
+	GROWTH: 1.5
+	SAMPLES: 30
+
+RUN: visualize
+	TYPE: SAW
+	TESTS: dist, rad_of_gyr, cm
+	OUTFILE: "../data/visualize_chain.dna"
+	VERBOSE: false
+
+	SIZE: 400
+
+
+
+
+%
+%
+% More tests may come later
+%
+%

@@ -7,6 +7,12 @@
 #define GLOBULE_SLOPE 1/3.f
 #endif // THEORETICAL_SLOPES
 
+#ifndef OUT_FILES
+#define INITIAL_STATE "../data/initial_state.m"
+#define ANIMATION = "../data/animation.m"
+#define MEAN_SQUARE_DISTANCE "../data/meanSquareDistance.m"
+#endif // OUT_FILES
+
 #include "Eigen/Dense"
 #include <string>
 class ChainStatistics{
@@ -20,7 +26,7 @@ class ChainStatistics{
 
 	private:
 
-		int type; // 1 = Phantom, 2 = SAW, 3 = Globule
+		int _type; // 1 = Phantom, 2 = SAW, 3 = Globule
 
 		// Simulation Parameters
 		int _nr_strides;			// Number of data points
@@ -29,7 +35,7 @@ class ChainStatistics{
 		double _growth_rate;		// The growth betwen data points
 
 		// Global
-		Eigen::ArrayXd nr_links     // Number of links in each chain
+		Eigen::ArrayXd nr_links;    // Number of links in each chain
 		
 		// Result arrays for mean distance
 		Eigen::ArrayXd mDist;  			// End to end distance of chains
@@ -59,7 +65,8 @@ class ChainStatistics{
 		void init_arrays();
 		
 		void init_plotting_parameters();
-		void write_to_terminal(int N);
+		void write_to_terminal(int N, int i, int j);
+		void write_to_file();
 };
 
 #endif //CHAIN_STATISTICS_HPP 

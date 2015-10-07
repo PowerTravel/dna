@@ -2,8 +2,12 @@
 % of links increases. fit1.a should be horizontal
 B = load('../data/meanSquareDistance.m');
 
-ydata  = B(:,5);
+%ydata  = B(:,5);
+%xdata = log(B(:,1));
+
+ydata  = log(B(:,2));
 xdata = log(B(:,1));
+
 
 f = fittype('a*x+b');
 fit1 = fit(xdata,ydata,f,'StartPoint',[1 1]);

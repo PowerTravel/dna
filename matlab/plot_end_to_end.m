@@ -8,11 +8,22 @@ measures = A(:,2);
 var_top = measures + A(:,3);
 var_bot = measures - A(:,3);
 theoretical = A(:,4);
-mean_slope = ( log(measures(N)/measures(1)) ) / log(n(N) / n(1))
-fitted = A(:,1).^mean_slope;
+
 theoretical_slope = log(theoretical(N)/theoretical(1))  / log(n(N)/ n(1))
 
-figure(1)
+
+
+ydata  = log(measures);
+xdata = log(n);
+f = fittype('a*x+b');
+fit1 = fit(xdata,ydata,f,'StartPoint',[1 1]);
+figure(1);
+plot(fit1,'r-',xdata,ydata,'k.')
+
+mean_slope = fit1.a
+fitted = A(:,1).^mean_slope;
+
+figure(2)
 %l2 = loglog(n, var_top, 'xk');
 %
 %for i= 1:N
@@ -25,6 +36,7 @@ figure(1)
 l4 = loglog(n, measures, 'k');
 hold on
 l5 = loglog(n, theoretical);
+l6 = loglog(n, fitted, 'g');
 
 title('Mean distance 100 samples per data-point');
 xlabel('log Nr of links');
