@@ -11,6 +11,7 @@ add_executable(dna
 	src/ChainStatistics.cpp
 
 	src/ConfReader.cpp
+	src/Simulation.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )
