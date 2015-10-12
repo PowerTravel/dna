@@ -78,13 +78,15 @@ void ConfReader::read(std::string filePath)
 
 	for(auto it = parsed_config_vec.begin(); it!= parsed_config_vec.end(); it++ )
 	{
-	/*
-		for(auto it1 = it->begin(); it1 != it->end(); it1++ )
+		std::map<std::string, std::string> sm = *it;
+		if(sm["RUN"].compare("verify")==0 )
 		{
-			std::cout << it1->first << " : " << it1->second << std::endl;
+			_sim_list.push_back( std::shared_ptr<Simulation>(new Verify(sm)) );
+			std::cout << _sim_list.back() << std::endl;
+		}else if(sm["RUN"].compare("visualize") == 0)
+		{
+			// _sim_list.push_back( Visualize(sm) );
 		}
-	*/	
-		_sim_list.push_back( Simulation(*it) );
 	}
 
 	file.close();

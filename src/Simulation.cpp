@@ -8,14 +8,15 @@ const std::map<std::string, int> Simulation::val_map =
 
 Simulation::Simulation()
 {
-
+	_valid = false;
 }
 
 Simulation::Simulation(std::map<std::string, std::string> sm)
 {
-	if( is_valid(sm) )
-	{
-			
+	// Checks that all commands are valid
+	_valid =  is_valid(sm);
+	if(_valid){
+		set_general_parameters(sm);
 	}
 }
 
@@ -29,6 +30,29 @@ void Simulation::apply()
 
 }
 
+void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
+{
+	if( sm.find("TYPE") != sm.end())
+	{
+		type = val_map.at(sm["TYPE"]);
+	}else{
+		type = DEFAULT_TYPE;
+	}
+
+	if( sm.find("OUTFILE") != sm.end())
+	{
+		outfile = sm["OUTFILE"];
+	}else{
+		outfile = DEFAULT_OUTFILE;
+	}
+
+	if( sm.find("VERBOSE") != sm.end())
+	{
+		verbose = text_to_bool(sm["VERBOSE"]);
+	}else{
+		verbose = DEFAULT_VERBOSE;
+	}
+}
 
 // Check simulation wide parameters
 bool Simulation::is_valid(std::map<std::string, std::string> sm)
@@ -39,9 +63,10 @@ bool Simulation::is_valid(std::map<std::string, std::string> sm)
 	for(auto it = sm.begin(); it != sm.end(); it++)
 	{
 		// Check if each argument exists in the argument dictionary
-		if( param_map.find( it->first ) == param_end.end() )
+		if( param_map.find( it->first ) == param_map.end() )
 		{
-			std::cerr << "ERROR: " << it->first << " is 	
+			std::cerr << "ERROR: " << it->first << " is not a valid parameter " << std::endl;
+			return false;
 		}
 
 		int data_type =  param_map.at(it->first);
@@ -70,13 +95,14 @@ bool Simulation::is_valid(std::map<std::string, std::string> sm)
 			default:
 				break;
 		}
+		if(return_flag == false)
+		{
+			std::cerr << "ERROR: '" << it->second << "' is not a valid value for parameter '" << it->first <<"'"<< std::endl;
+			return false;
+		}
 	}
 
-	return return_flag;
-	//for(auto it2 = sm.begin(); it2!= sm.end(); it2++ )
-	//{	
-	//	std::cout << it2->first << " : " << it2->second << std::endl;
-	//}
+	return true;
 }
 
 std::map<std::string , int> Simulation::create_parameter_map()
@@ -145,6 +171,21 @@ bool Simulation::check_bool_type(std::string val)
 		return false;
 	}
 }
+
+bool Simulation::text_to_bool(std::string l)
+{
+	if( l.compare("true") == 0 )
+	{
+		return true;
+	}else if(l.compare("false") == 0){
+		return false;
+	}else{
+		std::cerr << "ERROR in Simulation::text_to_bool" << std::endl;
+		std::cerr << l << "  Must be 'true' or 'false'. Shutting Down." << std::endl;
+		exit(1);
+	}
+}
+
 bool Simulation::check_map_type(std::string val)
 {
 	if(val_map.find(val) != val_map.end())
@@ -153,4 +194,18 @@ bool Simulation::check_map_type(std::string val)
 	}else{
 		return false;
 	}
+}
+
+int Simulation::text_to_int(std::string l)
+{
+	return std::stoi(l);
+}
+
+double Simulation::text_to_double(std::string l)
+{
+	return std::stod(l);
+}
+bool Simulation::valid()
+{
+	return _valid;
 }

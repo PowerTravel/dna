@@ -2,21 +2,21 @@
 % of links increases. fit1.a should be horizontal
 B = load('../data/meanSquareDistance.m');
 
-%ydata  = B(:,5);
-%xdata = log(B(:,1));
-
-ydata  = log(B(:,2));
-xdata = log(B(:,1));
+logerr  = B(:,5);
+loglinks = log(B(:,1));
+logdata  = log(B(:,2));
 
 
 f = fittype('a*x+b');
-fit1 = fit(xdata,ydata,f,'StartPoint',[1 1]);
+error = fit(loglinks,logerr,f,'StartPoint',[1 1]);
+slope = fit(loglinks,logdata,f,'StartPoint',[1 1]);
 
 
 figure(1);
-plot(fit1,'r-',xdata,ydata,'k.')
+plot(error,'r-',loglinks,logerr,'k.')
 
 figure(2);
-plot(xdata, ydata)
+plot(slope,'r-',loglinks,logdata,'k.')
 
-fit1.a
+error
+slope

@@ -6,7 +6,8 @@ RUN: verify
 	STRIDE_LEN: 10
 	GROWTH: 1.5
 	SAMPLES: 30
+	SIZE: 32
 
-	TYPE: phantom
+	TYPE: fg
 	OUTFILE: ../data/default_data.dna
-	VERBOSE: true
+	VERBOSE: false

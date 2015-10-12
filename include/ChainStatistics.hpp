@@ -3,7 +3,8 @@
 
 #ifndef THEORETICAL_SLOPES
 #define PHANTOM_SLOPE 1/2.f
-#define SAW_SLOPE 3/(2.f+3.f)
+//#define SAW_SLOPE 3/(2.f+3.f)
+#define SAW_SLOPE 0.588
 #define GLOBULE_SLOPE 1/3.f
 #endif // THEORETICAL_SLOPES
 

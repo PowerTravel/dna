@@ -4,7 +4,8 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "Simulation.hpp"
+#include <memory>
+#include "Verify.hpp"
 
 class ConfReader{
 
@@ -16,7 +17,7 @@ class ConfReader{
 		void read(std::string filePath = "../configs/DEFAULT");
 	private:
 
-		std::vector< Simulation > _sim_list;
+		std::vector< std::shared_ptr<Simulation> > _sim_list;
 
 
 		std::string remove_leading_whitespace(std::string line);
