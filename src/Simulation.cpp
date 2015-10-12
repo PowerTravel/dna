@@ -1,14 +1,19 @@
 #include "Simulation.hpp"
 #include <iostream>
+#include <ctime>
 
+//std::default_random_engine Simulation::_generator = std::default_random_engine(time(NULL));
 const std::map<std::string, int> Simulation::param_map = 
 							Simulation::create_parameter_map();
 const std::map<std::string, int> Simulation::val_map = 
 							Simulation::create_value_map();
 
+const std::map<int, std::string> Simulation::dictionary =
+							Simulation::create_simulation_dictionary();
 Simulation::Simulation()
 {
 	_valid = false;
+	_complete = false;
 }
 
 Simulation::Simulation(std::map<std::string, std::string> sm)
@@ -25,25 +30,20 @@ Simulation::~Simulation()
 
 }
 		
-void Simulation::apply()
-{
-
-}
-
 void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 {
 	if( sm.find("TYPE") != sm.end())
 	{
-		type = val_map.at(sm["TYPE"]);
+		_chain_type = val_map.at(sm["TYPE"]);
 	}else{
-		type = DEFAULT_TYPE;
+		_chain_type = DEFAULT_TYPE;
 	}
 
 	if( sm.find("OUTFILE") != sm.end())
 	{
-		outfile = sm["OUTFILE"];
+		_outfile = sm["OUTFILE"];
 	}else{
-		outfile = DEFAULT_OUTFILE;
+		_outfile = DEFAULT_OUTFILE;
 	}
 
 	if( sm.find("VERBOSE") != sm.end())
@@ -105,6 +105,16 @@ bool Simulation::is_valid(std::map<std::string, std::string> sm)
 	return true;
 }
 
+std::map<int, std::string> Simulation::create_simulation_dictionary()
+{
+	std::map<int, std::string> m;
+	m[VAL_BIT_VERIFY] = "verify";
+	m[VAL_BIT_VISUALIZE] = "visualize";
+	m[VAL_BIT_PHANTOM] = "Phantom Chain";
+	m[VAL_BIT_SAW] = "Self Avoiding Walk";
+	m[VAL_BIT_FG] = "Fractal Globule";
+	return m;
+}
 std::map<std::string , int> Simulation::create_parameter_map()
 {
 	std::map<std::string, int> m;
@@ -209,3 +219,18 @@ bool Simulation::valid()
 {
 	return _valid;
 }
+
+void Simulation::print_pre_info()
+{
+	if(verbose){
+		std::cout << "Starting Simulation '" << dictionary.at(_simulation_type) << "' on a '" << dictionary.at(_chain_type) <<"'." << std::endl;
+	}
+}
+
+void Simulation::print_post_info()
+{
+	if(verbose){
+		std::cout << "Data written to '" << _outfile << "'." << std::endl;
+	}
+}
+

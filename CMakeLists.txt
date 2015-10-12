@@ -14,6 +14,7 @@ add_executable(dna
 
 	src/Simulation.cpp
 	src/Verify.cpp
+	src/Visualize.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

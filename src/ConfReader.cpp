@@ -12,7 +12,7 @@ ConfReader::~ConfReader()
 }
 
 
-void ConfReader::read(std::string filePath)
+std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath)
 {
 	std::ifstream file;
 	errno = 0;
@@ -23,7 +23,7 @@ void ConfReader::read(std::string filePath)
 	{
 		std::cerr << "ERROR: Could not open '" << filePath << "'"<<std::endl << "Reason: " << strerror(errno) <<"."<< std::endl;
 		file.close();
-		return;
+		return _sim_list;
 	}
 	
 	std::vector< std::map< std::string, std::string > > parsed_config_vec;
@@ -82,14 +82,16 @@ void ConfReader::read(std::string filePath)
 		if(sm["RUN"].compare("verify")==0 )
 		{
 			_sim_list.push_back( std::shared_ptr<Simulation>(new Verify(sm)) );
-			std::cout << _sim_list.back() << std::endl;
 		}else if(sm["RUN"].compare("visualize") == 0)
 		{
-			// _sim_list.push_back( Visualize(sm) );
+			_sim_list.push_back(std::shared_ptr<Simulation>(new  Visualize(sm) ) );
 		}
+		//std::cout << _sim_list.back() << std::endl;
 	}
 
 	file.close();
+
+	return _sim_list;
 }
 std::string ConfReader::remove_leading_whitespace(std::string line)
 {

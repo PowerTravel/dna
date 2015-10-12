@@ -1,11 +1,11 @@
 
 
-system('../_build/dna ax 200');
+%system('../_build/dna ax 200');
 
-data = load('../data/initial_state.m');
+data = load('../data/default_visualize_data.dna');
 N = size(data,1);
-plot_steps = 10;
-animate = true;
+plot_steps = 1;
+animate = false;
 
 
 lim = floor(N^(3/5));

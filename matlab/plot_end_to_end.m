@@ -1,5 +1,6 @@
 %A = load('../data/saved/meanSquareDistance.m');
-A = load('../data/meanSquareDistance.m');
+%A = load('../data/meanSquareDistance.m');
+A = load('../data/default_data.dna');
 % Nr data points
 N  = size(A(:,1),1);
 

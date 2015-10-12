@@ -29,6 +29,7 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <random>
 
 // A basic simulation class containing general simulation parameters
 // Every new simulation will have a new derived simulation class
@@ -46,34 +47,38 @@ class Simulation
 		Simulation(std::map<std::string, std::string> sm);
 		virtual ~Simulation();
 		
-		virtual void apply();
 		bool valid();
 
 		friend std::ostream& operator<<(std::ostream& os, const Simulation& b);
-		//virtual void print(std::ostream& os) const{ os << "This is the base class.";};
-		virtual void print(std::ostream& os) const = 0;
+		
+		virtual void apply() = 0;
+		virtual void print(std::ostream& os)= 0;
 	protected:
 		bool _valid;
-
+		bool _complete;
 		// General Parameters
-		int type;
-		std::string outfile;
+		int _chain_type;
+		int _simulation_type;
+		std::string _outfile;
 		bool verbose;
-		
-		
-		//virtual void print(std::ostream& os) const = 0;
 		
 		bool text_to_bool(std::string l);
 		int text_to_int(std::string l);
 		double text_to_double(std::string l);
+
+		void print_pre_info();
+		void print_post_info();
+		
+		const static std::map<std::string, int> param_map;
+		const static std::map<std::string, int> val_map;
+		const static std::map<int, std::string> dictionary;
 	private:
 
 
-		const static std::map<std::string, int> param_map;
-		const static std::map<std::string, int> val_map;
 
 		static std::map<std::string , int> create_value_map();
 		static std::map<std::string , int> create_parameter_map();
+		static std::map<int, std::string> create_simulation_dictionary();
 
 		
 		void set_general_parameters(std::map<std::string, std::string> sm);
@@ -86,10 +91,10 @@ class Simulation
 		bool check_bool_type(std::string val);
 		bool check_map_type(std::string val);
 		bool check_general_map_type(std::string val);
-		
+
 };
 
-inline std::ostream& operator << (std::ostream& os, const Simulation* b)
+inline std::ostream& operator << (std::ostream& os, Simulation* b)
 {
 	b->print(os);
 	return os;

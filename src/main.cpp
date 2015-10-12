@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+#include <memory>
 #include "RChain.hpp"
 #include "ChainStatistics.hpp"
 #include "ConfReader.hpp"
@@ -32,7 +34,13 @@ int main(int argc, char* argv[])
 	//cs.generate();
 	ConfReader cnf;
 	//cnf.read("../data/TESTCONF");
-	cnf.read();
+	std::vector< std::shared_ptr<Simulation> > sim_list =  cnf.read();
+	for(auto it = sim_list.begin(); it != sim_list.end(); it++)
+	{
+		std::shared_ptr<Simulation> p = NULL;	
+		p = *it;
+		p->apply();
+	}
 	return 0;
 }
 

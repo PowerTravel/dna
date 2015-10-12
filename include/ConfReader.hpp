@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include "Verify.hpp"
+#include "Visualize.hpp"
 
 class ConfReader{
 
@@ -14,7 +15,7 @@ class ConfReader{
 		virtual ~ConfReader();
 
 
-		void read(std::string filePath = "../configs/DEFAULT");
+		std::vector< std::shared_ptr<Simulation> > read(std::string filePath = "../configs/DEFAULT");
 	private:
 
 		std::vector< std::shared_ptr<Simulation> > _sim_list;
