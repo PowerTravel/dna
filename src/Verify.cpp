@@ -65,25 +65,25 @@ void Verify::init_plotting_parameters()
 void Verify::init_arrays()
 {
 	// Global
-	nr_links    = Eigen::VectorXd::Zero(_nr_strides);
+	nr_links    = Eigen::ArrayXd::Zero(_nr_strides);
 	
 	// Result arrays for mean distance
-	mDist   	= Eigen::VectorXd::Zero(_nr_strides);
-	mDist_var	= Eigen::VectorXd::Zero(_nr_strides);
-	mDist_theo  = Eigen::VectorXd::Zero(_nr_strides);
-	mDist_err	= Eigen::VectorXd::Zero(_nr_strides);
+	mDist   	= Eigen::ArrayXd::Zero(_nr_strides);
+	mDist_var	= Eigen::ArrayXd::Zero(_nr_strides);
+	mDist_theo  = Eigen::ArrayXd::Zero(_nr_strides);
+	mDist_err	= Eigen::ArrayXd::Zero(_nr_strides);
 
 	// Result arrays for mean Radious of gyration
-	mRadGyr   	= Eigen::VectorXd::Zero(_nr_strides);
-	mRadGyr_var = Eigen::VectorXd::Zero(_nr_strides);
-	mRadGyr_teo = Eigen::VectorXd::Zero(_nr_strides);
-	mRadGyr_err = Eigen::VectorXd::Zero(_nr_strides);
+	mRadGyr   	= Eigen::ArrayXd::Zero(_nr_strides);
+	mRadGyr_var = Eigen::ArrayXd::Zero(_nr_strides);
+	mRadGyr_teo = Eigen::ArrayXd::Zero(_nr_strides);
+	mRadGyr_err = Eigen::ArrayXd::Zero(_nr_strides);
 
 	// Result arrays for center of mass
-	CM   		= Eigen::VectorXd::Zero(_nr_strides);
-	CM_var   	= Eigen::VectorXd::Zero(_nr_strides);
-	CM_teo  	= Eigen::VectorXd::Zero(_nr_strides);
-	CM_err   	= Eigen::VectorXd::Zero(_nr_strides);
+	CM   		= Eigen::ArrayXXd::Zero(_nr_strides,3);
+	CM_var   	= Eigen::ArrayXXd::Zero(_nr_strides,3);
+	CM_teo  	= Eigen::ArrayXXd::Zero(_nr_strides,3);
+	CM_err   	= Eigen::ArrayXXd::Zero(_nr_strides,3);
 }
 void Verify::print(std::ostream& os)
 {
@@ -120,6 +120,101 @@ void Verify::set_chain_type()
 			break;
 	}
 }
+
+void Verify::apply()
+{
+	print_pre_info();
+
+	int max_idx = _nr_strides;
+	int measures = _samples;
+
+	nr_links(0) = _stride_len;
+	for(int i = 1; i<max_idx; i++)
+	{
+		nr_links(i) = nr_links(i-1)*_growth;
+	}
+	int chain_length = nr_links(max_idx-1);
+
+	// Rows contain different measures
+	// columns contain different lengths,
+	Eigen::ArrayXXd mDist_tmp = Eigen::ArrayXXd::Zero(measures, max_idx);
+	Eigen::ArrayXXd mRadGyr_tmp = Eigen::ArrayXXd::Zero(measures, max_idx);
+	Eigen::ArrayXXd CM_tmp = Eigen::ArrayXXd::Zero(measures,3 * max_idx);
+	for(int i = 0; i<measures; i++)
+	{
+		RChain c = RChain();
+		c.build(chain_length, _t);
+
+		// Gather mean distance data
+		for(int j = 0; j<max_idx; j++)
+		{
+			// Mean distance
+			mDist_tmp(i,j) += c.get_mean_squared_distance(0, nr_links(j));
+
+			// Radious of gyration
+			mRadGyr_tmp(i,j) += c.get_rad_of_gyr(0, nr_links(j));
+			
+			// Center of mass
+			Eigen::Array3d  tmp_cm = c.get_CM(0, nr_links(j));
+			CM_tmp.block(i,3*j,1,3) =CM_tmp.block(i,3*j,1,3) + tmp_cm.transpose();
+			if(verbose)
+			{
+				write_to_terminal(chain_length,i,j);
+			}
+		}
+	}
+
+	// Calculate mean distance
+	for(int i = 0; i<max_idx; i++)
+	{
+
+		Eigen::ArrayXd tmp_arr = Eigen::ArrayXd::Zero(measures);
+		Eigen::Vector2d mv = Eigen::Vector2d::Zero();
+
+		/*  Mean square dispacement  */
+		// Calculate the mean and variance
+		tmp_arr = mDist_tmp.col(i);
+		mv = get_mean_and_variance(tmp_arr);
+		mDist(i) = mv(0);
+		mDist_var(i) = mv(1);
+		// Generate the theoretical slope
+        mDist_theo(i) = pow(nr_links(i), _theoretical_slope);
+		
+		/* Center of mass */
+		for(int j = 0; j<3; j++)
+		{
+			mv = get_mean_and_variance(CM_tmp.col(3*i+j));
+			CM(i,j) = mv(0);
+			CM_var(i,j) = mv(1);
+		}
+
+		/* Radius of gyration */
+		// THIS IS GIVING WEIRD RESULTS I THINK	
+		mv = get_mean_and_variance(mRadGyr_tmp.col(i));
+		mRadGyr(i) = mv(0);  
+		mRadGyr_var(i) = mv(1);
+	}
+	std::cout << mRadGyr << std::endl << std::endl;
+	std::cout << mRadGyr_var << std::endl << std::endl;
+	// The log of the error between the theoretical and the measured distance	
+	mDist_err = ((mDist / mDist_theo).abs()).log();
+
+	write_to_file();
+
+	print_post_info();
+}
+
+Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
+{
+	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
+	// Mean
+	ret(0) = in_data.sum()/((double) in_data.size());
+	ret(1) = (in_data-ret(0)).pow(2).sum();
+	
+	return ret;
+}
+
+/*
 void Verify::apply()
 {
 	print_pre_info();
@@ -158,7 +253,7 @@ void Verify::apply()
 	
 	print_post_info();
 }
-
+*/
 void Verify::write_to_file()
 {
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(_nr_strides, 5);
@@ -186,6 +281,6 @@ void Verify::write_to_terminal(int N, int i, int j)
 		_percent += _plot_interval;
 		double disp_percentage = 100*(_percent+_plot_interval);
 		std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
-			<<"Generating " << _samples <<" Globules with " << N << " links. " <<  std::flush;
+			<<"Generating " << _samples <<" " <<dictionary.at(_chain_type) <<"s with " << N << " links. " <<  std::flush;
 	}
 }

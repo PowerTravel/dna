@@ -1,6 +1,5 @@
-%A = load('../data/saved/meanSquareDistance.m');
-%A = load('../data/meanSquareDistance.m');
 A = load('../data/default_data.dna');
+%A = load('../data/1000_measures_end_to_end_data.dna')
 % Nr data points
 N  = size(A(:,1),1);
 
@@ -21,7 +20,8 @@ fit1 = fit(xdata,ydata,f,'StartPoint',[1 1]);
 figure(1);
 plot(fit1,'r-',xdata,ydata,'k.')
 
-mean_slope = fit1.a
+fit1
+mean_slope = fit1.a;
 fitted = A(:,1).^mean_slope;
 
 figure(2)

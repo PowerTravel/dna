@@ -1,9 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-#include "RChain.hpp"
-#include "ChainStatistics.hpp"
 #include "ConfReader.hpp"
+#include "Simulation.hpp"
 
 /*
  * 	Program dna
@@ -11,30 +10,18 @@
  */
 
 
-void build_initial_state(int n);
-void get_average_radious_of_gyration(int N);
-
-
-
 int main(int argc, char* argv[])
 {
-/*
-	if(argc == 3)
+	std::string config;
+	if(argc > 1)
 	{
-		int N = atoi(argv[2]);
-		if(argv[1][0] == 'i')
-		{
-			build_initial_state(N);
-		}else if( argv[1][0] == 'r'){
-			get_average_radious_of_gyration(N);
-		}
+		config = argv[1];
+	}else{
+		config = "../configs/DEFAULT";
 	}
-	*/
-	//ChainStatistics cs = ChainStatistics();
-	//cs.generate();
-	ConfReader cnf;
-	//cnf.read("../data/TESTCONF");
-	std::vector< std::shared_ptr<Simulation> > sim_list =  cnf.read();
+
+	std::vector< std::shared_ptr<Simulation> > sim_list =  ConfReader::read(config);
+
 	for(auto it = sim_list.begin(); it != sim_list.end(); it++)
 	{
 		std::shared_ptr<Simulation> p = NULL;	
@@ -42,43 +29,4 @@ int main(int argc, char* argv[])
 		p->apply();
 	}
 	return 0;
-}
-
-void build_initial_state(int n)
-{
-	RChain c = RChain();
-	c.build(n,RChain::ChainType::SAW);
-	// Print to file
-	std::ofstream file;
-	file.open(INITIAL_STATE, std::fstream::out | std::fstream::trunc);
-	if(file.is_open())
-	{
-		file << c << std::endl;
-	}
-	file.close();
-}
-
-void get_average_radious_of_gyration(int N)
-{
-	int tests = 100;
-
-	double mean = 0;
-	Eigen::ArrayXd arr = Eigen::ArrayXd::Zero(tests);
-	double var = 0;
-
-	for(int i=0; i<tests; i++)
-	{
-		RChain c = RChain();
-		c.build(N , RChain::ChainType::PHANTOM);
-		arr(i) =  c.get_rad_of_gyr();
-	}
-	mean = arr.sum()/((double) tests);	
-	
-	for(int i=0; i<tests; i++)
-	{
-		double ax =(mean - arr(i));
-		var += ax*ax; 
-	}
-	var = var/((double)N);
-	std::cout << "Rad = " << mean << "  stdavvikelse = " << sqrt(var) << std::endl; 
 }

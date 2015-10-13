@@ -280,23 +280,45 @@ Eigen::VectorXd RChain::PDF_to_CDF(Eigen::VectorXd f)
 
 double RChain::get_mean_squared_distance()
 {
-	Eigen::Vector3d len = _chain.back().pos - _chain.front().pos;
-	return len.norm();
+	return get_mean_squared_distance(0,_N);
 }
 
 double RChain::get_rad_of_gyr()
 {
-	Eigen::Vector3d mean(0,0,0);
-	for(auto it = _chain.begin(); it != _chain.end(); it++)
-	{
-		mean += it->pos;
-	}
-	mean = mean/_N;
+	return get_rad_of_gyr(0,_N);
+}
+
+
+Eigen::Vector3d RChain::get_CM()
+{
+	return get_CM(0,_N);
+}
+
+double RChain::get_mean_squared_distance(int start, int end)
+{
+	Eigen::Vector3d len = _chain[end-1].pos - _chain[start].pos;
+	return len.norm();
+}
+
+double RChain::get_rad_of_gyr(int start, int end)
+{
+	Eigen::Vector3d mean = get_CM();
 	double var = 0;
-	for(auto it = _chain.begin(); it != _chain.end(); it++)
+	for(int i = 0; i<end; i++)
 	{	
-		Eigen::Vector3d v = it->pos - mean;
+		Eigen::Vector3d v = _chain[i].pos - mean;
 		var += v.transpose() * v;;
 	}
-	return var/_N;
+	return var/((double) (end-start));
+}
+
+Eigen::Vector3d RChain::get_CM(int start, int end)
+{
+	Eigen::Vector3d cm(0,0,0);
+	for(int i = 0; i<end; i++)
+	{
+		cm += _chain[i].pos;
+	}
+	cm = cm/((double) (end-start));
+	return cm;
 }

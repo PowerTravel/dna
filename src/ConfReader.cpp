@@ -2,6 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <errno.h>
+
+#include "Verify.hpp"
+#include "Visualize.hpp"
 ConfReader::ConfReader()
 {
 
@@ -14,6 +17,7 @@ ConfReader::~ConfReader()
 
 std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath)
 {
+	std::vector< std::shared_ptr<Simulation> > sim_list;
 	std::ifstream file;
 	errno = 0;
 	file.open(filePath);
@@ -23,7 +27,7 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 	{
 		std::cerr << "ERROR: Could not open '" << filePath << "'"<<std::endl << "Reason: " << strerror(errno) <<"."<< std::endl;
 		file.close();
-		return _sim_list;
+		return sim_list;
 	}
 	
 	std::vector< std::map< std::string, std::string > > parsed_config_vec;
@@ -55,7 +59,6 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 
 		// Now we have a param cotaining a word and val containing a word
 
-		// if(is_valid(param, val)) // If valid should be handled by individual simulation classes
 		// If we have something in param and val we proceed in creating a list
 		if( !param.empty() && !val.empty() )
 		{
@@ -81,17 +84,16 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 		std::map<std::string, std::string> sm = *it;
 		if(sm["RUN"].compare("verify")==0 )
 		{
-			_sim_list.push_back( std::shared_ptr<Simulation>(new Verify(sm)) );
+			sim_list.push_back( std::shared_ptr<Simulation>(new Verify(sm)) );
 		}else if(sm["RUN"].compare("visualize") == 0)
 		{
-			_sim_list.push_back(std::shared_ptr<Simulation>(new  Visualize(sm) ) );
+			sim_list.push_back(std::shared_ptr<Simulation>(new  Visualize(sm) ) );
 		}
-		//std::cout << _sim_list.back() << std::endl;
 	}
 
 	file.close();
 
-	return _sim_list;
+	return sim_list;
 }
 std::string ConfReader::remove_leading_whitespace(std::string line)
 {
@@ -114,42 +116,4 @@ std::string ConfReader::isolate_first_word(std::string line)
 	}
 	return std::string();
 }
-
-/*
-bool ConfReader::is_valid(std::string param, std::string val)
-{
-	if(param.empty() || val.empty()) return false;
-	if(param_map.find(param) == param_map.end()) return false;
-
-	int data_type = param_map.at(param);
-	bool return_flag = false;
-	switch(data_type)
-	{
-		case UNSIGNED_INTEGER_TYPE:
-			return_flag = check_uint_type(val);
-			break;
-
-		case DOUBLE_TYPE:
-			return_flag = check_double_type(val);
-			break;
-
-		case STRING_TYPE:
-			return_flag = check_string_type(val);
-			break;
-
-		case BOOL_TYPE:
-			return_flag = check_bool_type(val);
-			break;
-
-		case MAP_TYPE:
-			return_flag = check_map_type(val);
-			break;
-		
-		default:
-			break;
-	}
-
-	return return_flag;
-}
-*/
 

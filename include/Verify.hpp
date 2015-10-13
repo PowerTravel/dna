@@ -17,6 +17,10 @@
 	"STRIDE_LEN" = UNSIGNED_INTEGER_TYPE;
 	"GROWTH" = DOUBLE_TYPE;
 	"SAMPLES" = UNSIGNED_INTEGER_TYPE;
+
+	Output:
+	A file with columns:
+	Nr links,  Mean distance, Variance, Theoretical, Log of error
 */
 
 class Verify : public  Simulation{
@@ -55,10 +59,10 @@ class Verify : public  Simulation{
 		Eigen::ArrayXd mRadGyr_err; 	// Log of deviation from theoretical
 
 		// Result arrays for center of mass
-		Eigen::ArrayXd CM;				// Center of mass
-		Eigen::ArrayXd CM_var;			// Variance
-		Eigen::ArrayXd CM_teo; 			// Theoretical
-		Eigen::ArrayXd CM_err;  		// Error
+		Eigen::ArrayXXd CM;				// Center of mass
+		Eigen::ArrayXXd CM_var;			// Variance
+		Eigen::ArrayXXd CM_teo; 			// Theoretical
+		Eigen::ArrayXXd CM_err;  		// Error
 
 		// write progress to terminal
 		bool _verbose;					// Plot to terminal?
@@ -74,6 +78,9 @@ class Verify : public  Simulation{
 		void write_to_terminal(int N, int i, int j);
 		void write_to_file();
 		void set_chain_type();
+
+
+		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data );
 };
 
 #endif //  VERIFY_HPP

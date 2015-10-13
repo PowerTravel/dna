@@ -3,12 +3,7 @@ project (DNA)
 
 add_executable(dna
 	src/main.cpp
-	src/Chain.cpp
-	src/Sphere.cpp
-	src/Spring.cpp
-	src/RandomEngine.cpp
 	src/RChain.cpp
-	src/ChainStatistics.cpp
 
 	src/ConfReader.cpp
 

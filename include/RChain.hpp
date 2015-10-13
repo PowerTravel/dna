@@ -46,7 +46,13 @@ class RChain
 		void build(int N, ChainType c = FG);
 		
 		double get_mean_squared_distance();
+		double get_mean_squared_distance(int start, int end);
 		double get_rad_of_gyr();
+		double get_rad_of_gyr(int start, int end);
+		Eigen::Vector3d get_CM();
+		Eigen::Vector3d get_CM(int start, int end);
+
+		
 		
 		friend std::ostream& operator<<(std::ostream& os, const RChain& c);
 	private:
