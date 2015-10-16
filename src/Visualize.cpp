@@ -1,5 +1,5 @@
 #include "Visualize.hpp"
-#include "RChain.hpp"
+#include "Chain.hpp"
 #include <iostream>
 Visualize::Visualize()
 {
@@ -27,9 +27,8 @@ void Visualize::apply()
 {
 	print_pre_info();
 
-
-	RChain c = RChain();
-	c.build(_size,RChain::ChainType::SAW);
+	Chain c = Chain();
+	c.build(_size,Chain::ChainType::SAW);
 	// Print to file
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);

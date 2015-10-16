@@ -3,7 +3,7 @@ project (DNA)
 
 add_executable(dna
 	src/main.cpp
-	src/RChain.cpp
+	src/Chain.cpp
 
 	src/ConfReader.cpp
 

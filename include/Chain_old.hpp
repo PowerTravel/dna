@@ -1,11 +1,10 @@
-
-#ifndef RCHAIN_HPP
-#define RCHAIN_HPP
+#ifndef CHAIN_HPP
+#define CHAIN_HPP
 
 
 
 #ifndef MAX_GRID_SIZE
-#define MAX_GRID_SIZE 1000
+#define MAX_GRID_SIZE 10000
 #endif // MAX_GRID_SIZE
 
 #ifndef NR_OF_DIRECTIONS
@@ -23,40 +22,37 @@
 #include <string>
 #include <fstream>
 
-
-#include <functional>
-
-
 #include "Sphere.hpp"
 #include "Spring.hpp"
 class Chain
 {
 	public:
-		enum ChainType{
-			PHANTOM,
-			SAW,
-			FG
-		};
-
 		Chain();
 		virtual ~Chain();
 		
 		void update(double dt = 0.01);
 
-		void build(int N, ChainType c = FG);
+		// Generera kedjan i en spatial haschmap
+		void generateGlobule(int N);
 		
-		double get_mean_squared_distance();
-		double get_mean_squared_distance(int start, int end);
-		double get_rad_of_gyr();
-		double get_rad_of_gyr(int start, int end);
-		Eigen::Vector3d get_CM();
-		Eigen::Vector3d get_CM(int start, int end);
 
-		
+		double get_mean_squared_distance(int start, int end);
+		double get_mean_squared_distance();
 		
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
+		int _redo;
 	private:
 
+
+		//Random Walk
+		Eigen::Vector3d getNextStep_random();
+		Eigen::Vector3d getNextStep_selfAvoiding();
+
+
+		struct knot{
+			int start;
+			int len;
+		};
 
 		struct link{
 			link(){
@@ -73,27 +69,26 @@ class Chain
 			Eigen::Vector3d pos;
 		};
 
+		bool _verbose;
+
 		static std::default_random_engine _generator;
 
-		ChainType _ct;
 		int _N;
 		int _n;
 
-		std::vector< link > _chain;
-		std::map<long long,bool> _grid;
+		std::vector< link > _globule;
+		std::vector< knot > _knots;
+		int _knots_check;
 
-		long long hash_fun(Eigen::Vector3d x);
+		int hash_fun(Eigen::Vector3d x);
+
 		Eigen::Vector3d int_to_coord(int i);
+		int coord_to_int(Eigen::Vector3d pos);
 
-
-		Eigen::Vector3d getNextStep();
-
+		Eigen::Vector3d getNextStep_globule(std::map<int,int>& m);
+		Eigen::VectorXd get_stepping_PDF(std::map<int,int>& m);
 		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
-	
-
-		Eigen::VectorXd get_pdf();
-		Eigen::VectorXd fractal_globule();
-		Eigen::VectorXd self_avoiding();
+		Eigen::Vector3d nextStep(Eigen::VectorXd F);
 };
 
-#endif // RCHAIN_HPP
+#endif // CHAIN_HPP

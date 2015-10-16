@@ -2,17 +2,17 @@
 % This config is if no other configfile is called
 
 RUN: verify
- 	NR_STRIDES: 14
+ 	NR_STRIDES: 50
 	STRIDE_LEN: 10
-	GROWTH: 1.5
+	GROWTH: 1.1
 	SAMPLES: 100
 
 	TYPE: phantom
 	VERBOSE: true
-	OUTFILE: ../data/default_data.dna
+	OUTFILE: ../data/Verify_Default.dna
 
 RUN: visualize
-	OUTFILE: ../data/default_visualize_data.dna
+	OUTFILE: ../data/Visualize_Default.dna
 	SIZE: 10
 
 	VERBOSE: true

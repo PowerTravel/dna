@@ -3,13 +3,12 @@
 
 #ifndef THEORETICAL_SLOPES
 #define PHANTOM_SLOPE 1/2.f
-//#define SAW_SLOPE 3/(2.f+3.f)
 #define SAW_SLOPE 0.588
 #define GLOBULE_SLOPE 1/3.f
 #endif // THEORETICAL_SLOPES
 
 #include "Simulation.hpp" 
-#include "RChain.hpp"
+#include "Chain.hpp"
 #include <Eigen/Dense>
 /*
 	Valid parameters
@@ -39,8 +38,9 @@ class Verify : public  Simulation{
 		double _growth;
 		int _samples;
 
-		RChain::ChainType _t;
+		Chain::ChainType _t;
 		double _theoretical_slope;
+		double _theoretical_Rg_slope;
 		
 		
 		// Global
@@ -50,19 +50,19 @@ class Verify : public  Simulation{
 		Eigen::ArrayXd mDist;  			// End to end distance of chains
 		Eigen::ArrayXd mDist_var;		// Variance
 		Eigen::ArrayXd mDist_theo;   	// Theoretical value
-		Eigen::ArrayXd mDist_err;		// Log of Error (for measuring slope)
+		Eigen::ArrayXd mDist_err;		// Relative Error
 
 		// Result arrays for mean Radious of gyration
 		Eigen::ArrayXd mRadGyr;   		// Radius of gyration
 		Eigen::ArrayXd mRadGyr_var; 	// Variance
-		Eigen::ArrayXd mRadGyr_teo; 	// Theoretical value
-		Eigen::ArrayXd mRadGyr_err; 	// Log of deviation from theoretical
+		Eigen::ArrayXd mRadGyr_theo; 	// Theoretical value
+		Eigen::ArrayXd mRadGyr_err; 	// Relative Error
 
 		// Result arrays for center of mass
 		Eigen::ArrayXXd CM;				// Center of mass
 		Eigen::ArrayXXd CM_var;			// Variance
-		Eigen::ArrayXXd CM_teo; 			// Theoretical
-		Eigen::ArrayXXd CM_err;  		// Error
+		Eigen::ArrayXXd CM_theo; 		// Theoretical
+		Eigen::ArrayXXd CM_err;  		// Relative Error
 
 		// write progress to terminal
 		bool _verbose;					// Plot to terminal?
