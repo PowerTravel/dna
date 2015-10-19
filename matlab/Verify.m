@@ -1,4 +1,4 @@
-
+%system('../_build/dna')
 
 A = importdata('../data/Verify_Default.dna');
 

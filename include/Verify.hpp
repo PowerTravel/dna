@@ -23,8 +23,6 @@
 	End distance, Variance, Theoretical, Relative error
 	Radius of gyration, Variance, Theoretical, Relative error
 	Center of mass, Variance, Theoretical, Relative error
-	
-
 */
 
 class Verify : public  Simulation{

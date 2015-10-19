@@ -93,14 +93,20 @@ void Verify::set_chain_type()
 			_t = Chain::ChainType::FG;
 			break;
 	}
-
 }
+
 void Verify::set_exponential_links()
 {
 	double N =(double) _size;
 	double s =(double) _strides;
 
-	double start_link = 2;
+//	double start_link = 2;
+	double start_link = N/100;
+
+	if(start_link<2){
+		start_link = 2;
+	}
+
 	double k = log(N /start_link ) / (s-1);
 
 	nr_links = Eigen::ArrayXd::Zero(s);
@@ -108,7 +114,6 @@ void Verify::set_exponential_links()
 	{
 		nr_links(i) = floor( start_link * exp(k * i) );
 	}
-
 }
 
 void Verify::set_linear_links()
@@ -183,7 +188,7 @@ void Verify::apply()
 	int max_idx = nr_links.size();
 	int measures = _samples;
 
-	int chain_length = _size;
+	int chain_length = nr_links(max_idx-1);
 
 	// Theoretical Values
 	CM_theo 	= Eigen::ArrayXXd::Zero(max_idx,3);
@@ -231,7 +236,6 @@ void Verify::apply()
 		mv = get_mean_and_variance(tmp_arr);
 		mDist(i) = mv(0);
 		mDist_var(i) = mv(1);
-		// Generate the theoretical slope
 		
 		// Center of mass 
 		for(int j = 0; j<3; j++)
