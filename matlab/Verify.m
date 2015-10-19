@@ -40,10 +40,10 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
 R_error = fit(log_n, log(R_err), f, 'StartPoint',[1 1]);
 R_error_slope = R_error.a;
 
-figure(2)
-hist(R_var);
-title('Variance of end to end distance vs nr of links');
-xlabel('# of links');
+% figure(2)
+% hist(R_var);
+% title('Variance of end to end distance vs nr of links');
+% xlabel('# of links');
 %% R_gyr
 Rg = A(:,6);
 Rg_var = A(:,7);
@@ -73,10 +73,10 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
                      ['average slope of measured data is: ',num2str(Rg_mean_slope), ...
                        ' +- ', num2str(cnf,1), char(10) ...
                        'with 95% confidence interval. Theoretical slope is ', num2str(fit2_t.a) ]);
-figure(4)
-hist(Rg_var);
-title('Variance of Radius of gyration vs nr of links');
-xlabel('# of links');
+% figure(4)
+% hist(Rg_var);
+% title('Variance of Radius of gyration vs nr of links');
+% xlabel('# of links');
 %% CM
 cm = A(:,10);
 cm_var = A(:,13);
@@ -105,7 +105,7 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
                      ['average slope of measured data is: ',num2str(cm_mean_slope), ...
                        ' +- ', num2str(cnf,1), char(10) ...
                        'with 95% confidence interval. Theoretical slope is ', num2str(fit3_t.a) ]);
-figure(6)
-hist(cm_var);
-title('Variance in Center of mass vs nr of links');
-xlabel('# of links');
+% figure(6)
+% hist(cm_var);
+% title('Variance in Center of mass vs nr of links');
+% xlabel('# of links');

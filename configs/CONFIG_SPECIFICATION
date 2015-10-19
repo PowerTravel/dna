@@ -37,10 +37,10 @@
 %				 	  of the chain. 
 %
 %			'Specific Parameter' for 'RUN: verify' is:
-%			NR_STRIDES: 'Unsigned integer' 	- # datapoints
-%			STRIDE_LEN: 'Unsigned integer' 	- The size of first chain
+%			SIZE: 		'Unsigned integer' 	- The size the longest chain
+%			STRIDES: 	'Unsigned integer' 	- # datapoints
 %			SAMPLES: 	'Unsigned integer' 	- # of samples for each stride.
-%			GROWTH: 	'Float' 			- The growth of each stride
+%			EXP: 		'Boolean' 			- If the strides should be spaced linearly or exponentially
 %	
 %		* visualize - Builds one chain which can be plotted in matlab
 %
@@ -67,20 +67,20 @@
 %
 %	Below is a working example of verify and visualize
 
+
 RUN: verify
- 	NR_STRIDES: 40
-	STRIDE_LEN: 10
-	GROWTH: 1.5
-	SAMPLES: 30
+	SIZE: 10000
+ 	STRIDES: 50
+	SAMPLES: 50
+	EXP: true
 
-	TYPE: phantom
-	OUTFILE: ../data/verify_data.dna
+
+	TYPE: saw
 	VERBOSE: true
-
+	OUTFILE: ../data/Verify_Default.dna
 
 RUN: visualize
-	SIZE: 400
-	
-	TYPE: saw
-	OUTFILE: ../data/visualize_chain.dna  
-	VERBOSE: false
+	SIZE: 10
+
+	VERBOSE: true
+	OUTFILE: ../data/Visualize_Default.dna

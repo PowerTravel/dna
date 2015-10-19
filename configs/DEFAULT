@@ -1,13 +1,14 @@
 % The default config which gives a basic fast simulation. 
 % This config is if no other configfile is called
 
-RUN: verify
- 	NR_STRIDES: 50
-	STRIDE_LEN: 10
-	GROWTH: 1.1
-	SAMPLES: 100
 
-	TYPE: saw
+RUN: verify
+	SIZE: 10000
+ 	STRIDES: 50
+	EXP: true
+	SAMPLES: 50
+
+	TYPE: phantom
 	VERBOSE: true
 	OUTFILE: ../data/Verify_Default.dna
 

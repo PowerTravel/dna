@@ -23,23 +23,23 @@ Verify::~Verify()
 
 void Verify::init_simulaition_parameters(std::map<std::string, std::string> sm)
 {
-	if( sm.find("NR_STRIDES") != sm.end() )
+	if( sm.find("SIZE") != sm.end() )
 	{
-		_nr_strides  = text_to_int(sm["NR_STRIDES"]);
+		_size  = text_to_int(sm["SIZE"]);
 	}else{
 		_valid = false;
 	}
 
-	if( sm.find("STRIDE_LEN") != sm.end() )
+	if( sm.find("STRIDES") != sm.end() )
 	{
-		_stride_len  = text_to_int(sm["STRIDE_LEN"]);
+		_strides  = text_to_int(sm["STRIDES"]);
 	}else{
 		_valid = false;
 	}
 
-	if( sm.find("GROWTH") != sm.end() )
+	if( sm.find("EXP") != sm.end() )
 	{
-		_growth  = text_to_double(sm["GROWTH"]);
+		_exp  = text_to_bool(sm["EXP"]);
 	}else{
 		_valid = false;
 	}
@@ -51,55 +51,25 @@ void Verify::init_simulaition_parameters(std::map<std::string, std::string> sm)
 		_valid = false;
 	}
 	
-}
-
-void Verify::init_plotting_parameters()
-{
-	double interval = 1; // How big our update step should be,
-						 // 1== update every time
-	_increment = 1.f/(_nr_strides*_samples);
-	_plot_interval = interval * _increment;
-	_percent = 0.0;
-}
-
-void Verify::init_arrays()
-{
-	// Global
-	nr_links    = Eigen::ArrayXd::Zero(_nr_strides);
+	if(_valid){
 	
-	// Result arrays for mean distance
-	mDist   	= Eigen::ArrayXd::Zero(_nr_strides);
-	mDist_var	= Eigen::ArrayXd::Zero(_nr_strides);
-	mDist_theo  = Eigen::ArrayXd::Zero(_nr_strides);
-	mDist_err	= Eigen::ArrayXd::Zero(_nr_strides);
+		double N =(double) _size;
+		double s =(double) _strides;
 
-	// Result arrays for mean Radious of gyration
-	mRadGyr   	= Eigen::ArrayXd::Zero(_nr_strides);
-	mRadGyr_var = Eigen::ArrayXd::Zero(_nr_strides);
-	mRadGyr_theo= Eigen::ArrayXd::Zero(_nr_strides);
-	mRadGyr_err = Eigen::ArrayXd::Zero(_nr_strides);
+		if( N/s < 1 )
+		{
+			_valid = false;
+		}else{
 
-	// Result arrays for center of mass
-	CM   		= Eigen::ArrayXXd::Zero(_nr_strides,3);
-	CM_var   	= Eigen::ArrayXXd::Zero(_nr_strides,3);
-	CM_theo 	= Eigen::ArrayXXd::Zero(_nr_strides,3);
-	CM_err   	= Eigen::ArrayXXd::Zero(_nr_strides,3);
-	
-}
-void Verify::print(std::ostream& os)
-{
-	os <<"Simulation = Verify" << std::endl;
-	if(_valid)
-	{
-		os <<"Out File   = " << _outfile << std::endl;
-		os <<"Nr Strides = " << _nr_strides << std::endl;
-		os <<"Stride Len = " << _stride_len << std::endl;
-		os <<"Growth     = " << _growth << std::endl;
-		os <<"Samples    = " << _samples;
-	}else{
-		os << "Simulation failed to load.";
+			if(_exp)
+			{
+				set_exponential_links();
+			}else{
+				set_linear_links();
+			}
+		}
 	}
-};
+}
 
 void Verify::set_chain_type()
 {
@@ -125,22 +95,98 @@ void Verify::set_chain_type()
 	}
 
 }
+void Verify::set_exponential_links()
+{
+	double N =(double) _size;
+	double s =(double) _strides;
+
+	double start_link = 2;
+	double k = log(N /start_link ) / (s-1);
+
+	nr_links = Eigen::ArrayXd::Zero(s);
+	for(int i = 0; i< s; i++)
+	{
+		nr_links(i) = floor( start_link * exp(k * i) );
+	}
+
+}
+
+void Verify::set_linear_links()
+{
+	double N =(double) _size;
+	double s =(double) _strides;
+	_step_size = N /s;
+	if(_step_size < 2)
+	{
+		_start_link = 2;
+		_strides = _strides - 1;
+	}else{
+		_start_link = floor(_step_size);	
+	}
+
+	nr_links = Eigen::ArrayXd::Zero(_strides);
+	for(int i = 0; i<_strides; i++)
+	{
+		nr_links(i) =floor( i * _step_size ) + _start_link;
+	}
+}
+
+void Verify::init_plotting_parameters()
+{
+	double interval = 1; // How big our update step should be,
+						 // 1== update every time
+	_increment = 1.f/(_strides*_samples);
+	_plot_interval = interval * _increment;
+	_percent = 0.0;
+}
+void Verify::init_arrays()
+{
+	// Result arrays for mean distance
+	mDist   	= Eigen::ArrayXd::Zero(_strides);
+	mDist_var	= Eigen::ArrayXd::Zero(_strides);
+	mDist_theo  = Eigen::ArrayXd::Zero(_strides);
+	mDist_err	= Eigen::ArrayXd::Zero(_strides);
+
+	// Result arrays for mean Radious of gyration
+	mRadGyr   	= Eigen::ArrayXd::Zero(_strides);
+	mRadGyr_var = Eigen::ArrayXd::Zero(_strides);
+	mRadGyr_theo= Eigen::ArrayXd::Zero(_strides);
+	mRadGyr_err = Eigen::ArrayXd::Zero(_strides);
+
+	// Result arrays for center of mass
+	CM   		= Eigen::ArrayXXd::Zero(_strides,3);
+	CM_var   	= Eigen::ArrayXXd::Zero(_strides,3);
+	CM_theo 	= Eigen::ArrayXXd::Zero(_strides,3);
+	CM_err   	= Eigen::ArrayXXd::Zero(_strides,3);
+	
+}
+
+void Verify::print(std::ostream& os)
+{
+	os <<"Simulation = Verify" << std::endl;
+	if(_valid)
+	{
+		os <<"Out File   = " << _outfile << std::endl;
+		os <<"Chain Size = " << _size<< std::endl;
+		os <<"Nr Strides = " << _strides << std::endl;
+		os <<"Samples    = " << _samples;
+		os <<"Exponential= " << _exp << std::endl;
+	}else{
+		os << "Simulation failed to load.";
+	}
+};
+
 void Verify::apply()
 {
 	print_pre_info();
 
-	int max_idx = _nr_strides;
+	int max_idx = nr_links.size();
 	int measures = _samples;
 
-	nr_links(0) = _stride_len;
-	for(int i = 1; i<max_idx; i++)
-	{
-		nr_links(i) = nr_links(i-1)*_growth;
-	}
-	int chain_length = nr_links(max_idx-1);
+	int chain_length = _size;
 
 	// Theoretical Values
-	CM_theo 	= Eigen::ArrayXXd::Zero(_nr_strides,3);
+	CM_theo 	= Eigen::ArrayXXd::Zero(max_idx,3);
 	mDist_theo  = nr_links.pow(_theoretical_slope);
 	mRadGyr_theo= nr_links.pow(_theoretical_Rg_slope);
 
@@ -227,7 +273,7 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
 
 void Verify::write_to_file()
 {
-	int idx = _nr_strides;
+	int idx = nr_links.size();
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 21);
 	result.block(0,0,idx,1) = nr_links;
 	result.block(0,1,idx,1) = mDist;

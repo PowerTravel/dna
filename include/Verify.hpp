@@ -12,14 +12,19 @@
 #include <Eigen/Dense>
 /*
 	Valid parameters
-	"NR_STRIDES" = UNSIGNED_INTEGER_TYPE;
-	"STRIDE_LEN" = UNSIGNED_INTEGER_TYPE;
-	"GROWTH" = DOUBLE_TYPE;
+	"SIZE" = UNSIGNED_INTEGER_TYPE
+	"STRIDES" = UNSIGNED_INTEGER_TYPE;
+	"EXP" = BOOL_TYPE;
 	"SAMPLES" = UNSIGNED_INTEGER_TYPE;
 
 	Output:
 	A file with columns:
-	Nr links,  Mean distance, Variance, Theoretical, Log of error
+	Nr links,  
+	End distance, Variance, Theoretical, Relative error
+	Radius of gyration, Variance, Theoretical, Relative error
+	Center of mass, Variance, Theoretical, Relative error
+	
+
 */
 
 class Verify : public  Simulation{
@@ -33,10 +38,15 @@ class Verify : public  Simulation{
 		void apply();
 		
 	private:
-		int _nr_strides;
-		int _stride_len;
-		double _growth;
+		int _size;
+		int _strides;
+		bool _exp;
 		int _samples;
+
+		double _step_size;
+		double _growth_factor;
+		int _start_link;
+
 
 		Chain::ChainType _t;
 		double _theoretical_slope;
@@ -72,6 +82,8 @@ class Verify : public  Simulation{
 
 
 		void init_arrays();
+		void set_linear_links();
+		void set_exponential_links();
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		
 		void init_plotting_parameters();

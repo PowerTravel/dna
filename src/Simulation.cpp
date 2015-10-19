@@ -118,20 +118,20 @@ std::map<int, std::string> Simulation::create_simulation_dictionary()
 std::map<std::string , int> Simulation::create_parameter_map()
 {
 	std::map<std::string, int> m;
-	
+	// General	
 	m["RUN"] = MAP_TYPE;
 	m["TYPE"] = MAP_TYPE;
 	m["OUTFILE"] = STRING_TYPE;
 	m["VERBOSE"] = BOOL_TYPE;
 
 	// verify
-	m["NR_STRIDES"] =UNSIGNED_INTEGER_TYPE;
-	m["STRIDE_LEN"] =UNSIGNED_INTEGER_TYPE;
-	m["GROWTH"] = DOUBLE_TYPE;
+	m["SIZE"] = UNSIGNED_INTEGER_TYPE;  // Visualize also
+	m["STRIDES"] = UNSIGNED_INTEGER_TYPE;
+	m["EXP"] = BOOL_TYPE;
 	m["SAMPLES"]= UNSIGNED_INTEGER_TYPE;
 
 	// Visualize
-	m["SIZE"] = UNSIGNED_INTEGER_TYPE;
+//	m["SIZE"] = UNSIGNED_INTEGER_TYPE;
 
 	return m;
 }
