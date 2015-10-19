@@ -7,7 +7,7 @@ RUN: verify
 	GROWTH: 1.1
 	SAMPLES: 100
 
-	TYPE: phantom
+	TYPE: saw
 	VERBOSE: true
 	OUTFILE: ../data/Verify_Default.dna
 

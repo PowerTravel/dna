@@ -125,7 +125,6 @@ void Verify::set_chain_type()
 	}
 
 }
-
 void Verify::apply()
 {
 	print_pre_info();
@@ -180,7 +179,7 @@ void Verify::apply()
 		Eigen::ArrayXd tmp_arr = Eigen::ArrayXd::Zero(measures);
 		Eigen::Vector2d mv = Eigen::Vector2d::Zero();
 
-		/*  Mean square dispacement  */
+		// Mean square dispacement 
 		// Calculate the mean and variance
 		tmp_arr = mDist_tmp.col(i);
 		mv = get_mean_and_variance(tmp_arr);
@@ -188,7 +187,7 @@ void Verify::apply()
 		mDist_var(i) = mv(1);
 		// Generate the theoretical slope
 		
-		/* Center of mass */
+		// Center of mass 
 		for(int j = 0; j<3; j++)
 		{
 			mv = get_mean_and_variance(CM_tmp.col(3*i+j));
@@ -196,7 +195,7 @@ void Verify::apply()
 			CM_var(i,j) = mv(1);
 		}
 
-		/* Radius of gyration */
+		// Radius of gyration 
 		mv = get_mean_and_variance(mRadGyr_tmp.col(i));
 		mRadGyr(i) = mv(0);
 		mRadGyr_var(i) = mv(1);
@@ -228,33 +227,28 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
 
 void Verify::write_to_file()
 {
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(_nr_strides, 21);
-	result.block(0,0,_nr_strides,1) = nr_links;
-	result.block(0,1,_nr_strides,1) = mDist;
-	result.block(0,2,_nr_strides,1) = mDist_var;
-	result.block(0,3,_nr_strides,1) = mDist_theo;
-	result.block(0,4,_nr_strides,1) = mDist_err;
+	int idx = _nr_strides;
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 21);
+	result.block(0,0,idx,1) = nr_links;
+	result.block(0,1,idx,1) = mDist;
+	result.block(0,2,idx,1) = mDist_var;
+	result.block(0,3,idx,1) = mDist_theo;
+	result.block(0,4,idx,1) = mDist_err;
 
-	result.block(0,5,_nr_strides,1) = mRadGyr;
-	result.block(0,6,_nr_strides,1) = mRadGyr_var;
-	result.block(0,7,_nr_strides,1) = mRadGyr_theo;
-	result.block(0,8,_nr_strides,1) = mRadGyr_err;
+	result.block(0,5,idx,1) = mRadGyr;
+	result.block(0,6,idx,1) = mRadGyr_var;
+	result.block(0,7,idx,1) = mRadGyr_theo;
+	result.block(0,8,idx,1) = mRadGyr_err;
 
-	result.block(0,9,_nr_strides,3)  = CM;
-	result.block(0,12,_nr_strides,3) = CM_var;
-	result.block(0,15,_nr_strides,3) = CM_theo;
-	result.block(0,18,_nr_strides,3) = CM_err;
+	result.block(0,9, idx,3)  = CM;
+	result.block(0,12,idx,3) = CM_var;
+	result.block(0,15,idx,3) = CM_theo;
+	result.block(0,18,idx,3) = CM_err;
 
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open())
 	{
-//		file << "R\tRv\tRt\tRerr\t";
-//		file << "Rg\tEg_v\tRg_t\tRg_err\t"; 
-//		file << "cm_x\tcm_ycm_z\t";
-//		file << "cm_x_var\tcm_y_var\tcm_z_var\t";
-//		file << "cm_x_t\tcm_y_t\tcm_z_t\t";
-//		file << "cm_x_err\tcm_y_err\tcm_z_err\t" << std::endl;
 		file << result << std::endl;
 	}else{
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;

@@ -16,6 +16,8 @@ R_err = A(:,5);
 f = fittype('a*x+b');
 fit1 = fit(log_n,log( R ),f,'StartPoint',[1 1]);
 fit1_t = fit(log_n,log( R_theo ),f,'StartPoint',[1 1]);
+fit1_err = fit(n,R,f,'StartPoint',[1 1]);
+R_Error_increase = fit1_err.a
 
 figure(1);
 
@@ -39,7 +41,7 @@ R_error = fit(log_n, log(R_err), f, 'StartPoint',[1 1]);
 R_error_slope = R_error.a;
 
 figure(2)
-hist(R_var,size(R_var,1));
+hist(R_var);
 title('Variance of end to end distance vs nr of links');
 xlabel('# of links');
 %% R_gyr
@@ -51,6 +53,9 @@ Rg_err = A(:,9);
 f = fittype('a*x+b');
 fit2 = fit(log_n,log( Rg ),f,'StartPoint',[1 1]);
 fit2_t = fit(log_n,log( Rg_theo ),f,'StartPoint',[1 1]);
+fit2_err = fit(n,Rg_err,f,'StartPoint',[1 1]);
+R_Gyr_Error_increase = fit2_err.a
+
 
 figure(3);
 
@@ -69,7 +74,7 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
                        ' +- ', num2str(cnf,1), char(10) ...
                        'with 95% confidence interval. Theoretical slope is ', num2str(fit2_t.a) ]);
 figure(4)
-hist(Rg_var,size(Rg_var,1));
+hist(Rg_var);
 title('Variance of Radius of gyration vs nr of links');
 xlabel('# of links');
 %% CM
@@ -81,6 +86,9 @@ cm_err = A(:,19);
 f = fittype('a*x+b');
 fit3 = fit(n ,cm ,f,'StartPoint',[1 1]);
 fit3_t = fit(n ,cm_theo ,f,'StartPoint',[1 1]);
+fit3_err = fit(n,cm,f,'StartPoint',[1 1]);
+CM_Error_increase = fit3_err.a
+
 figure(5);
 
 cm_mean_slope = fit3.a;
@@ -98,6 +106,6 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
                        ' +- ', num2str(cnf,1), char(10) ...
                        'with 95% confidence interval. Theoretical slope is ', num2str(fit3_t.a) ]);
 figure(6)
-hist(cm_var,size(cm_var,1));
+hist(cm_var);
 title('Variance in Center of mass vs nr of links');
 xlabel('# of links');
