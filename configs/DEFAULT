@@ -4,11 +4,11 @@
 
 RUN: verify
 	SIZE: 1000
- 	STRIDES: 100
-	SAMPLES: 1000
+ 	STRIDES: 50
+	SAMPLES: 500
 	EXP: true
 
-	TYPE: phantom
+	TYPE: saw
 	VERBOSE: true
 	OUTFILE: ../data/Verify_Default.dna
 

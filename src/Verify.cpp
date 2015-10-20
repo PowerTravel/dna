@@ -101,7 +101,8 @@ void Verify::set_exponential_links()
 	double s =(double) _strides;
 
 //	double start_link = 2;
-	double start_link = N/100;
+//	double start_link = N/100;
+	double start_link = 10;
 
 	if(start_link<2){
 		start_link = 2;
@@ -264,7 +265,6 @@ void Verify::apply()
 	print_post_info();
 }
 
-
 Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
 {
 	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
@@ -274,7 +274,6 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
 	
 	return ret;
 }
-
 void Verify::write_to_file()
 {
 	int idx = nr_links.size();
