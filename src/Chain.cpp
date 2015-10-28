@@ -24,6 +24,8 @@ void Chain::update(double dt)
 
 void Chain::build(int N, ChainType c)
 {
+	path_chosen = Eigen::ArrayXd::Zero(6);
+
 	_N = N;
 	_ct = c;
 
@@ -43,6 +45,7 @@ void Chain::build(int N, ChainType c)
 		_grid[hash_fun(pos)] = true;
 	}
 	//std::cout <<_grid.size() <<" - " << _chain.size() << " = " << ((int)_grid.size()) - ((int) _chain.size()) << std::endl;
+//	std::cout << (path_chosen / path_chosen.sum()).transpose() << std::endl;
 }
 
 Eigen::Vector3d Chain::getNextStep(  )
@@ -59,12 +62,10 @@ Eigen::Vector3d Chain::getNextStep(  )
 	{
 		i++;	
 	}
+	path_chosen[i]++;
 
 	return int_to_coord(i);
 }
-
-
-
 
 Eigen::VectorXd Chain::get_pdf()
 {
@@ -82,9 +83,9 @@ Eigen::VectorXd Chain::get_pdf()
 	}
 	// Fractal Globule
 	else if(_ct == ChainType::FG){
-		std::cerr << "FRACTAL_GLOBULE NOT IMPLEMENTED"<< std::endl;	
-		exit(1);
-		//f = fractal_globule();
+	//	std::cerr << "FRACTAL_GLOBULE NOT IMPLEMENTED"<< std::endl;	
+	//	exit(1);
+		f = fractal_globule();
 	}else{
 		std::cerr <<_ct <<" is an invalid chainType. Creating Phantom"<< std::endl;	
 		exit(1);
@@ -95,7 +96,7 @@ Eigen::VectorXd Chain::get_pdf()
 
 Eigen::VectorXd Chain::self_avoiding()
 {
-	double A = 1000000;
+	double A = 100000;
 	double eps = 0.0001;
 	// Porbability Distribution of sites
  	Eigen::VectorXd f = Eigen::VectorXd::Zero(NR_OF_DIRECTIONS);
@@ -114,7 +115,7 @@ Eigen::VectorXd Chain::self_avoiding()
 			f(j) = A;
 		// else we set it to epsilon
 		}else{
-		//	std::cout << site.transpose() << " is occupied." << std::endl;
+			//std::cout << site.transpose() << " is occupied." << std::endl;
 			f(j) = eps;
 		}
 	}
@@ -126,7 +127,7 @@ Eigen::VectorXd Chain::self_avoiding()
 
 	return f/f.sum();
 }
-/*
+
 Eigen::VectorXd Chain::fractal_globule()
 {
 	double A = 10000;
@@ -170,6 +171,7 @@ Eigen::VectorXd Chain::fractal_globule()
 
 	// If we are in a place where all neighbouring places are occupied
 	// we have a knot
+	/*
 	if(occupied == NR_OF_DIRECTIONS)
 	{
 		_knots_check++;	
@@ -188,9 +190,10 @@ Eigen::VectorXd Chain::fractal_globule()
 				_knots.push_back(k);
 		}
 	}
+	*/
 	return f/f.sum();
 }
-*/
+
 Eigen::Vector3d Chain::int_to_coord(int i)
 {
 	Eigen::Vector3d idx(0,0,0);
@@ -255,6 +258,26 @@ long long Chain::hash_fun(Eigen::Vector3d x)
 	return p1 + p2 + p3;
 }
 		
+Eigen::ArrayXXd Chain::as_array()
+{
+	return as_array(0,_N);
+}
+Eigen::ArrayXXd Chain::as_array(int start, int end)
+{
+	Eigen::ArrayXXd ret = Eigen::ArrayXXd::Zero(end-start,3);
+	int i = 0;
+	for( int idx = start;  idx < end; idx++ )
+	{
+		Eigen::Vector3d v = _chain[idx].pos;
+		ret(i,0) = v(0);
+		ret(i,1) = v(1);
+		ret(i,2) = v(2);
+		i++;
+	}
+
+	return ret;
+}
+
 std::ostream& operator<<(std::ostream& os, const Chain& c)
 {
 	for( auto ptr = c._chain.begin(); ptr!= c._chain.end(); ptr++)
@@ -283,9 +306,9 @@ double Chain::get_mean_squared_distance()
 	return get_mean_squared_distance(0,_N);
 }
 
-double Chain::get_rad_of_gyr()
+double Chain::Rg()
 {
-	return get_rad_of_gyr(0,_N);
+	return Rg(0,_N);
 }
 
 
@@ -300,7 +323,27 @@ double Chain::get_mean_squared_distance(int start, int end)
 	return len.norm();
 }
 
-double Chain::get_rad_of_gyr(int start, int end)
+Eigen::Vector2d Chain::get_binned_mean_square_distance(int start, int end)
+{
+	Eigen::ArrayXd len = Eigen::ArrayXd::Zero(end-start);
+	int j = 0;
+	for(int i = start; i<end; i++)
+	{
+		len(j) +=get_mean_squared_distance(0,i);
+		j++;
+	}
+	double mean = len.sum()/( (double) len.size() );
+	double var = 0;
+	for(int i = 0; i<len.size(); i++)
+	{
+		var += pow(len(i) - mean,2);
+	}
+	var = var/len.size();
+
+	return Eigen::Vector2d(mean,var);
+}
+
+double Chain::Rg(int start, int end)
 {
 	Eigen::Vector3d mean = get_CM(start, end);
 	double var = 0;

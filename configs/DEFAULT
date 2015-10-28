@@ -3,20 +3,19 @@
 
 
 RUN: verify
-	SIZE: 1000
- 	STRIDES: 50
-	SAMPLES: 500
-	EXP: true
+	SIZE: 10000
+ 	STRIDES: 10
+	SAMPLES: 30
+	EXP: false
 
-	TYPE: saw
+	TYPE: phantom
 	VERBOSE: true
-	OUTFILE: ../data/Verify_Default.dna
+	OUTFILE: ../matlab/phantom/R.dna
 
-RUN: visualize
-	OUTFILE: ../data/Visualize_Default.dna
-	SIZE: 10
+%RUN: visualize
+%	OUTFILE: ../data/Visualize_Default.dna
+%	SIZE: 10
 
-	VERBOSE: false
-
+%	VERBOSE: false
 
 

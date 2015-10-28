@@ -11,10 +11,8 @@ Verify::Verify(std::map<std::string, std::string> sm) : Simulation(sm)
 	_simulation_type = val_map.at("verify");
 	init_simulaition_parameters(sm);
 	set_chain_type();
-
-	init_plotting_parameters();
 	
-	init_arrays();
+	init_plotting_parameters();
 }
 Verify::~Verify()
 {
@@ -50,25 +48,6 @@ void Verify::init_simulaition_parameters(std::map<std::string, std::string> sm)
 	}else{
 		_valid = false;
 	}
-	
-	if(_valid){
-	
-		double N =(double) _size;
-		double s =(double) _strides;
-
-		if( N/s < 1 )
-		{
-			_valid = false;
-		}else{
-
-			if(_exp)
-			{
-				set_exponential_links();
-			}else{
-				set_linear_links();
-			}
-		}
-	}
 }
 
 void Verify::set_chain_type()
@@ -79,6 +58,7 @@ void Verify::set_chain_type()
 			_theoretical_slope = PHANTOM_SLOPE;
 			_theoretical_Rg_slope = PHANTOM_SLOPE;
 			_t = Chain::ChainType::PHANTOM;
+
 			break;
 
 		case VAL_BIT_SAW:
@@ -88,83 +68,67 @@ void Verify::set_chain_type()
 			break;
 
 		case VAL_BIT_FG:
-			_theoretical_slope = GLOBULE_SLOPE;
-			_theoretical_Rg_slope = GLOBULE_SLOPE;
+			_theoretical_slope = FG_SLOPE;
+			_theoretical_Rg_slope = FG_SLOPE;
 			_t = Chain::ChainType::FG;
 			break;
 	}
 }
 
-void Verify::set_exponential_links()
+void Verify::set_plot_points()
 {
-	double N =(double) _size;
-	double s =(double) _strides;
+	Eigen::ArrayXd n = Eigen::ArrayXd::Zero(_strides+1);
 
-//	double start_link = 2;
-//	double start_link = N/100;
-	double start_link = 10;
+	double start_point = 100.f;
+	double N = (double) _size;
+	double steps =(double) _strides;
 
-	if(start_link<2){
-		start_link = 2;
+	double k = log(N / start_point) / steps; // exponential
+	
+	double dn = (N - start_point) / steps; // linear
+
+	for(int i = 0; i<steps+1; i++){
+		if(_exp)
+		{
+			n(i) = start_point * exp(k*i);
+		}else{
+			n(i) = i * dn + start_point;	
+		}
 	}
-
-	double k = log(N /start_link ) / (s-1);
-
-	nr_links = Eigen::ArrayXd::Zero(s);
-	for(int i = 0; i< s; i++)
-	{
-		nr_links(i) = floor( start_link * exp(k * i) );
-	}
+		
+	nr_links = n;
+	link_mean = (n.segment(0,steps) + n.segment(1,steps)) / 2;
 }
 
-void Verify::set_linear_links()
-{
-	double N =(double) _size;
-	double s =(double) _strides;
-	_step_size = N /s;
-	if(_step_size < 2)
-	{
-		_start_link = 2;
-		_strides = _strides - 1;
-	}else{
-		_start_link = floor(_step_size);	
-	}
 
-	nr_links = Eigen::ArrayXd::Zero(_strides);
-	for(int i = 0; i<_strides; i++)
+void Verify::set_theoretical_values()
+{
+	switch(_chain_type)
 	{
-		nr_links(i) =floor( i * _step_size ) + _start_link;
+		case VAL_BIT_PHANTOM: 
+			R_theo = PHANTOM_R_FF * link_mean.pow(PHANTOM_SLOPE);
+			Rg_theo = PHANTOM_RG_FF * link_mean.pow(PHANTOM_SLOPE);
+			break;
+
+		case VAL_BIT_SAW:
+			R_theo = link_mean.pow(SAW_SLOPE);
+			Rg_theo =0.4205 * link_mean.pow(SAW_SLOPE); // Forefactor from polymer
+														// textbook p 40 numerical
+			break;
+
+		case VAL_BIT_FG:
+			R_theo = link_mean.pow(FG_SLOPE);
+			Rg_theo =link_mean.pow(FG_SLOPE); // Forefactor from polymer
+			break;
 	}
 }
-
 void Verify::init_plotting_parameters()
 {
 	double interval = 1; // How big our update step should be,
 						 // 1== update every time
-	_increment = 1.f/(_strides*_samples);
+	_increment = 1.f/((_strides-1)*(_samples-1));
 	_plot_interval = interval * _increment;
 	_percent = 0.0;
-}
-void Verify::init_arrays()
-{
-	// Result arrays for mean distance
-	mDist   	= Eigen::ArrayXd::Zero(_strides);
-	mDist_var	= Eigen::ArrayXd::Zero(_strides);
-	mDist_theo  = Eigen::ArrayXd::Zero(_strides);
-	mDist_err	= Eigen::ArrayXd::Zero(_strides);
-
-	// Result arrays for mean Radious of gyration
-	mRadGyr   	= Eigen::ArrayXd::Zero(_strides);
-	mRadGyr_var = Eigen::ArrayXd::Zero(_strides);
-	mRadGyr_theo= Eigen::ArrayXd::Zero(_strides);
-	mRadGyr_err = Eigen::ArrayXd::Zero(_strides);
-
-	// Result arrays for center of mass
-	CM   		= Eigen::ArrayXXd::Zero(_strides,3);
-	CM_var   	= Eigen::ArrayXXd::Zero(_strides,3);
-	CM_theo 	= Eigen::ArrayXXd::Zero(_strides,3);
-	CM_err   	= Eigen::ArrayXXd::Zero(_strides,3);
-	
 }
 
 void Verify::print(std::ostream& os)
@@ -182,86 +146,82 @@ void Verify::print(std::ostream& os)
 	}
 };
 
+Eigen::ArrayXd Verify::get_R()
+{
+	return Eigen::ArrayXd::Zero(10);
+}
+
+
 void Verify::apply()
 {
 	print_pre_info();
 
-	int max_idx = nr_links.size();
-	int measures = _samples;
+	int steps = _strides;
+	int samples = _samples;
+	int N = _size;
 
-	int chain_length = nr_links(max_idx-1);
+	set_plot_points();
+	set_theoretical_values();
 
-	// Theoretical Values
-	CM_theo 	= Eigen::ArrayXXd::Zero(max_idx,3);
-	mDist_theo  = nr_links.pow(_theoretical_slope);
-	mRadGyr_theo= nr_links.pow(_theoretical_Rg_slope);
-
-	// Rows contain different measures
-	// columns contain different lengths,
-	Eigen::ArrayXXd mDist_tmp = Eigen::ArrayXXd::Zero(measures, max_idx);
-	Eigen::ArrayXXd mRadGyr_tmp = Eigen::ArrayXXd::Zero(measures, max_idx);
-	Eigen::ArrayXXd CM_tmp = Eigen::ArrayXXd::Zero(measures,3 * max_idx);
-	for(int i = 0; i<measures; i++)
+	Eigen::ArrayXXd binned_chain = Eigen::ArrayXXd::Zero(steps,3*samples);
+	
+	Eigen::ArrayXXd Rg_tmp = Eigen::ArrayXXd::Zero(steps,samples);
+	
+	for(int i = 0; i < samples; i++)
 	{
 		Chain c = Chain();
-		c.build(chain_length, _t);
-
-		// Gather mean distance data
-		for(int j = 0; j<max_idx; j++)
+		c.build(N ,_t);
+		
+		// bin values
+		for(int j = 0; j<steps; j++)
 		{
-			// Mean distance
-			mDist_tmp(i,j) = c.get_mean_squared_distance(0, nr_links(j));
+			Eigen::ArrayXXd sub_chain = c.as_array( nr_links(j), nr_links(j+1) );
 
-			// Radious of gyration
-			mRadGyr_tmp(i,j) = c.get_rad_of_gyr(0, nr_links(j));
-			
-			// Center of mass
-			Eigen::Array3d  tmp_cm = c.get_CM(0, nr_links(j));
-			CM_tmp.block(i,3*j,1,3) =CM_tmp.block(i,3*j,1,3) + tmp_cm.transpose();
+			binned_chain(j,3*i+0) = sub_chain.col(0).mean();
+			binned_chain(j,3*i+1) = sub_chain.col(1).mean();
+			binned_chain(j,3*i+2) = sub_chain.col(2).mean();
+
+
+			Rg_tmp(j,i) = c.Rg(0,floor(link_mean(j)));
+
 			if(verbose)
 			{
-				write_to_terminal(chain_length,i,j);
+				write_to_terminal(N,i,j);
 			}
 		}
 	}
-	// Calculate mean distance
-	for(int i = 0; i<max_idx; i++)
-	{
 
-		Eigen::ArrayXd tmp_arr = Eigen::ArrayXd::Zero(measures);
-		Eigen::Vector2d mv = Eigen::Vector2d::Zero();
-
-		// Mean square dispacement 
-		// Calculate the mean and variance
-		tmp_arr = mDist_tmp.col(i);
-		mv = get_mean_and_variance(tmp_arr);
-		mDist(i) = mv(0);
-		mDist_var(i) = mv(1);
-		
-		// Center of mass 
-		for(int j = 0; j<3; j++)
-		{
-			mv = get_mean_and_variance(CM_tmp.col(3*i+j));
-			CM(i,j) = mv(0);
-			CM_var(i,j) = mv(1);
-		}
-
-		// Radius of gyration 
-		mv = get_mean_and_variance(mRadGyr_tmp.col(i));
-		mRadGyr(i) = mv(0);
-		mRadGyr_var(i) = mv(1);
-	}
+	Eigen::ArrayXXd R_tmp = Eigen::ArrayXXd::Zero(steps,samples);
 	
-	// The log of the error between the theoretical and the measured distance	
-	// This can only be caluclated where I know the theoretical values
-	mDist_err = ((mDist - mDist_theo)/mDist_theo).abs();
+	R 		= Eigen::ArrayXd::Zero(steps);
+	R_var 	= Eigen::ArrayXd::Zero(steps);
 
-	CM_err = (CM - CM_theo)/(1+CM_theo).abs();
+	Rg 		= Eigen::ArrayXd::Zero(steps);
+	Rg_var 	= Eigen::ArrayXd::Zero(steps);
 
-	mRadGyr_err = (mRadGyr - mRadGyr_theo).abs()/mRadGyr_theo;
+	
+	for(int i = 0; i < steps; i++)
+	{
+		for(int j = 0; j < samples; j++)
+		{
+			Eigen::Vector3d pos  = binned_chain.block(i,3*j,1,3).transpose();
+			R_tmp(i,j) = pos.norm();
+
+		}
+	}
+
+	for(int i = 0; i<steps; i++)
+	{
+		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i));
+		R(i) = mv(0);
+		R_var(i) = mv(1);
+		
+		mv= get_mean_and_variance(Rg_tmp.row(i));
+		Rg(i) = mv(0);
+		Rg_var(i) = mv(1);
+	}
 
 	write_to_file();
-
 	print_post_info();
 }
 
@@ -270,30 +230,26 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
 	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
 	// Mean
 	ret(0) = in_data.sum()/((double) in_data.size());
-	ret(1) = (in_data-ret(0)).pow(2).sum();
+	ret(1) = (in_data-ret(0)).pow(2).sum()/((double) in_data.size());
 	
 	return ret;
 }
+
 void Verify::write_to_file()
 {
-	int idx = nr_links.size();
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 21);
-	result.block(0,0,idx,1) = nr_links;
-	result.block(0,1,idx,1) = mDist;
-	result.block(0,2,idx,1) = mDist_var;
-	result.block(0,3,idx,1) = mDist_theo;
-	result.block(0,4,idx,1) = mDist_err;
+	int idx = nr_links.size()-1;
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 23);
 
-	result.block(0,5,idx,1) = mRadGyr;
-	result.block(0,6,idx,1) = mRadGyr_var;
-	result.block(0,7,idx,1) = mRadGyr_theo;
-	result.block(0,8,idx,1) = mRadGyr_err;
+	result.block(0,0,idx,1) = link_mean;
+	result.block(0,1,idx,1) = R;
+	result.block(0,2,idx,1) = R_var;
+	result.block(0,3,idx,1) = R_theo;
+	
+	result.block(0,4,idx,1) = Rg;
+	result.block(0,5,idx,1) = Rg_var;
+	result.block(0,6,idx,1) = Rg_theo;
 
-	result.block(0,9, idx,3)  = CM;
-	result.block(0,12,idx,3) = CM_var;
-	result.block(0,15,idx,3) = CM_theo;
-	result.block(0,18,idx,3) = CM_err;
-
+	result.block(0,21,idx,1) = link_mean;
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open())
@@ -307,12 +263,7 @@ void Verify::write_to_file()
 
 void Verify::write_to_terminal(int N, int i, int j)
 {
-	double p = (i*_samples + j) * _increment;
-	if( (p > _percent) )
-	{
-		_percent += _plot_interval;
-		double disp_percentage = 100*(_percent+_plot_interval);
-		std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< disp_percentage << std::fixed << "%] "
+	double p = ( ( double) i*nr_links(nr_links.size()-1) + j) / ((double) _samples*nr_links(nr_links.size()-1)) * 100.f;
+		std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< p << std::fixed << "%] "
 			<<"Generating " << _samples <<" " <<dictionary.at(_chain_type) <<"s with " << N << " links. " <<  std::flush;
-	}
 }
