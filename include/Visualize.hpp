@@ -2,7 +2,7 @@
 #define VISUALIZE_HPP
 
 #include "Simulation.hpp"
-
+#include "PhantomChain.hpp"
 class Visualize : public Simulation {
 
 	public:

@@ -4,6 +4,8 @@ project (DNA)
 add_executable(dna
 	src/main.cpp
 	src/Chain.cpp
+	src/PhantomChain.cpp
+	src/SAWChain.cpp
 
 	src/ConfReader.cpp
 

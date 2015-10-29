@@ -57,20 +57,16 @@ void Verify::set_chain_type()
 		case VAL_BIT_PHANTOM: 
 			_theoretical_slope = PHANTOM_SLOPE;
 			_theoretical_Rg_slope = PHANTOM_SLOPE;
-			_t = Chain::ChainType::PHANTOM;
-
 			break;
 
 		case VAL_BIT_SAW:
 			_theoretical_slope = SAW_SLOPE;
 			_theoretical_Rg_slope = SAW_SLOPE;
-			_t = Chain::ChainType::SAW;
 			break;
 
 		case VAL_BIT_FG:
 			_theoretical_slope = FG_SLOPE;
 			_theoretical_Rg_slope = FG_SLOPE;
-			_t = Chain::ChainType::FG;
 			break;
 	}
 }
@@ -168,29 +164,34 @@ void Verify::apply()
 	Eigen::ArrayXXd Rg_tmp = Eigen::ArrayXXd::Zero(steps,samples);
 	
 	for(int i = 0; i < samples; i++)
-	{
-		Chain c = Chain();
-		c.build(N ,_t);
-		
+	{	
+		if(_c != NULL)
+		{
+			_c->build(N);
+		}else{
+			std::cerr << "VERIFY::APPLY Chain IS NULL" << std::endl;
+			exit(1);
+		}
+		std::cout << _c->weight() << std::endl;	
 		// bin values
 		for(int j = 0; j<steps; j++)
 		{
-			Eigen::ArrayXXd sub_chain = c.as_array( nr_links(j), nr_links(j+1) );
+			Eigen::ArrayXXd sub_chain = _c->as_array( nr_links(j), nr_links(j+1)-nr_links(j) ).transpose();
+
 
 			binned_chain(j,3*i+0) = sub_chain.col(0).mean();
 			binned_chain(j,3*i+1) = sub_chain.col(1).mean();
 			binned_chain(j,3*i+2) = sub_chain.col(2).mean();
 
 
-			Rg_tmp(j,i) = c.Rg(0,floor(link_mean(j)));
-
-			if(verbose)
-			{
-				write_to_terminal(N,i,j);
-			}
+			Rg_tmp(j,i) = _c->Rg(0,floor(link_mean(j)));
+		}
+		if(verbose)
+		{
+			write_to_terminal(N,i,steps);
 		}
 	}
-
+	
 	Eigen::ArrayXXd R_tmp = Eigen::ArrayXXd::Zero(steps,samples);
 	
 	R 		= Eigen::ArrayXd::Zero(steps);

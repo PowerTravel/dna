@@ -14,6 +14,7 @@ Simulation::Simulation()
 {
 	_valid = false;
 	_complete = false;
+	_c = NULL;
 }
 
 Simulation::Simulation(std::map<std::string, std::string> sm)
@@ -27,7 +28,11 @@ Simulation::Simulation(std::map<std::string, std::string> sm)
 
 Simulation::~Simulation()
 {
-
+	if(_c!= NULL)
+	{
+		delete _c;
+		_c = NULL;
+	}
 }
 		
 void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
@@ -35,6 +40,20 @@ void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 	if( sm.find("TYPE") != sm.end())
 	{
 		_chain_type = val_map.at(sm["TYPE"]);
+		switch(_chain_type)
+		{
+			case VAL_BIT_PHANTOM: 
+				_c = new PhantomChain();
+				break;
+		
+			case VAL_BIT_SAW:
+				_c = new SAWChain();
+				break;
+		
+			case VAL_BIT_FG:
+				_c = NULL;
+				break;
+		}
 	}else{
 		_chain_type = DEFAULT_TYPE;
 	}

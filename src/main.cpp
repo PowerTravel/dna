@@ -3,13 +3,14 @@
 #include <memory>
 #include "ConfReader.hpp"
 #include "Simulation.hpp"
-
+#include "PhantomChain.hpp"
 /*
  * 	Program dna
  *	Generates a fractal globule and prints data to a file
  */
 
 
+#include <Eigen/Dense>
 int main(int argc, char* argv[])
 {
 	std::string config;
@@ -28,5 +29,6 @@ int main(int argc, char* argv[])
 		p = *it;
 		p->apply();
 	}
+
 	return 0;
 }

@@ -3,12 +3,12 @@
 
 
 RUN: verify
-	SIZE: 10000
+	SIZE: 1000
  	STRIDES: 10
-	SAMPLES: 30
-	EXP: false
+	SAMPLES: 100
+	EXP: true
 
-	TYPE: phantom
+	TYPE: saw
 	VERBOSE: true
 	OUTFILE: ../matlab/phantom/R.dna
 

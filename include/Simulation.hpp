@@ -31,6 +31,9 @@
 #include <fstream>
 #include <random>
 
+#include "SAWChain.hpp"
+#include "PhantomChain.hpp"
+
 // A basic simulation class containing general simulation parameters
 // Every new simulation will have a new derived simulation class
 
@@ -54,6 +57,8 @@ class Simulation
 		virtual void apply() = 0;
 		virtual void print(std::ostream& os)= 0;
 	protected:
+		Chain * _c;
+
 		bool _valid;
 		bool _complete;
 		// General Parameters
@@ -61,7 +66,7 @@ class Simulation
 		int _simulation_type;
 		std::string _outfile;
 		bool verbose;
-		
+
 		bool text_to_bool(std::string l);
 		int text_to_int(std::string l);
 		double text_to_double(std::string l);

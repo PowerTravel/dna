@@ -27,8 +27,9 @@ void Visualize::apply()
 {
 	print_pre_info();
 
-	Chain c = Chain();
-	c.build(_size,Chain::ChainType::SAW);
+	PhantomChain c = PhantomChain();
+	//c.build(_size,Chain::ChainType::SAW);
+	c.build(_size);
 	// Print to file
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);

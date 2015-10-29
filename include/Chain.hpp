@@ -19,7 +19,6 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <random>
-#include <map>
 #include <string>
 #include <fstream>
 
@@ -29,75 +28,31 @@
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
+ 
+
+// Base class for chains
 class Chain
 {
 	public:
-		enum ChainType{
-			PHANTOM,
-			SAW,
-			FG
-		};
-
 		Chain();
 		virtual ~Chain();
 		
-		void update(double dt = 0.01);
+		virtual void build(int N) = 0;
+		Eigen::ArrayXXd as_array(int start, int size);
+		double Rg(int start, int size);
+		Eigen::Array3d cm(int start, int size);
 
-		void build(int N, ChainType c = FG);
-		
-		double get_mean_squared_distance();
-		double get_mean_squared_distance(int start, int end);
-		Eigen::Vector2d get_binned_mean_square_distance(int start, int end);
-		double Rg();
-		double Rg(int start, int end);
-		Eigen::Vector3d get_CM();
-		Eigen::Vector3d get_CM(int start, int end);
+		int len();
+		double weight();
 
-		Eigen::ArrayXXd as_array(int start, int end);
-		Eigen::ArrayXXd as_array();
-		
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
-	private:
+	protected:
+		Eigen::ArrayXXd _chain;
+		double _weight;
 
-
-		struct link{
-			link(){
-				nr=0;
-				pos = Eigen::Vector3d(0,0,0);
-			};
-			link(int n, Eigen::Vector3d p)
-			{
-				nr = n;
-				pos = p;
-			};
-		
-			int nr;
-			Eigen::Vector3d pos;
-		};
-
+		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
 
-		ChainType _ct;
-		int _N;
-		int _n;
-
-		Eigen::ArrayXd path_chosen;
-
-		std::vector< link > _chain;
-		std::map<long long,bool> _grid;
-
-		long long hash_fun(Eigen::Vector3d x);
-		Eigen::Vector3d int_to_coord(int i);
-
-
-		Eigen::Vector3d getNextStep();
-
-		Eigen::VectorXd PDF_to_CDF(Eigen::VectorXd f);
-	
-
-		Eigen::VectorXd get_pdf();
-		Eigen::VectorXd fractal_globule();
-		Eigen::VectorXd self_avoiding();
 };
 
 #endif // RCHAIN_HPP

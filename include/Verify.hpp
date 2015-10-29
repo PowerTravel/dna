@@ -17,7 +17,7 @@
 #endif // THEORETICAL_FOREFACTORS
 
 #include "Simulation.hpp" 
-#include "Chain.hpp"
+#include "PhantomChain.hpp"
 #include <Eigen/Dense>
 /*
 	Valid parameters
@@ -53,7 +53,7 @@ class Verify : public  Simulation{
 		double _step_size;
 
 
-		Chain::ChainType _t;
+		//Chain::ChainType _t;
 		double _theoretical_slope;
 		double _theoretical_Rg_slope;
 	
