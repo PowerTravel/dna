@@ -13,15 +13,16 @@ const std::map<int, std::string> Simulation::dictionary =
 Simulation::Simulation()
 {
 	_valid = false;
-	_complete = false;
 	_c = NULL;
 }
 
 Simulation::Simulation(std::map<std::string, std::string> sm)
 {
 	// Checks that all commands are valid
+	_c = NULL;
 	_valid =  is_valid(sm);
 	if(_valid){
+
 		set_general_parameters(sm);
 	}
 }
@@ -40,22 +41,10 @@ void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 	if( sm.find("TYPE") != sm.end())
 	{
 		_chain_type = val_map.at(sm["TYPE"]);
-		switch(_chain_type)
-		{
-			case VAL_BIT_PHANTOM: 
-				_c = new PhantomChain();
-				break;
-		
-			case VAL_BIT_SAW:
-				_c = new SAWChain();
-				break;
-		
-			case VAL_BIT_FG:
-				_c = NULL;
-				break;
-		}
+		allocateChain();
 	}else{
 		_chain_type = DEFAULT_TYPE;
+		allocateChain();
 	}
 
 	if( sm.find("OUTFILE") != sm.end())
@@ -71,6 +60,30 @@ void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 	}else{
 		verbose = DEFAULT_VERBOSE;
 	}
+}
+
+void Simulation::allocateChain()
+{
+		switch(_chain_type)
+		{
+			case VAL_BIT_PHANTOM: 
+				_c = new PhantomChain();
+				break;
+		
+			case VAL_BIT_SAW:
+				_c = new SAWChain();
+				break;
+		
+			case VAL_BIT_FG:
+				_c = new FractalGlobule();
+				//_c = NULL;
+				//std::cout << "In Simulation.src:allocateChain - FractalGlobule not implemented"<< std::endl;
+				break;
+			default:
+				std::cout << "In Simulation.src:allocateChain: Weird Chain TYpe, this line should never be written" << std::endl;
+				break;
+				
+		}
 }
 
 // Check simulation wide parameters

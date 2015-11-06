@@ -22,7 +22,7 @@ Eigen::ArrayXXd Chain::as_array(int start, int size)
 }
 std::ostream& operator<<(std::ostream& os, const Chain& c)
 {
-	os << c._chain << std::endl;
+	os << c._chain.transpose() << std::endl;
 	return os;
 }
 
@@ -32,6 +32,7 @@ double Chain::Rg(int start, int size)
 	double var = 0;
 	for(int i = start; i<start+size; i++)
 	{
+		//Eigen::Vector3d v = (_chain.block(0,i,3,1) - mean).matrix();
 		Eigen::Vector3d v = (_chain.block(0,i,3,1) - mean).matrix();
 		var += v.transpose() * v;
 	}

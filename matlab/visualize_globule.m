@@ -1,17 +1,17 @@
 
-%system('../_build/dna ax 200');
+system('../_build/dna');
 
-data = load('../data/default_visualize_data.dna');
+data = load('../data/Visualize_Default.dna');
 N = size(data,1);
-plot_steps = 1000;
-animate = true;
+plot_steps = 1;
+animate = false;
 
 
 lim = floor(N^(1/2));
 dt = 0.01;
 dn = floor(N/plot_steps);
 
-data(N,:)
+data(N,:);
 
 if animate
 for i = (dn+1):dn:N
@@ -25,5 +25,8 @@ for i = (dn+1):dn:N
 end
 else
     plot3(data(:,1),data(:,2),data(:,3),'.-');
-    axis([-lim,lim, -lim,lim, -lim,lim]) 
+    %axis([-lim,lim, -lim,lim, -lim,lim]) 
 end
+xlabel('X')
+ylabel('Y')
+zlabel('Z')

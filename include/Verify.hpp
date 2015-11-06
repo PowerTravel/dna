@@ -48,7 +48,6 @@ class Verify : public  Simulation{
 		int _strides;
 		bool _exp;
 		int _samples;
-
 	
 		double _step_size;
 
@@ -90,7 +89,7 @@ class Verify : public  Simulation{
 
 		Eigen::ArrayXd get_R();
 
-		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data );
+		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data, Eigen::ArrayXd weight );
 };
 
 #endif //  VERIFY_HPP

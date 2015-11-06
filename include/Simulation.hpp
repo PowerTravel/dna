@@ -33,6 +33,7 @@
 
 #include "SAWChain.hpp"
 #include "PhantomChain.hpp"
+#include "FractalGlobule.hpp"
 
 // A basic simulation class containing general simulation parameters
 // Every new simulation will have a new derived simulation class
@@ -60,7 +61,6 @@ class Simulation
 		Chain * _c;
 
 		bool _valid;
-		bool _complete;
 		// General Parameters
 		int _chain_type;
 		int _simulation_type;
@@ -87,6 +87,7 @@ class Simulation
 
 		
 		void set_general_parameters(std::map<std::string, std::string> sm);
+		void allocateChain();
 
 
 		bool is_valid(std::map<std::string, std::string> sm);

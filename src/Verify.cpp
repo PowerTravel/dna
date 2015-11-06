@@ -151,6 +151,11 @@ Eigen::ArrayXd Verify::get_R()
 void Verify::apply()
 {
 	print_pre_info();
+	if(!_valid)
+	{
+		std::cerr << "Verify not valid. Exiting" << std::endl;
+		return;
+	}
 
 	int steps = _strides;
 	int samples = _samples;
@@ -162,44 +167,41 @@ void Verify::apply()
 	Eigen::ArrayXXd binned_chain = Eigen::ArrayXXd::Zero(steps,3*samples);
 	
 	Eigen::ArrayXXd Rg_tmp = Eigen::ArrayXXd::Zero(steps,samples);
-	
+	Eigen::ArrayXd weight = Eigen::ArrayXd::Zero(samples);
 	for(int i = 0; i < samples; i++)
 	{	
 		if(_c != NULL)
 		{
 			_c->build(N);
 		}else{
-			std::cerr << "VERIFY::APPLY Chain IS NULL" << std::endl;
-			exit(1);
+			std::cerr << "ERROR: VERIFY::APPLY Chain IS NULL" << std::endl;
+			return;
 		}
-		std::cout << _c->weight() << std::endl;	
+		weight(i) =  _c->weight();
 		// bin values
 		for(int j = 0; j<steps; j++)
 		{
 			Eigen::ArrayXXd sub_chain = _c->as_array( nr_links(j), nr_links(j+1)-nr_links(j) ).transpose();
 
-
 			binned_chain(j,3*i+0) = sub_chain.col(0).mean();
 			binned_chain(j,3*i+1) = sub_chain.col(1).mean();
 			binned_chain(j,3*i+2) = sub_chain.col(2).mean();
 
-
 			Rg_tmp(j,i) = _c->Rg(0,floor(link_mean(j)));
 		}
+
 		if(verbose)
 		{
 			write_to_terminal(N,i,steps);
 		}
 	}
-	
 	Eigen::ArrayXXd R_tmp = Eigen::ArrayXXd::Zero(steps,samples);
-	
+
 	R 		= Eigen::ArrayXd::Zero(steps);
 	R_var 	= Eigen::ArrayXd::Zero(steps);
 
 	Rg 		= Eigen::ArrayXd::Zero(steps);
 	Rg_var 	= Eigen::ArrayXd::Zero(steps);
-
 	
 	for(int i = 0; i < steps; i++)
 	{
@@ -207,18 +209,19 @@ void Verify::apply()
 		{
 			Eigen::Vector3d pos  = binned_chain.block(i,3*j,1,3).transpose();
 			R_tmp(i,j) = pos.norm();
-
 		}
 	}
 
+//std::cout << R_tmp <<std::endl;
 	for(int i = 0; i<steps; i++)
 	{
-		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i));
+		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i), weight);
 		R(i) = mv(0);
 		R_var(i) = mv(1);
 		
-		mv= get_mean_and_variance(Rg_tmp.row(i));
+		mv= get_mean_and_variance(Rg_tmp.row(i), weight);
 		Rg(i) = mv(0);
+		std::cout << Rg_tmp.row(i).mean() <<"  " << Rg(i) <<"  "<< Rg_theo(i) << std::endl;
 		Rg_var(i) = mv(1);
 	}
 
@@ -226,12 +229,21 @@ void Verify::apply()
 	print_post_info();
 }
 
-Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data )
+Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, Eigen::ArrayXd weight)
 {
 	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
 	// Mean
-	ret(0) = in_data.sum()/((double) in_data.size());
-	ret(1) = (in_data-ret(0)).pow(2).sum()/((double) in_data.size());
+
+	double M = weight.size();
+	double N = in_data.size();
+
+	//ret(0) = in_data.sum()/((double) in_data.size());
+	//ret(1) = (in_data-ret(0)).pow(2).sum()/((double) in_data.size());
+	ret(0) = (in_data * weight).sum()/(weight.sum());
+
+	double var_denominator = ((M-1)/(M)) * weight.sum(); 
+	double var_numerator = ( weight * (in_data-ret(0)).pow(2) ).sum();
+	ret(1) = var_numerator / var_denominator;
 	
 	return ret;
 }
@@ -253,8 +265,7 @@ void Verify::write_to_file()
 	result.block(0,21,idx,1) = link_mean;
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
-	if(file.is_open())
-	{
+	if(file.is_open()){
 		file << result << std::endl;
 	}else{
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;

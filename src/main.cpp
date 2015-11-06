@@ -9,6 +9,7 @@
  *	Generates a fractal globule and prints data to a file
  */
 
+#include "ChainMap.hpp"
 
 #include <Eigen/Dense>
 int main(int argc, char* argv[])

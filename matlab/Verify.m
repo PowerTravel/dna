@@ -1,6 +1,7 @@
 %system('../_build/dna')
 
-A = importdata('../data/Verify_Default.dna');
+A = importdata('../matlab/phantom/R.dna');
+%A = importdata('../data/Verify_Default.dna');
 %A = importdata('../data/saved/Verify_N40000_Samples1000.dna');
 
 N  = size(A(:,1),1);
@@ -54,6 +55,7 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
 Rg = A(:,5);
 Rg_var = A(:,6);
 Rg_theo =1/sqrt(6)  * A(:,7);
+Rg_theo =A(:,7);
 %Rg_err = A(:,9);
 
 f = fittype('a*x+b');

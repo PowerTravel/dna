@@ -8,7 +8,6 @@ Visualize::Visualize()
 
 Visualize::Visualize(std::map<std::string, std::string> sm) : Simulation(sm)
 {
-	_valid = true;
 	_simulation_type = val_map.at("visualize");
 
 	if( sm.find("SIZE") != sm.end() )
@@ -26,16 +25,20 @@ Visualize::~Visualize()
 void Visualize::apply()
 {
 	print_pre_info();
+	if(!_valid)
+	{
+		std::cerr << "Visualize not valid. Exiting" << std::endl;
+		return;
+	}
 
-	PhantomChain c = PhantomChain();
-	//c.build(_size,Chain::ChainType::SAW);
-	c.build(_size);
+	_c->build(_size);
 	// Print to file
+	
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open())
 	{
-		file << c << std::endl;
+		file << *_c << std::endl;
 	}
 	file.close();
 

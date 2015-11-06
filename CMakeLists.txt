@@ -6,12 +6,15 @@ add_executable(dna
 	src/Chain.cpp
 	src/PhantomChain.cpp
 	src/SAWChain.cpp
+	src/FractalGlobule.cpp
 
 	src/ConfReader.cpp
 
 	src/Simulation.cpp
 	src/Verify.cpp
 	src/Visualize.cpp
+
+	src/ChainMap.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

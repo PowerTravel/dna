@@ -57,6 +57,7 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 		param = isolate_first_word(param);
 		val = isolate_first_word(val);
 
+
 		// Now we have a param cotaining a word and val containing a word
 
 		// If we have something in param and val we proceed in creating a list
@@ -92,7 +93,6 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 	}
 
 	file.close();
-
 	return sim_list;
 }
 std::string ConfReader::remove_leading_whitespace(std::string line)

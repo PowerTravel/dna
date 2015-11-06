@@ -1,4 +1,3 @@
-
 #ifndef RCHAIN_HPP
 #define RCHAIN_HPP
 
