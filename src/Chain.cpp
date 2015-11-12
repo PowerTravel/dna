@@ -32,7 +32,6 @@ double Chain::Rg(int start, int size)
 	double var = 0;
 	for(int i = start; i<start+size; i++)
 	{
-		//Eigen::Vector3d v = (_chain.block(0,i,3,1) - mean).matrix();
 		Eigen::Vector3d v = (_chain.block(0,i,3,1) - mean).matrix();
 		var += v.transpose() * v;
 	}

@@ -41,7 +41,6 @@ Eigen::Array4d FractalGlobule::get_next_step()
 	}
 
 	f = f/f.sum();
-	//std::cout << f.transpose() << std::endl;
 	Eigen::ArrayXd F = Eigen::ArrayXd::Zero(2*DIM+1);
 
 	for(int i=0; i<2*DIM; i++)
@@ -57,9 +56,11 @@ Eigen::Array4d FractalGlobule::get_next_step()
 	{
 		i++;	
 	}
+
 	ret(0) = set_weight(2*DIM - occupied);
-	//std::cout << "chose " << i <<" :  " << int_to_coord(i).transpose() << std::endl;
+
 	ret.segment(1,DIM) = int_to_coord(i);
+
 	return ret;
 }
 

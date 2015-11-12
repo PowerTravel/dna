@@ -3,7 +3,6 @@
 
 #ifndef INT_TYPE
 #define INT_TYPE unsigned long long
-#define INT_TYPE_MAX ULLONG_MAX
 #endif
 
 #ifndef DIM

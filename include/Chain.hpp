@@ -24,6 +24,7 @@
 
 #include <functional>
 
+#include <gmp.h>
 
 #include "Sphere.hpp"
 #include "Spring.hpp"
@@ -48,6 +49,7 @@ class Chain
 	protected:
 		Eigen::ArrayXXd _chain;
 		double _weight;
+
 
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;

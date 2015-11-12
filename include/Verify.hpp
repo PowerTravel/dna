@@ -12,7 +12,7 @@
 #define PHANTOM_RG_FF 1/sqrt(6) // Polymer Textbook p 18
 #define SAW_R_FF 1				// Need to find out
 #define SAW_RG_FF 0.4205		// Polymer textbook p 40, numerical
-#define FG_FF 1 				// Unknown
+#define FG_R_FF 1 				// Unknown
 #define FG_RG_FF 1				// Unknown
 #endif // THEORETICAL_FOREFACTORS
 

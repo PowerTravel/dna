@@ -35,8 +35,14 @@ endif()
 ## Include Directories @@
 include_directories(
 	external/eigen-3.2.5
+#	external/gmp-6.1.0/
 	include
 )
+
+#find_package(GMP REQUIRED)
+#include_directories(${GOBJECT_INCLUDE_DIR})
+#add_executable(dna main.cpp)
+#target_link_libraries(dna ${GOBJECT_LIBRAIES})
 
 ## LINK TO LIBRARIES ##
 #set(GLFW_LIBS
@@ -54,6 +60,7 @@ include_directories(
 #endif()
 target_link_libraries(dna
 	#openmp
+	gmp
 )
 
 

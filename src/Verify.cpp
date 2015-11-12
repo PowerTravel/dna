@@ -107,14 +107,14 @@ void Verify::set_theoretical_values()
 			break;
 
 		case VAL_BIT_SAW:
-			R_theo = link_mean.pow(SAW_SLOPE);
-			Rg_theo =0.4205 * link_mean.pow(SAW_SLOPE); // Forefactor from polymer
+			R_theo = SAW_R_FF * link_mean.pow(SAW_SLOPE);
+			Rg_theo = SAW_RG_FF * link_mean.pow(SAW_SLOPE); // Forefactor from polymer
 														// textbook p 40 numerical
 			break;
 
 		case VAL_BIT_FG:
-			R_theo = link_mean.pow(FG_SLOPE);
-			Rg_theo =link_mean.pow(FG_SLOPE); // Forefactor from polymer
+			R_theo = FG_R_FF * link_mean.pow(FG_SLOPE);
+			Rg_theo = FG_RG_FF * link_mean.pow(FG_SLOPE); // Forefactor from polymer
 			break;
 	}
 }

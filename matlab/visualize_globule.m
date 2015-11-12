@@ -1,16 +1,16 @@
 
-system('../_build/dna');
+%system('../_build/dna');
 
 data = load('../data/Visualize_Default.dna');
 N = size(data,1);
 plot_steps = 1;
-animate = false;
+animate = true;
 
 
 lim = floor(N^(1/2));
 dt = 0.01;
 dn = floor(N/plot_steps);
-
+dn = 10
 data(N,:);
 
 if animate

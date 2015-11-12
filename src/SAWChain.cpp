@@ -1,5 +1,4 @@
 #include "SAWChain.hpp"
-
 #include <iostream>
 #include <climits>
 
@@ -16,15 +15,18 @@ SAWChain::~SAWChain()
 void SAWChain::build(int N)
 {
 	max_grid_size = 2*N;
-	if( pow(max_grid_size ,3 ) >= INT_TYPE_MAX	)
+	if( pow(max_grid_size ,3 ) >= std::numeric_limits<INT_TYPE>::max()	)
 	{
-		std::cerr << "SAW CHAIN too long, max len is " << pow(ULLONG_MAX ,1/3.f)/2 << std::endl; 
+		std::cerr << "SAW CHAIN too long, max len is " << pow(std::numeric_limits<INT_TYPE>::max() ,1/3.f)/2 << std::endl; 
 		return; 
 	}
 
+	bool ret;
 	int tries = 0;
 	int tries_limit = 100;
 	do{
+		tries ++;
+		ret = false;
 		_n = 0;
 		_w = Eigen::ArrayXd::Zero(N);
 		_chain = Eigen::ArrayXXd::Zero(3,N);
@@ -41,11 +43,26 @@ void SAWChain::build(int N)
 			_chain.block(0,_n,3,1) = _chain.block(0,_n-1,3,1) + 
 										next_step.segment(1,DIM);
 			set_grid(_chain.block(0,_n,3,1));
+
+			if(_w(_n) == 0)
+			{
+				ret = true;
+				break;
+			}
 		}
 
-		tries ++;
 		_weight = _w.prod();
-	}while( (_weight  == 0 ) && (tries < tries_limit) );
+	//	_weight = 1;
+
+		//std::cout << "w = " <<_weight << "w_size = "<< _w.size() << std::endl;
+//	}while( (_weight  == 0 ) && (tries < tries_limit) );
+	}while( (ret == true ) && (tries < tries_limit) );
+	if( _weight == 0)
+	{
+		std::cout << "fuck lyfe " << std::endl;
+	}
+	_weight = _weight * _n;
+	//std::cerr << "Complete, " << tries << " with tries" << std::endl;
 }
 
 Eigen::Array4d SAWChain::get_next_step()
@@ -107,7 +124,6 @@ INT_TYPE SAWChain::pos_to_idx(Eigen::Array3d pos)
 }
 bool SAWChain::is_occupied(Eigen::Array3d pos)
 {
-	//std::cout << "   checking " << pos.transpose() <<  "  ";
 	INT_TYPE idx = pos_to_idx(pos);
 	if(_grid.find(idx) != _grid.end())
 	{
@@ -119,7 +135,5 @@ bool SAWChain::is_occupied(Eigen::Array3d pos)
 void SAWChain::set_grid(Eigen::Array3d pos)
 {
 	INT_TYPE idx = pos_to_idx(pos);
-
-//	std::cout << "POS " << pos.transpose() << "  grid idx " << idx << "  set" << std::endl;
 	_grid[idx] = 1;
 }

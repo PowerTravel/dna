@@ -4,6 +4,7 @@
 #include "ConfReader.hpp"
 #include "Simulation.hpp"
 #include "PhantomChain.hpp"
+#include <gmp.h>
 /*
  * 	Program dna
  *	Generates a fractal globule and prints data to a file
@@ -14,6 +15,12 @@
 #include <Eigen/Dense>
 int main(int argc, char* argv[])
 {
+
+//	mpf_t fp;
+//	mpf_init(fp);
+
+
+//	mpf_out_str(stdout, 10,3, fp );
 	std::string config;
 	if(argc > 1)
 	{

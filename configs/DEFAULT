@@ -6,17 +6,17 @@ RUN: verify
 	SIZE: 500
 	STRIDES: 10
 	SAMPLES: 20000
-	EXP: false
+	EXP: true
 
 	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../matlab/phantom/R.dna
 
-%RUN: visualize
-%	OUTFILE: ../data/Visualize_Default.dna
-%	TYPE: fg
-%	VERBOSE: true
-%	SIZE: 1000
+RUN: visualize
+	OUTFILE: ../data/Visualize_Default.dna
+	TYPE: fg
+	VERBOSE: true
+	SIZE: 2000
 
 
 
