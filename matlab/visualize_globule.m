@@ -4,7 +4,7 @@
 data = load('../data/Visualize_Default.dna');
 N = size(data,1);
 plot_steps = 1;
-animate = true;
+animate = false;
 
 
 lim = floor(N^(1/2));

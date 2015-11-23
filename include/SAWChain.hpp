@@ -9,10 +9,6 @@
 #define DIM 3
 #endif // DIM
 
-//#ifndef MAX_GRID_SIZE
-//#define MAX_GRID_SIZE 10000
-//#endif // MAX_GRID_SIZE
-
 #include <map>
 #include "Chain.hpp"
 
@@ -28,7 +24,6 @@ class SAWChain : public Chain
 
 		int max_grid_size;
 		int _n;
-		Eigen::ArrayXd _w;
 		std::map<INT_TYPE, int> _grid;
 
 		bool is_occupied(Eigen::Array3d pos);
@@ -39,6 +34,7 @@ class SAWChain : public Chain
 		
 		virtual Eigen::Array4d get_next_step();
 		Eigen::ArrayXd get_PDF();
+//		PFloat mult_weights(Eigen::ArrayXd w);
 };
 
 #endif

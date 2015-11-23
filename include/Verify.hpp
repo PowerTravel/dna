@@ -16,8 +16,13 @@
 #define FG_RG_FF 1				// Unknown
 #endif // THEORETICAL_FOREFACTORS
 
+#ifndef START_POINT
+#define START_POINT 10
+#endif
+
 #include "Simulation.hpp" 
 #include "PhantomChain.hpp"
+#include "PFloat.hpp"
 #include <Eigen/Dense>
 /*
 	Valid parameters
@@ -87,9 +92,10 @@ class Verify : public  Simulation{
 		void write_to_file();
 		void set_chain_type();
 
-		Eigen::ArrayXd get_R();
 
-		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data, Eigen::ArrayXd weight );
+		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data, std::vector<PFloat >& weight );
+
+		PFloat mult_weights(Eigen::ArrayXd w);
 };
 
 #endif //  VERIFY_HPP

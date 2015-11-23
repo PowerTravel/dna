@@ -8,7 +8,8 @@
 std::default_random_engine Chain::_generator = std::default_random_engine(time(NULL));
 
 Chain::Chain()
-{
+{	
+
 }
 
 Chain::~Chain()
@@ -48,10 +49,11 @@ int Chain::len()
 	return _chain.outerSize();
 }
 
-double Chain::weight()
+Eigen::ArrayXd Chain::weights()
 {
-	return _weight;
+	return _w;
 }
+
 Eigen::Array3d Chain::int_to_coord(int i)
 {
 	Eigen::Vector3d idx(0,0,0);

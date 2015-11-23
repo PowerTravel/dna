@@ -5,7 +5,6 @@
 
 SAWChain::SAWChain()
 {
-	_weight = 0;
 }
 SAWChain::~SAWChain()
 {
@@ -23,7 +22,7 @@ void SAWChain::build(int N)
 
 	bool ret;
 	int tries = 0;
-	int tries_limit = 100;
+	int tries_limit = 1000;
 	do{
 		tries ++;
 		ret = false;
@@ -46,22 +45,27 @@ void SAWChain::build(int N)
 
 			if(_w(_n) == 0)
 			{
+				//std::cout << tries<< " " << _n << "  " <<double(_n)/double(N) << std::endl;
 				ret = true;
 				break;
 			}
 		}
 
-		_weight = _w.prod();
-	//	_weight = 1;
-
-		//std::cout << "w = " <<_weight << "w_size = "<< _w.size() << std::endl;
-//	}while( (_weight  == 0 ) && (tries < tries_limit) );
 	}while( (ret == true ) && (tries < tries_limit) );
-	if( _weight == 0)
+	if(tries >= tries_limit)
 	{
-		std::cout << "fuck lyfe " << std::endl;
+		std::cerr << "Could not make a chain with "<< tries << " tries. Exiting program" << std::endl;
+		exit(1);
 	}
-	_weight = _weight * _n;
+	//std::cout << tries <<  "  " << tries_limit << std::endl; 
+	// _weight = mult_weights(_w);
+	//_weight.print();
+
+	//if( _weight == 0)
+//	{
+//		std::cout << "fuck lyfe " << std::endl;
+//	}
+	//_weight = _weight * _n;
 	//std::cerr << "Complete, " << tries << " with tries" << std::endl;
 }
 
@@ -137,3 +141,24 @@ void SAWChain::set_grid(Eigen::Array3d pos)
 	INT_TYPE idx = pos_to_idx(pos);
 	_grid[idx] = 1;
 }
+/*
+PFloat SAWChain::mult_weights(Eigen::ArrayXd w)
+{
+	PFloat w_tmp = w[0];
+	for(int i =1; i<_w.size(); i++)
+	{
+		if(_w[i] == 0)
+		{
+			return PFloat();
+		}
+
+		w_tmp = w_tmp * w[i];
+
+		if(w_tmp == 0 )
+		{
+			std::cerr << "WEIGHT ROUNDED TO ZERO IN SAWCHAIN.CPP " << std::endl;
+		}
+	}
+	return w_tmp;
+}
+*/

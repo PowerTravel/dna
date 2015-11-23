@@ -75,7 +75,7 @@ void Verify::set_plot_points()
 {
 	Eigen::ArrayXd n = Eigen::ArrayXd::Zero(_strides+1);
 
-	double start_point = 100.f;
+	double start_point = double( START_POINT );
 	double N = (double) _size;
 	double steps =(double) _strides;
 
@@ -118,6 +118,7 @@ void Verify::set_theoretical_values()
 			break;
 	}
 }
+
 void Verify::init_plotting_parameters()
 {
 	double interval = 1; // How big our update step should be,
@@ -142,12 +143,6 @@ void Verify::print(std::ostream& os)
 	}
 };
 
-Eigen::ArrayXd Verify::get_R()
-{
-	return Eigen::ArrayXd::Zero(10);
-}
-
-
 void Verify::apply()
 {
 	print_pre_info();
@@ -165,9 +160,13 @@ void Verify::apply()
 	set_theoretical_values();
 
 	Eigen::ArrayXXd binned_chain = Eigen::ArrayXXd::Zero(steps,3*samples);
-	
+	std::vector< std::vector<PFloat> > w = std::vector< std::vector<PFloat> >(steps);
+	for(int i = 0; i < steps; i++)
+	{
+		w[i] = std::vector<PFloat>(samples);	
+	}
 	Eigen::ArrayXXd Rg_tmp = Eigen::ArrayXXd::Zero(steps,samples);
-	Eigen::ArrayXd weight = Eigen::ArrayXd::Zero(samples);
+
 	for(int i = 0; i < samples; i++)
 	{	
 		if(_c != NULL)
@@ -177,7 +176,9 @@ void Verify::apply()
 			std::cerr << "ERROR: VERIFY::APPLY Chain IS NULL" << std::endl;
 			return;
 		}
-		weight(i) =  _c->weight();
+
+		Eigen::VectorXd w_tmp = _c->weights();
+
 		// bin values
 		for(int j = 0; j<steps; j++)
 		{
@@ -188,6 +189,8 @@ void Verify::apply()
 			binned_chain(j,3*i+2) = sub_chain.col(2).mean();
 
 			Rg_tmp(j,i) = _c->Rg(0,floor(link_mean(j)));
+
+			w[j][i] = mult_weights( w_tmp.segment(0, nr_links(j+1)) );
 		}
 
 		if(verbose)
@@ -212,16 +215,15 @@ void Verify::apply()
 		}
 	}
 
-//std::cout << R_tmp <<std::endl;
 	for(int i = 0; i<steps; i++)
 	{
-		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i), weight);
+		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i), w[i]);
 		R(i) = mv(0);
 		R_var(i) = mv(1);
 		
-		mv= get_mean_and_variance(Rg_tmp.row(i), weight);
+		mv = get_mean_and_variance(Rg_tmp.row(i), w[i]);
 		Rg(i) = mv(0);
-		std::cout << Rg_tmp.row(i).mean() <<"  " << Rg(i) <<"  "<< Rg_theo(i) << std::endl;
+		//std::cout << Rg_tmp.row(i).mean() <<"  " << Rg(i) <<"  "<< Rg_theo(i) << std::endl;
 		Rg_var(i) = mv(1);
 	}
 
@@ -229,21 +231,43 @@ void Verify::apply()
 	print_post_info();
 }
 
-Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, Eigen::ArrayXd weight)
+Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, std::vector<PFloat>& weight)
 {
 	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
+	
 	// Mean
-
 	double M = weight.size();
 	double N = in_data.size();
 
-	//ret(0) = in_data.sum()/((double) in_data.size());
-	//ret(1) = (in_data-ret(0)).pow(2).sum()/((double) in_data.size());
-	ret(0) = (in_data * weight).sum()/(weight.sum());
+	PFloat sum = PFloat();
+	for(int i=0; i < M; i++ )
+	{
+		sum = sum + weight[i];
+	}
 
-	double var_denominator = ((M-1)/(M)) * weight.sum(); 
-	double var_numerator = ( weight * (in_data-ret(0)).pow(2) ).sum();
+	PFloat unity = 1;
+	PFloat scale = unity / sum;
+	//PFloat scale = PFloat::div(unity, sum);
+	Eigen::ArrayXd s_weight = Eigen::ArrayXd(M);
+	for(int i=0; i<M; i++)
+	{
+		PFloat tmp = scale * weight[i];
+		s_weight(i) = tmp.as_float();
+	}
+	//std::cout << "scale = ";
+	//scale.print(); std::cout << std::endl;
+	//std::cout << "SUM2 = ";
+	//sum.print(); std::cout << std::endl;
+	//std::cout  << s_weight <<"  SUM  " << s_weight.sum() <<  std::endl;
+	// Weights are scaled to be unity and are written out just for clarity
+	double w_sum = 1.0;
+	ret(0) = (in_data * s_weight).sum() / w_sum;
+	double var_denominator = ((M-1)/(M)) * w_sum; 
+	double var_numerator   = ( s_weight * (in_data-ret(0)).pow(2) ).sum();
 	ret(1) = var_numerator / var_denominator;
+
+	//std::cerr << var_denominator << "   "  <<  var_numerator << "   " << ret(1) << std::endl;
+	//std::cerr << s_weight<< std::endl;
 	
 	return ret;
 }
@@ -278,4 +302,16 @@ void Verify::write_to_terminal(int N, int i, int j)
 	double p = ( ( double) i*nr_links(nr_links.size()-1) + j) / ((double) _samples*nr_links(nr_links.size()-1)) * 100.f;
 		std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< p << std::fixed << "%] "
 			<<"Generating " << _samples <<" " <<dictionary.at(_chain_type) <<"s with " << N << " links. " <<  std::flush;
+}
+
+PFloat Verify::mult_weights(Eigen::ArrayXd w)
+{
+	PFloat ret = PFloat(w[0]);
+
+	for(int i = 1; i < w.size(); i++)
+	{
+		PFloat tmp = PFloat(w(i));
+		ret = ret*tmp;
+	}
+	return ret;
 }

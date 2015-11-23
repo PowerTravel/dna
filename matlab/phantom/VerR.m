@@ -1,4 +1,3 @@
-
  
 chain = importdata('R.dna');
 

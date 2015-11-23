@@ -15,6 +15,8 @@ add_executable(dna
 	src/Visualize.cpp
 
 	src/ChainMap.cpp
+
+#	src/PFloat.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

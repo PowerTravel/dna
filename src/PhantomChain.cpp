@@ -3,7 +3,6 @@
 
 PhantomChain::PhantomChain()
 {
-	_weight = 1;	
 }
 
 PhantomChain::~PhantomChain()
@@ -13,7 +12,7 @@ PhantomChain::~PhantomChain()
 
 void PhantomChain::build(int N)
 {
-	_weight = 1;
+	_w = Eigen::ArrayXd::Ones(N);
 	_chain = Eigen::ArrayXXd::Zero(3, N);
 	
 	// Start position

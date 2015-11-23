@@ -20,14 +20,12 @@
 #include <random>
 #include <string>
 #include <fstream>
+//#include <functional>
 
+//#include "PFloat.hpp"
 
-#include <functional>
-
-#include <gmp.h>
-
-#include "Sphere.hpp"
-#include "Spring.hpp"
+//#include "Sphere.hpp"
+//#include "Spring.hpp"
  
 
 // Base class for chains
@@ -39,18 +37,19 @@ class Chain
 		
 		virtual void build(int N) = 0;
 		Eigen::ArrayXXd as_array(int start, int size);
+		Eigen::ArrayXd weights();
 		double Rg(int start, int size);
 		Eigen::Array3d cm(int start, int size);
 
+
 		int len();
-		double weight();
 
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 	protected:
 		Eigen::ArrayXXd _chain;
-		double _weight;
+		Eigen::ArrayXd _w;
 
-
+		//PFloat mult_weights();
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
 
