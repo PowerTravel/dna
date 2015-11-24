@@ -20,12 +20,11 @@ void SAWChain::build(int N)
 		return; 
 	}
 
-	bool ret;
 	int tries = 0;
-	int tries_limit = 1000;
+	int tries_limit = TRIES_LIMIT;
 	do{
 		tries ++;
-		ret = false;
+		_retry = false;
 		_n = 0;
 		_w = Eigen::ArrayXd::Zero(N);
 		_chain = Eigen::ArrayXXd::Zero(3,N);
@@ -42,31 +41,14 @@ void SAWChain::build(int N)
 			_chain.block(0,_n,3,1) = _chain.block(0,_n-1,3,1) + 
 										next_step.segment(1,DIM);
 			set_grid(_chain.block(0,_n,3,1));
-
-			if(_w(_n) == 0)
-			{
-				//std::cout << tries<< " " << _n << "  " <<double(_n)/double(N) << std::endl;
-				ret = true;
-				break;
-			}
 		}
 
-	}while( (ret == true ) && (tries < tries_limit) );
+	}while( (_retry == true ) && (tries < tries_limit) );
 	if(tries >= tries_limit)
 	{
 		std::cerr << "Could not make a chain with "<< tries << " tries. Exiting program" << std::endl;
 		exit(1);
 	}
-	//std::cout << tries <<  "  " << tries_limit << std::endl; 
-	// _weight = mult_weights(_w);
-	//_weight.print();
-
-	//if( _weight == 0)
-//	{
-//		std::cout << "fuck lyfe " << std::endl;
-//	}
-	//_weight = _weight * _n;
-	//std::cerr << "Complete, " << tries << " with tries" << std::endl;
 }
 
 Eigen::Array4d SAWChain::get_next_step()
@@ -106,7 +88,13 @@ Eigen::Array4d SAWChain::get_next_step()
 	{
 		i++;	
 	}
+
 	ret(0) = set_weight(2*DIM - occupied);
+	if(ret(0) == 0)
+	{
+		_retry = true;
+	}
+
 	ret.segment(1,DIM) = int_to_coord(i);
 	return ret;
 }

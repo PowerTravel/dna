@@ -9,6 +9,10 @@
 #define DIM 3
 #endif // DIM
 
+#ifndef TRIES_LIMIT
+#define TRIES_LIMIT 1000
+#endif
+
 #include <map>
 #include "Chain.hpp"
 
@@ -22,6 +26,7 @@ class SAWChain : public Chain
 
 	protected:
 
+		bool _retry;
 		int max_grid_size;
 		int _n;
 		std::map<INT_TYPE, int> _grid;

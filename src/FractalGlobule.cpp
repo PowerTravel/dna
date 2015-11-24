@@ -12,46 +12,8 @@ FractalGlobule::FractalGlobule()
 void FractalGlobule::build(int N)
 {
 	this->SAWChain::build(N);
-	//_w = Eigen::ArrayXd::Ones(N);
 }
 
-/*
-void FractalGlobule::build(int N)
-{
-	max_grid_size = 2*N;
-	if( pow(max_grid_size ,3 ) >= std::numeric_limits<INT_TYPE>::max()	)
-	{
-		std::cerr << "SAW CHAIN too long, max len is " << pow(std::numeric_limits<INT_TYPE>::max() ,1/3.f)/2 << std::endl; 
-		return; 
-	}
-
-	bool a = false;
-
-	_n = 0;
-	_w = Eigen::ArrayXd::Zero(N);
-	_chain = Eigen::ArrayXXd::Zero(3,N);
-	_grid = std::map<INT_TYPE, int>();
-	
-	_chain.block(0,0,3,1) = Eigen::Array3d(0,0,0);
-	_w(0) = 1;
-	set_grid(Eigen::Array3d(0,0,0));
-
-	for(_n = 1; _n<N; _n++)
-	{
-		Eigen::Array4d next_step = get_next_step();
-		_chain.block(0,_n,3,1) = _chain.block(0,_n-1,3,1) + 
-									next_step.segment(1,DIM);
-		set_grid(_chain.block(0,_n,3,1));
-		if( (next_step(0) == 0) && (a == false))
-		{	
-		//	a=true;
-			std::cout <<  _n <<  "  axax" << std::endl;
-		}
-	}
-
-	_weight = 1.0;
-}
-*/
 Eigen::Array4d FractalGlobule::get_next_step()
 {
 	double eps = 0.00001;
@@ -71,12 +33,13 @@ Eigen::Array4d FractalGlobule::get_next_step()
 			occupied ++;
 		}
 	}
-
-	f = f/f.sum();
+/*
 	if(occupied == 2*DIM)
 	{
-//		std::cout << f.transpose() << std::endl;
+		_retry = true;
 	}
+*/
+	f = f/f.sum();
 	Eigen::ArrayXd F = Eigen::ArrayXd::Zero(2*DIM+1);
 
 	for(int i=0; i<2*DIM; i++)
@@ -93,7 +56,7 @@ Eigen::Array4d FractalGlobule::get_next_step()
 		i++;	
 	}
 
-	ret(0) = set_weight(2*DIM - occupied);
+	ret(0) = 1.0;
 
 	ret.segment(1,DIM) = int_to_coord(i);
 

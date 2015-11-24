@@ -5,10 +5,10 @@
 RUN: verify
 	SIZE: 2000
 	STRIDES: 10
-	SAMPLES: 10000
+	SAMPLES: 1000
 	EXP: true
 
-	TYPE: fg
+	TYPE: phantom
 	VERBOSE: true
 	OUTFILE: ../matlab/phantom/R.dna
 
