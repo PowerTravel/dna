@@ -6,7 +6,6 @@ N = size(data,1);
 plot_steps = 1;
 animate = false;
 
-
 lim = floor(N^(1/2));
 dt = 0.01;
 dn = floor(N/plot_steps);

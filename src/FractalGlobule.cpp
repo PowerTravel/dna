@@ -76,5 +76,5 @@ int FractalGlobule::get_occupied_neighbours(Eigen::Array3d step)
 			occupied_cites++;
 		}
 	}
-	return  occupied_cites;
+	return  occupied_cites-1;
 }

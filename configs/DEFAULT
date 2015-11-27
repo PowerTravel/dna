@@ -8,7 +8,7 @@ RUN: verify
 	SAMPLES: 1000
 	EXP: true
 
-	TYPE: phantom
+	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../matlab/phantom/R.dna
 
