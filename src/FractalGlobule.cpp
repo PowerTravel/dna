@@ -33,6 +33,7 @@ Eigen::Array4d FractalGlobule::get_next_step()
 			occupied ++;
 		}
 	}
+	// We allow for intersections
 /*
 	if(occupied == 2*DIM)
 	{

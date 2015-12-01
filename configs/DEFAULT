@@ -3,7 +3,7 @@
 
 
 RUN: verify
-	SIZE: 2000
+	SIZE: 5000
 	STRIDES: 10
 	SAMPLES: 1000
 	EXP: true
@@ -14,7 +14,7 @@ RUN: verify
 
 %RUN: visualize
 %	OUTFILE: ../data/Visualize_Default.dna
-%	TYPE: fg
+%	TYPE: phantom
 %	VERBOSE: true
 %	SIZE: 5000
 

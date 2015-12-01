@@ -6,12 +6,15 @@
 class Sphere
 {
 	public:
+	
 		Sphere();
 		Sphere(Eigen::Vector3d x, Eigen::Vector3d v, double r);
 		virtual ~Sphere();
 
 		Eigen::Vector3d getPos();
 		Eigen::Vector3d getVel();
+
+		static get_collision
 
 		void move(Eigen::Vector3d dx);
 	private:

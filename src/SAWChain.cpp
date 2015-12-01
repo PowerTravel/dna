@@ -41,9 +41,25 @@ void SAWChain::build(int N)
 			_chain.block(0,_n,3,1) = _chain.block(0,_n-1,3,1) + 
 										next_step.segment(1,DIM);
 			set_grid(_chain.block(0,_n,3,1));
-		}
 
+			if(_retry == true)
+			{
+				break;
+			}
+		}
+/*
+		if(_retry == true)
+		{
+			std::cout << "Retry " << _n << std::endl;	
+		}
+*/
 	}while( (_retry == true ) && (tries < tries_limit) );
+/*
+	if(tries > 1)
+	{
+		std::cout << tries<< std::endl;
+	}
+*/
 	if(tries >= tries_limit)
 	{
 		std::cerr << "Could not make a chain with "<< tries << " tries. Exiting program" << std::endl;

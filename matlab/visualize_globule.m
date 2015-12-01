@@ -6,10 +6,10 @@ N = size(data,1);
 plot_steps = 1;
 animate = false;
 
-lim = floor(N^(1/2));
+lim = floor(N^(1/3));
 dt = 0.01;
 dn = floor(N/plot_steps);
-dn = 10
+dn = 1;
 data(N,:);
 
 if animate
@@ -23,8 +23,16 @@ for i = (dn+1):dn:N
 
 end
 else
-    plot3(data(:,1),data(:,2),data(:,3),'.-');
-    %axis([-lim,lim, -lim,lim, -lim,lim]) 
+    nrColors = 5;
+    c = prism(nrColors);
+    dp = floor(N/nrColors);
+    for i =[1:nrColors]
+        hold on
+        plot3(data((i-1)*dp+1:i*dp,1),data((i-1)*dp+1:i*dp,2)...
+            ,data((i-1)*dp+1:i*dp,3),'.-', 'color', c(i,:), ...
+            'LineWidth',3);
+    end
+    %axis([-lim,lim, -lim,lim, -lim,lim])
 end
 xlabel('X')
 ylabel('Y')
