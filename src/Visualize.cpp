@@ -19,7 +19,7 @@ Visualize::Visualize(std::map<std::string, std::string> sm) : Simulation(sm)
 }
 Visualize::~Visualize()
 {
-
+	
 }
 
 void Visualize::apply()

@@ -1,5 +1,4 @@
 #include "Verify.hpp"
-#include <iostream>
 #include <iomanip>
 Verify::Verify()
 {

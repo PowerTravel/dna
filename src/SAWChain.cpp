@@ -65,6 +65,8 @@ void SAWChain::build(int N)
 		std::cerr << "Could not make a chain with "<< tries << " tries. Exiting program" << std::endl;
 		exit(1);
 	}
+
+	_ok = true;
 }
 
 Eigen::Array4d SAWChain::get_next_step()

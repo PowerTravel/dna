@@ -7,7 +7,6 @@ PhantomChain::PhantomChain()
 
 PhantomChain::~PhantomChain()
 {
-
 }
 
 void PhantomChain::build(int N)
@@ -26,4 +25,6 @@ void PhantomChain::build(int N)
 		Eigen::Array3d next_step = int_to_coord(step);
 		_chain.block(0,i,3,1) = _chain.block(0,i-1,3,1) + next_step;
 	}
+
+	_ok = true;
 }

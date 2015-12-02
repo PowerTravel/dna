@@ -1,9 +1,9 @@
 #ifndef SPHERE_HPP
 #define SPHERE_HPP
 
-#include <Eigen/Dense>
+#include "Dynamics.hpp"
 
-class Sphere
+class Sphere : public Dynamics
 {
 	public:
 	
@@ -11,18 +11,12 @@ class Sphere
 		Sphere(Eigen::Vector3d x, Eigen::Vector3d v, double r);
 		virtual ~Sphere();
 
-		Eigen::Vector3d getPos();
-		Eigen::Vector3d getVel();
-
-		static get_collision
-
-		void move(Eigen::Vector3d dx);
+		void update();
+	
+		double getRadius();
 	private:
-	
-		Eigen::Vector3d _x; 	// Position
-		Eigen::Vector3d _v;		// Velocity
-		double _r;				// Radious
-	
+		
+		double r;				// Radious
 };
 
 #endif // SPHERE_HPP

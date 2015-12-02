@@ -1,8 +1,6 @@
 #ifndef RCHAIN_HPP
 #define RCHAIN_HPP
 
-
-
 #ifndef MAX_GRID_SIZE
 #define MAX_GRID_SIZE 1000
 #endif // MAX_GRID_SIZE
@@ -22,12 +20,6 @@
 #include <fstream>
 //#include <functional>
 
-//#include "PFloat.hpp"
-
-//#include "Sphere.hpp"
-//#include "Spring.hpp"
- 
-
 // Base class for chains
 class Chain
 {
@@ -36,18 +28,26 @@ class Chain
 		virtual ~Chain();
 		
 		virtual void build(int N) = 0;
+		Eigen::ArrayXXd as_array();
 		Eigen::ArrayXXd as_array(int start, int size);
 		Eigen::ArrayXd weights();
+		Eigen::Array3d span();
 		double Rg(int start, int size);
+		double Rg();
 		Eigen::Array3d cm(int start, int size);
 
 
 		int len();
 
+		bool ok();
+
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 	protected:
+		bool _ok;
+
 		Eigen::ArrayXXd _chain;
 		Eigen::ArrayXd _w;
+		//double _a;
 
 		//PFloat mult_weights();
 		Eigen::Array3d int_to_coord(int i);

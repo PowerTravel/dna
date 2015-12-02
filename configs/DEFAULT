@@ -2,21 +2,30 @@
 % This config is if no other configfile is called
 
 
-RUN: verify
-	SIZE: 5000
-	STRIDES: 10
-	SAMPLES: 1000
-	EXP: true
+RUN: distance
+	SIZE: 100
 
 	TYPE: fg
 	VERBOSE: true
-	OUTFILE: ../matlab/phantom/R.dna
+	OUTFILE: ../data/default_distance.dna
+	SELFINTERSECTION: true
+	WEIGHT: true
 
-%RUN: visualize
-%	OUTFILE: ../data/Visualize_Default.dna
-%	TYPE: phantom
-%	VERBOSE: true
+%RUN: verify
 %	SIZE: 5000
+%	STRIDES: 10
+%	SAMPLES: 1000
+%	EXP: true
+%
+%	TYPE: fg
+%	VERBOSE: true
+%	OUTFILE: ../matlab/phantom/R.dna
+
+RUN: visualize
+	OUTFILE: ../data/Visualize_Default.dna
+	TYPE: fg
+	VERBOSE: true
+	SIZE: 1000
 
 
 

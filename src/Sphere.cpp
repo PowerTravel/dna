@@ -2,33 +2,26 @@
 
 Sphere::Sphere()
 {
-	_x = Eigen::Vector3d(0,0,0); 
-	_v = Eigen::Vector3d(0,0,0);;
-	_r = 1.0;
+	r = 1.0;
 }
 
-Sphere::Sphere(Eigen::Vector3d x, Eigen::Vector3d v, double r)
+Sphere::Sphere(Eigen::Vector3d xp, Eigen::Vector3d vp, double rp):
+Dynamics(xp,vp)
 {
-	_x = x; 
-	_v = v;
-	_r = r;
+	r = rp;
 }
+
 Sphere::~Sphere()
 {
 
 }
 
-Eigen::Vector3d Sphere::getPos()
+void Sphere::update()
 {
-	return _x;
-}
-Eigen::Vector3d Sphere::getVel()
-{
-	return _v;
+
 }
 
-void Sphere::move(Eigen::Vector3d dx)
+double Sphere::getRadius()
 {
-	_x += dx;
+	return r;
 }
-

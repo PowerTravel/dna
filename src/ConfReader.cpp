@@ -5,6 +5,8 @@
 
 #include "Verify.hpp"
 #include "Visualize.hpp"
+#include "Distance.hpp"
+
 ConfReader::ConfReader()
 {
 
@@ -83,12 +85,15 @@ std::vector< std::shared_ptr<Simulation> > ConfReader::read(std::string filePath
 	for(auto it = parsed_config_vec.begin(); it!= parsed_config_vec.end(); it++ )
 	{
 		std::map<std::string, std::string> sm = *it;
-		if(sm["RUN"].compare("verify")==0 )
+		if(sm["RUN"].compare("verify") == 0 )
 		{
 			sim_list.push_back( std::shared_ptr<Simulation>(new Verify(sm)) );
 		}else if(sm["RUN"].compare("visualize") == 0)
 		{
 			sim_list.push_back(std::shared_ptr<Simulation>(new  Visualize(sm) ) );
+		}else if(sm["RUN"].compare("distance") == 0)
+		{
+			sim_list.push_back(std::shared_ptr<Simulation>(new  Distance(sm) ) );
 		}
 	}
 

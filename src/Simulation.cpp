@@ -2,7 +2,6 @@
 #include <iostream>
 #include <ctime>
 
-//std::default_random_engine Simulation::_generator = std::default_random_engine(time(NULL));
 const std::map<std::string, int> Simulation::param_map = 
 							Simulation::create_parameter_map();
 const std::map<std::string, int> Simulation::val_map = 
@@ -59,6 +58,19 @@ void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 		verbose = text_to_bool(sm["VERBOSE"]);
 	}else{
 		verbose = DEFAULT_VERBOSE;
+	}
+
+	if( sm.find("SELFINTERSECTION") != sm.end())
+	{
+		selfint = text_to_bool(sm["SELFINTERSECTION"]);	
+	}else{
+		selfint = DEFAULT_SELFINT;	
+	}
+	if( sm.find("WEIGHT") != sm.end())
+	{
+		weight = text_to_bool(sm["WEIGHT"]);
+	}else{
+		weight = DEFAULT_WEIGHT;
 	}
 }
 
@@ -142,6 +154,8 @@ std::map<int, std::string> Simulation::create_simulation_dictionary()
 	std::map<int, std::string> m;
 	m[VAL_BIT_VERIFY] = "verify";
 	m[VAL_BIT_VISUALIZE] = "visualize";
+	m[VAL_BIT_DISTANCE] = "distance";
+
 	m[VAL_BIT_PHANTOM] = "Phantom Chain";
 	m[VAL_BIT_SAW] = "Self Avoiding Walk";
 	m[VAL_BIT_FG] = "Fractal Globule";
@@ -155,6 +169,8 @@ std::map<std::string , int> Simulation::create_parameter_map()
 	m["TYPE"] = MAP_TYPE;
 	m["OUTFILE"] = STRING_TYPE;
 	m["VERBOSE"] = BOOL_TYPE;
+	m["INTERSECTION"] = BOOL_TYPE;
+	m["WEIGHT"] = BOOL_TYPE;
 
 	// verify
 	m["SIZE"] = UNSIGNED_INTEGER_TYPE;  // Visualize also
@@ -174,6 +190,7 @@ std::map<std::string , int> Simulation::create_value_map()
 	// RUN
 	m["verify"] = VAL_BIT_VERIFY;
 	m["visualize"] = VAL_BIT_VISUALIZE;
+	m["distance"] = VAL_BIT_DISTANCE;
 	//TYPE
 	m["phantom"] = VAL_BIT_PHANTOM;
 	m["saw"] = VAL_BIT_SAW;
