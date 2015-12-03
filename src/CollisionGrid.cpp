@@ -11,7 +11,7 @@ CollisionGrid::~CollisionGrid()
 
 }
 
-void CollisionGrid::set_chain(Chain* c)
+void CollisionGrid::set_up(Chain* c)
 {
 	if(!c->ok())
 	{
@@ -37,31 +37,33 @@ void CollisionGrid::set_chain(Chain* c)
 		std::cerr << "Error posted from CollisionGrid::set_chain." << std::endl;
 		exit(1);
 	}
-
-/*	
-	Eigen::ArrayXXd tmp = c->as_array();
-	r = Eigen::ArrayXXd::Zero( 4 , c->len() );
-	r.block(1,0,3,c->len());
-
-	for(int i = 0; i<c->len(); i++)
-	{
-		r(0, i) = i;
-		r.block(1,i,3,1) = tmp.block(0,i,3,1);
-	}
-*/
-
+	
 	for(int i = 0; i < c->len(); i++)
 	{
 		// x, y and z are the indices of the box they will be placed in
 		Eigen::Vector3d r = c->as_array(i,1);
+
 		// Shift all indices to the positive quadrant
 		double x = floor((r(0)+max_axis)/box_size);
 		double y = floor((r(1)+max_axis)/box_size);
 		double z = floor((r(2)+max_axis)/box_size);
 
+
+
 		// set the map indexes with x+y*max_size+z*max_size*max_size
 		idx_type key = x+y*box_size + z*box_size*box_size;
+
+		std::vector<int> vec; 
+		if( grid.find(key) == grid.end() )
+		{
+			vec = std::vector<int>();
+		}else{
+			vec = grid[key];
+		}
+		vec.push_back(i);
+		grid[key] = vec;
 	}
+	
 }
 
 

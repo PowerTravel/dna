@@ -8,7 +8,7 @@ RUN: distance
 	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../data/default_distance.dna
-	SELFINTERSECTION: true
+	SELFINTERSECTION: false
 	WEIGHT: true
 
 %RUN: verify
@@ -16,16 +16,28 @@ RUN: distance
 %	STRIDES: 10
 %	SAMPLES: 1000
 %	EXP: true
+%	SELFINTERSECTION: true
 %
 %	TYPE: fg
 %	VERBOSE: true
-%	OUTFILE: ../matlab/phantom/R.dna
+%	OUTFILE: ../matlab/phantom/Rfgi.dna
+%
+%RUN: verify
+%	SIZE: 5000
+%	STRIDES: 10
+%	SAMPLES: 1000
+%	EXP: true
+%	SELFINTERSECTION: false
+%
+%	TYPE: fg
+%	VERBOSE: true
+%	OUTFILE: ../matlab/phantom/Rw.dna
 
-RUN: visualize
-	OUTFILE: ../data/Visualize_Default.dna
-	TYPE: fg
-	VERBOSE: true
-	SIZE: 1000
+%RUN: visualize
+%	OUTFILE: ../data/Visualize_Default.dna
+%	TYPE: fg
+%	VERBOSE: true
+%	SIZE: 1000
 
 
 

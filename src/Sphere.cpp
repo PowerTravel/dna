@@ -2,13 +2,14 @@
 
 Sphere::Sphere()
 {
-	r = 1.0;
+	r = 0.5;
+	x = Eigen::Vector3d::Zero();
 }
 
-Sphere::Sphere(Eigen::Vector3d xp, Eigen::Vector3d vp, double rp):
-Dynamics(xp,vp)
+Sphere::Sphere(Eigen::Array3d xp)
 {
-	r = rp;
+	r = 0.5;
+	x = xp;
 }
 
 Sphere::~Sphere()
@@ -16,9 +17,10 @@ Sphere::~Sphere()
 
 }
 
-void Sphere::update()
-{
 
+bool Sphere::intersects(Eigen::Array3d p)
+{
+	return false;
 }
 
 double Sphere::getRadius()

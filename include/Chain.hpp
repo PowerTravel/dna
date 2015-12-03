@@ -18,7 +18,8 @@
 #include <random>
 #include <string>
 #include <fstream>
-//#include <functional>
+
+#include "Sphere.hpp"
 
 // Base class for chains
 class Chain
@@ -26,7 +27,10 @@ class Chain
 	public:
 		Chain();
 		virtual ~Chain();
-		
+
+		void allow_selfintersection( bool as = true);
+		void use_weights( bool as = true );
+	
 		virtual void build(int N) = 0;
 		Eigen::ArrayXXd as_array();
 		Eigen::ArrayXXd as_array(int start, int size);
@@ -36,6 +40,7 @@ class Chain
 		double Rg();
 		Eigen::Array3d cm(int start, int size);
 
+		Sphere get_link(int i);
 
 		int len();
 
@@ -43,6 +48,8 @@ class Chain
 
 		friend std::ostream& operator<<(std::ostream& os, const Chain& c);
 	protected:
+		bool _selfint;
+		bool _use_weights;
 		bool _ok;
 
 		Eigen::ArrayXXd _chain;

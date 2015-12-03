@@ -1,17 +1,15 @@
  
-chain = importdata('R.dna');
+chain = importdata('Rw.dna');
 
 
 na = chain(:,1);
 R = chain(:,2);
 R_var = chain(:,3);
-%Rtheo = (0.9)*chain(:,4);
 R_theo = chain(:,4);
 
 Rg = chain(:,5);
 Rg_var = chain(:,6);
 Rg_theo = chain(:,7);
-%Rg_theo = (2/5)*chain(:,7);
 %% chain analyze points
 steps = size(na,1);
 

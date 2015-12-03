@@ -21,9 +21,9 @@
 #define VAL_BIT_VISUALIZE 2
 #define VAL_BIT_DISTANCE 4
 // TYPE
-#define VAL_BIT_PHANTOM 4
-#define VAL_BIT_SAW 8
-#define VAL_BIT_FG 16
+#define VAL_BIT_PHANTOM 8
+#define VAL_BIT_SAW 16
+#define VAL_BIT_FG 32
 
 #endif // VAL_BITS
 
@@ -46,7 +46,7 @@
 #define DEFAULT_TYPE VAL_BIT_PHANTOM
 #define DEFAULT_OUTFILE "../data/default_data.dna"
 #define DEFAULT_VERBOSE true
-#define DEFAULT_SELFINT true
+#define DEFAULT_SELFINT false
 #define DEFAULT_WEIGHT  true
 
 #endif // DEFAULT_GENERAL_PARAMETERS
@@ -72,8 +72,8 @@ class Simulation
 		int _simulation_type;
 		std::string _outfile;
 		bool verbose;
-		bool selfint;
-		bool weight;
+		bool _selfint;
+		bool _weight;
 
 		bool text_to_bool(std::string l);
 		int text_to_int(std::string l);

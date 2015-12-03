@@ -41,12 +41,18 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 
 void Distance::apply()
 {
-
+	print_pre_info();
+	if(!_valid)
+	{
+		std::cerr << "Verify not valid. Exiting" << std::endl;
+		return;
+	}
 	_c->build(_size);
-
+	std::cout << this << std::endl;
 	CollisionGrid cg = CollisionGrid();
-	cg.set_chain(_c);
+	cg.set_up(_c);
 
+	print_post_info();
 	
 
 	//std::cerr << "Simulation Distance is not implemented." << std::endl;
@@ -61,20 +67,19 @@ void Distance::print(std::ostream& os)
 		os <<"Out File   = " << _outfile << std::endl;
 		os <<"Chain Size = " << _size<< std::endl;
 		os <<"Use Weight = ";
-		if(weight)
+		if(_weight)
 		{
 			os << "true" << std::endl;
 		}else{
 			os << "false" << std::endl;
 		}
 		os <<"Allow selfintersection = ";
-		if(selfint)
+		if(_selfint)
 		{
 			os << "true" << std::endl;
 		}else{
 			os << "false" << std::endl;
 		}
-		os <<"Allow Selfintersection = " << _size<< std::endl;
 //		os <<"Nr Strides = " << _strides << std::endl;
 //		os <<"Samples    = " << _samples;
 //		os <<"Exponential= " << _exp << std::endl;

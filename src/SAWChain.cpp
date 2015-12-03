@@ -47,19 +47,8 @@ void SAWChain::build(int N)
 				break;
 			}
 		}
-/*
-		if(_retry == true)
-		{
-			std::cout << "Retry " << _n << std::endl;	
-		}
-*/
 	}while( (_retry == true ) && (tries < tries_limit) );
-/*
-	if(tries > 1)
-	{
-		std::cout << tries<< std::endl;
-	}
-*/
+
 	if(tries >= tries_limit)
 	{
 		std::cerr << "Could not make a chain with "<< tries << " tries. Exiting program" << std::endl;
@@ -84,12 +73,14 @@ Eigen::Array4d SAWChain::get_next_step()
 		}else{
 			f(i) = 1;
 		}
-	}	
-	if( occupied == 2*DIM )
-	{
-		return Eigen::Array4d::Zero();
 	}
 
+	if( occupied == 2*DIM  )
+	{
+		_retry = true;
+		return Eigen::Array4d::Zero();
+	}
+	
 	f = f/f.sum();
 	Eigen::ArrayXd F = Eigen::ArrayXd::Zero(2*DIM+1);
 
@@ -107,10 +98,10 @@ Eigen::Array4d SAWChain::get_next_step()
 		i++;	
 	}
 
-	ret(0) = set_weight(2*DIM - occupied);
-	if(ret(0) == 0)
-	{
-		_retry = true;
+	if(_use_weights){
+		ret(0) = set_weight(2*DIM - occupied);
+	}else{
+		ret(0) = 1.0;
 	}
 
 	ret.segment(1,DIM) = int_to_coord(i);

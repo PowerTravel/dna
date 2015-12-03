@@ -132,6 +132,20 @@ void Verify::print(std::ostream& os)
 	os <<"Simulation = Verify" << std::endl;
 	if(_valid)
 	{
+		os <<"Use Weight = ";
+		if(_weight)
+		{
+			os << "true" << std::endl;
+		}else{
+			os << "false" << std::endl;
+		}
+		os <<"Allow selfintersection = ";
+		if(_selfint)
+		{
+			os << "true" << std::endl;
+		}else{
+			os << "false" << std::endl;
+		}
 		os <<"Out File   = " << _outfile << std::endl;
 		os <<"Chain Size = " << _size<< std::endl;
 		os <<"Nr Strides = " << _strides << std::endl;
@@ -246,27 +260,18 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, std::vecto
 
 	PFloat unity = 1;
 	PFloat scale = unity / sum;
-	//PFloat scale = PFloat::div(unity, sum);
 	Eigen::ArrayXd s_weight = Eigen::ArrayXd(M);
 	for(int i=0; i<M; i++)
 	{
 		PFloat tmp = scale * weight[i];
 		s_weight(i) = tmp.as_float();
 	}
-	//std::cout << "scale = ";
-	//scale.print(); std::cout << std::endl;
-	//std::cout << "SUM2 = ";
-	//sum.print(); std::cout << std::endl;
-	//std::cout  << s_weight <<"  SUM  " << s_weight.sum() <<  std::endl;
 	// Weights are scaled to be unity and are written out just for clarity
 	double w_sum = 1.0;
 	ret(0) = (in_data * s_weight).sum() / w_sum;
 	double var_denominator = ((M-1)/(M)) * w_sum; 
 	double var_numerator   = ( s_weight * (in_data-ret(0)).pow(2) ).sum();
 	ret(1) = var_numerator / var_denominator;
-
-	//std::cerr << var_denominator << "   "  <<  var_numerator << "   " << ret(1) << std::endl;
-	//std::cerr << s_weight<< std::endl;
 	
 	return ret;
 }

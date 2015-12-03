@@ -21,8 +21,20 @@ Simulation::Simulation(std::map<std::string, std::string> sm)
 	_c = NULL;
 	_valid =  is_valid(sm);
 	if(_valid){
-
 		set_general_parameters(sm);
+	}
+	
+	if(_selfint)
+	{
+		_c->allow_selfintersection( true );
+	}else{
+		_c->allow_selfintersection( false );
+	}
+
+	if(_weight){
+		_c -> use_weights( true );
+	}else{
+		_c -> use_weights( false );
 	}
 }
 
@@ -62,15 +74,15 @@ void Simulation::set_general_parameters(std::map<std::string, std::string> sm)
 
 	if( sm.find("SELFINTERSECTION") != sm.end())
 	{
-		selfint = text_to_bool(sm["SELFINTERSECTION"]);	
+		_selfint = text_to_bool(sm["SELFINTERSECTION"]);	
 	}else{
-		selfint = DEFAULT_SELFINT;	
+		_selfint = DEFAULT_SELFINT;	
 	}
 	if( sm.find("WEIGHT") != sm.end())
 	{
-		weight = text_to_bool(sm["WEIGHT"]);
+		_weight = text_to_bool(sm["WEIGHT"]);
 	}else{
-		weight = DEFAULT_WEIGHT;
+		_weight = DEFAULT_WEIGHT;
 	}
 }
 
@@ -169,7 +181,7 @@ std::map<std::string , int> Simulation::create_parameter_map()
 	m["TYPE"] = MAP_TYPE;
 	m["OUTFILE"] = STRING_TYPE;
 	m["VERBOSE"] = BOOL_TYPE;
-	m["INTERSECTION"] = BOOL_TYPE;
+	m["SELFINTERSECTION"] = BOOL_TYPE;
 	m["WEIGHT"] = BOOL_TYPE;
 
 	// verify

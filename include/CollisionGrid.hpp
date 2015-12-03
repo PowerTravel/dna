@@ -22,15 +22,13 @@ class CollisionGrid{
 		CollisionGrid();
 		virtual ~CollisionGrid();
 
-		void set_chain(Chain* c);
+		void set_up(Chain* c);
 
 	private:
 
 		double box_size;	
-		std::map<std::vector<int>, idx_type > grid;
+		std::map<idx_type, std::vector<int> > grid;
 
-		Eigen::ArrayXXd r;
-		
 		int grid_map(int link, Eigen::Vector3d v);
 };
 

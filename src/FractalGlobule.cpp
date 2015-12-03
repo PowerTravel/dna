@@ -33,13 +33,13 @@ Eigen::Array4d FractalGlobule::get_next_step()
 			occupied ++;
 		}
 	}
-	// We allow for intersections
-/*
-	if(occupied == 2*DIM)
+
+	if( (occupied == 2*DIM) && (!_selfint))
 	{
 		_retry = true;
+		return Eigen::Array4d::Zero();
 	}
-*/
+
 	f = f/f.sum();
 	Eigen::ArrayXd F = Eigen::ArrayXd::Zero(2*DIM+1);
 
@@ -54,10 +54,16 @@ Eigen::Array4d FractalGlobule::get_next_step()
 	int i = 0;
 	while( !( (rand_nr > F(i)) && (rand_nr <F(i+1) ))  ) 
 	{
-		i++;	
+		i++;
 	}
 
-	ret(0) = 1.0;
+	if(_use_weights){
+		// Get a good scheme for counting weights
+		ret(0) = 1.0;
+	}else{
+		// This is the default
+		ret(0) = 1.0;
+	}
 
 	ret.segment(1,DIM) = int_to_coord(i);
 

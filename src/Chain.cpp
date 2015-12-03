@@ -10,11 +10,23 @@ std::default_random_engine Chain::_generator = std::default_random_engine(time(N
 Chain::Chain()
 {	
 	_ok = false;
+	_selfint = false;
+	_use_weights = true;
 }
 
 Chain::~Chain()
 {
 
+}
+
+void Chain::allow_selfintersection( bool as )
+{
+	_selfint = as;
+}
+
+void Chain::use_weights( bool uw )
+{
+	_use_weights = uw;
 }
 
 Eigen::ArrayXXd Chain::as_array(int start, int size)
@@ -54,6 +66,11 @@ Eigen::Array3d Chain::span()
 	Eigen::Array3d ret(sp(0)-sp(1), sp(2)-sp(3), sp(4)-sp(5)  );
 	return ret;
 
+}
+
+Sphere Chain::get_link(int i)
+{
+	return Sphere(_chain.block(0,i,3,1));
 }
 
 std::ostream& operator<<(std::ostream& os, const Chain& c)

@@ -46,9 +46,12 @@
 %
 %			'Specific parameters' for 'RUN: visualize' is:
 %			SIZE:		'Unsigned integer' 	- The size of the chain
-%							
+%			
+%		* distance -  Builds an ensamble of chains and lets a particle diffract through them and calculates
+%					  man distance and first passage.
 %					
-%	Below are general parameters valid for any simulation	
+%	Below are general parameters valid for any simulation. Note:	not all general parameters has to be used in a simulation
+%																	but they can be good to have.
 %
 %	TYPE: 'Specific value'	- What type of chain should be studied.
 %		'Specific Value' for TYPE is;
@@ -64,6 +67,17 @@
 %
 %	VERBOSE: 'Boolean'  - Tells if the program should print progress to terminal
 % 			Default is 'true'.
+%
+%	WEIGHT: 'Boolean'	- Tells if the simulation should use weighted chains when doing the statistical analysis
+%			Default is 'true'.
+%			Not always supported. Makes no difference for phantomChains as they are always weighted one for example.
+%			No weights is the same thing as setting all weights to one.
+%
+%	SELFINTERSECTION: 'Boolean'	- Tells if the chain should allow for selfintersection or not.
+%			Default is false;
+%			This does not turn a SAW to a Phantomchain. Instead it tells us if we should throw away a SAW which 
+%			encountered a self intersection or not. Same for fg.
+%
 %
 %	Below is a working example of verify and visualize
 
