@@ -56,9 +56,13 @@
 %	TYPE: 'Specific value'	- What type of chain should be studied.
 %		'Specific Value' for TYPE is;
 %		* phantom		A self intersecting random walk
+%			- Not affected by general parameter SELFINTERSECTION
+%			- Not affected by general parameter WEIGHT
 % 		* saw			A self-avoiding random walk
+%			- Not affected by general parameter WEIGHT
 %		* fg			A Fractal-Globule
-%		Default is 'phantom', will later change to 'fg' when it works
+%			- Not (yet) affected by general parameter WEIGHT
+%		Default is 'fg'
 %
 %	OUTFILE:	- Relative path to an output file in quotation marks. If file exists
 %				  it will be overwritten. 
@@ -70,13 +74,11 @@
 %
 %	WEIGHT: 'Boolean'	- Tells if the simulation should use weighted chains when doing the statistical analysis
 %			Default is 'true'.
-%			Not always supported. Makes no difference for phantomChains as they are always weighted one for example.
-%			No weights is the same thing as setting all weights to one.
+%			- Only works for chain TYPE 'saw'
 %
 %	SELFINTERSECTION: 'Boolean'	- Tells if the chain should allow for selfintersection or not.
-%			Default is false;
-%			This does not turn a SAW to a Phantomchain. Instead it tells us if we should throw away a SAW which 
-%			encountered a self intersection or not. Same for fg.
+%			Default is true;
+%			- Only works for chain TYPE 'fg'
 %
 %
 %	Below is a working example of verify and visualize
