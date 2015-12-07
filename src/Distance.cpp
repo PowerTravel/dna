@@ -15,28 +15,19 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 		_valid = false;
 	}
 
-/*
-	if( sm.find("STRIDES") != sm.end() )
+	if( sm.find("BOX_SIZE") != sm.end() )
 	{
-		_strides  = text_to_int(sm["STRIDES"]);
+		_box_size  = text_to_double(sm["BOX_SIZE"]);
 	}else{
 		_valid = false;
 	}
 
-	if( sm.find("EXP") != sm.end() )
+	if( sm.find("RADIUS") != sm.end() )
 	{
-		_exp  = text_to_bool(sm["EXP"]);
+		_rad  = text_to_double(sm["RADIUS"]);
 	}else{
 		_valid = false;
 	}
-
-	if( sm.find("SAMPLES") != sm.end() )
-	{
-		_samples  = text_to_int(sm["SAMPLES"]);
-	}else{
-		_valid = false;
-	}
-*/
 }
 
 void Distance::apply()
@@ -47,16 +38,14 @@ void Distance::apply()
 		std::cerr << "Verify not valid. Exiting" << std::endl;
 		return;
 	}
-	_c->build(_size);
 	std::cout << this << std::endl;
-	CollisionGrid cg = CollisionGrid();
+	_c->set_radius(_rad);
+	_c->build(_size);
+	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
 	print_post_info();
 	
-
-	//std::cerr << "Simulation Distance is not implemented." << std::endl;
-	//std::cerr << this << std::endl;
 }
 
 void Distance::print(std::ostream& os)
@@ -80,9 +69,8 @@ void Distance::print(std::ostream& os)
 		}else{
 			os << "false" << std::endl;
 		}
-//		os <<"Nr Strides = " << _strides << std::endl;
-//		os <<"Samples    = " << _samples;
-//		os <<"Exponential= " << _exp << std::endl;
+		os <<"Box_Size of collision grid = " << _box_size << std::endl;
+		os <<"Radius of chain links  = " << _rad << std::endl;
 	}else{
 		os << "Simulation failed to load.";
 	}

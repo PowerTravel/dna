@@ -40,18 +40,27 @@
 %			SIZE: 		'Unsigned integer' 	- The size the longest chain
 %			STRIDES: 	'Unsigned integer' 	- # datapoints
 %			SAMPLES: 	'Unsigned integer' 	- # of samples for each stride.
-%			EXP: 		'Boolean' 			- If the strides should be spaced linearly or exponentially
+%			EXP: 		'Boolean' 			- If the strides should be spaced 
+%											  linearly or exponentially
 %	
 %		* visualize - Builds one chain which can be plotted in matlab
 %
 %			'Specific parameters' for 'RUN: visualize' is:
 %			SIZE:		'Unsigned integer' 	- The size of the chain
 %			
-%		* distance -  Builds an ensamble of chains and lets a particle diffract through them and calculates
-%					  man distance and first passage.
+%		* distance -  Builds an ensamble of chains and lets a particle diffract
+%					  through them and calculates mean distance and first passage.
+%
+%			'Specific parameters' for 'RUN: distance' is:
+%			SIZE:		'Unsigned integer' 	- The size of the chain
+%			BOX_SIZE:	'double'			- The size of the boxes in the collsion
+%											  grid.
+%			RADIUS:		'double'			- The radius of the collision spheres in
+%											  the chain links.
 %					
-%	Below are general parameters valid for any simulation. Note:	not all general parameters has to be used in a simulation
-%																	but they can be good to have.
+%	Below are general parameters valid for any simulation. Note:	
+%							not all general parameters has to be used in a simulation
+%							but they can be good to have.
 %
 %	TYPE: 'Specific value'	- What type of chain should be studied.
 %		'Specific Value' for TYPE is;
@@ -72,11 +81,13 @@
 %	VERBOSE: 'Boolean'  - Tells if the program should print progress to terminal
 % 			Default is 'true'.
 %
-%	WEIGHT: 'Boolean'	- Tells if the simulation should use weighted chains when doing the statistical analysis
+%	WEIGHT: 'Boolean'	- Tells if the simulation should use weighted chains when
+%						  doing the statistical analysis
 %			Default is 'true'.
 %			- Only works for chain TYPE 'saw'
 %
-%	SELFINTERSECTION: 'Boolean'	- Tells if the chain should allow for selfintersection or not.
+%	SELFINTERSECTION: 'Boolean'	- Tells if the chain should allow for selfintersection
+%								  or not.
 %			Default is true;
 %			- Only works for chain TYPE 'fg'
 %
@@ -85,7 +96,7 @@
 
 
 RUN: verify
-	SIZE: 10000
+	SIZE: 1000
  	STRIDES: 50
 	SAMPLES: 50
 	EXP: true

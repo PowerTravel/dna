@@ -1,9 +1,9 @@
 #include "CollisionGrid.hpp"
 #include <iostream>
 
-CollisionGrid::CollisionGrid()
+CollisionGrid::CollisionGrid(double bs)
 {
-	box_size = 1.0;
+	box_size = bs;
 }
 
 CollisionGrid::~CollisionGrid()
@@ -13,6 +13,7 @@ CollisionGrid::~CollisionGrid()
 
 void CollisionGrid::set_up(Chain* c)
 {
+	std::cerr << "Creating grid " << std::endl;
 	if(!c->ok())
 	{
 		std::cerr << "ERROR: Chain not OK." << std::endl;
@@ -78,7 +79,7 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(Chain::link l)
 	idx = idx+max_idx; // Shift all the indices to be positive
 	std::vector<idx_type> ret = std::vector<idx_type>();
 //	std::cout << max_idx << std::endl;
-//	std::cout << idx.transpose() << std::endl;
+//	std::cerr << idx.transpose() << std::endl;
 	for(int i = idx(0); i<idx(1); i++)
 	{
 		for(int j = idx(2); j<idx(3); j++)

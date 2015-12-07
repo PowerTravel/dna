@@ -15,6 +15,8 @@ class Distance: public Simulation
 		void print(std::ostream& os);
 
 		int _size;
+		double _box_size;
+		double _rad;
 
 };
 

@@ -3,12 +3,13 @@
 
 
 RUN: distance
-	SIZE: 10
+	SIZE: 100
+	BOX_SIZE: 2.0
+	RADIUS: 0.5
 
 	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../data/default_distance.dna
-	SELFINTERSECTION: false
 	WEIGHT: true
 
 %RUN: verify

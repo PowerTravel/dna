@@ -192,6 +192,12 @@ std::map<std::string , int> Simulation::create_parameter_map()
 
 	// Visualize
 //	m["SIZE"] = UNSIGNED_INTEGER_TYPE;
+	
+	// Distance
+//	m["SIZE"] =	UNSIGNED_INTEGER_TYPE;
+	m["BOX_SIZE"] =	DOUBLE_TYPE;
+	m["RADIUS"] = DOUBLE_TYPE;
+	
 
 	return m;
 }

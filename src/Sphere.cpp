@@ -6,9 +6,9 @@ Sphere::Sphere()
 	x = Eigen::Vector3d::Zero();
 }
 
-Sphere::Sphere(Eigen::Array3d xp)
+Sphere::Sphere(Eigen::Array3d xp, double rad)
 {
-	r = 0.5;
+	r = rad;
 	x = xp;
 }
 
@@ -29,18 +29,6 @@ bool Sphere::intersects(Sphere* s)
 	}
 }
 
-// Returns an axis aligned box
-/*
-Sphere::axis_aligned Sphere::get_axis_aligned()
-{
-	axis_aligned ret;
-	ret.cm = x;
-	ret.x = r;
-	ret.y = r;
-	ret.z = r;
-	return ret;
-}
-*/
 // Returns min max values along the axis 
 Eigen::ArrayXd Sphere::get_span()
 {

@@ -12,6 +12,7 @@ Chain::Chain()
 	_ok = false;
 	_selfint = false;
 	_use_weights = true;
+	_rad = 0.5;
 }
 
 Chain::~Chain()
@@ -68,12 +69,17 @@ Eigen::Array3d Chain::axis_length()
 
 }
 
+void Chain::set_radius(double r)
+{
+	_rad = std::abs(r);
+}
+
 Chain::link Chain::get_link(int i)
 {
 	link l;
 	l.idx = i;
 	l.p = _chain.block(0,i,3,1);
-	l.geom = std::shared_ptr<CollisionGeometry>(new Sphere(l.p) );
+	l.geom = std::shared_ptr<CollisionGeometry>(new Sphere(l.p,_rad) );
 	return l;
 }
 

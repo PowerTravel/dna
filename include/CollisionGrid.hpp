@@ -19,7 +19,7 @@ typedef unsigned int idx_type;
 
 class CollisionGrid{
 	public:
-		CollisionGrid();
+		CollisionGrid(double bs);
 		virtual ~CollisionGrid();
 
 		void set_up(Chain* c);

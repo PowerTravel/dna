@@ -46,6 +46,7 @@ class Chain
 		double Rg();
 		Eigen::Array3d cm(int start, int size);
 
+		void set_radius(double r);
 		link get_link(int i);
 
 		int len();
@@ -60,6 +61,7 @@ class Chain
 
 		Eigen::ArrayXXd _chain;
 		Eigen::ArrayXd _w;
+		double _rad;
 		//double _a;
 
 		//PFloat mult_weights();
