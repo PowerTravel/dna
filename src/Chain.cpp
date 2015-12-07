@@ -38,7 +38,7 @@ Eigen::ArrayXXd Chain::as_array()
 	return _chain;
 }
 
-Eigen::Array3d Chain::span()
+Eigen::Array3d Chain::axis_length()
 {
 	Eigen::ArrayXd sp = Eigen::ArrayXd::Zero(6);
 	for(int i = 0; i<len(); i++)
@@ -68,9 +68,13 @@ Eigen::Array3d Chain::span()
 
 }
 
-Sphere Chain::get_link(int i)
+Chain::link Chain::get_link(int i)
 {
-	return Sphere(_chain.block(0,i,3,1));
+	link l;
+	l.idx = i;
+	l.p = _chain.block(0,i,3,1);
+	l.geom = std::shared_ptr<CollisionGeometry>(new Sphere(l.p) );
+	return l;
 }
 
 std::ostream& operator<<(std::ostream& os, const Chain& c)
@@ -152,3 +156,5 @@ bool Chain::ok()
 {
 	return _ok;
 }
+	
+

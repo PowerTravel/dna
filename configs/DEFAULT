@@ -3,7 +3,7 @@
 
 
 RUN: distance
-	SIZE: 100
+	SIZE: 10
 
 	TYPE: fg
 	VERBOSE: true

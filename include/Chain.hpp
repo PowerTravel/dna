@@ -20,11 +20,17 @@
 #include <fstream>
 
 #include "Sphere.hpp"
-
+#include <memory>
 // Base class for chains
 class Chain
 {
 	public:
+		struct link{
+			int idx;
+			Eigen::Array3d p;
+			std::shared_ptr<CollisionGeometry> geom;
+		};
+
 		Chain();
 		virtual ~Chain();
 
@@ -35,12 +41,12 @@ class Chain
 		Eigen::ArrayXXd as_array();
 		Eigen::ArrayXXd as_array(int start, int size);
 		Eigen::ArrayXd weights();
-		Eigen::Array3d span();
+		Eigen::Array3d axis_length();
 		double Rg(int start, int size);
 		double Rg();
 		Eigen::Array3d cm(int start, int size);
 
-		Sphere get_link(int i);
+		link get_link(int i);
 
 		int len();
 
