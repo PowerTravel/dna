@@ -21,7 +21,6 @@ class Particle{
 		bool first_step_taken;
 
 		CollisionGrid* grid;
-		Sphere S;
 		double r;
 		Eigen::Vector3d v;
 		Eigen::Vector3d x;

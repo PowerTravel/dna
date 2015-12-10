@@ -1,9 +1,10 @@
 #include "Plane.hpp"
 #include "Sphere.hpp"
-Plane::Plane(Eigen::Array3d xp, Eigen::Array3d np)
+#include <iostream>
+Plane::Plane(Eigen::Vector3d xp, Eigen::Vector3d np)
 {
 	x = xp;
-	n = np;
+	n = np.normalized();
 }
 
 Plane::~Plane()
@@ -19,8 +20,8 @@ bool Plane::intersects(Sphere* s)
 bool Plane::intersects(Plane* p)
 {
 	// Any plane that is not parallell intersects at some point
-	Eigen::Vector3d pn1 = p->getPlaneNormal().matrix();
-	Eigen::Vector3d pn2 = n.matrix();
+	Eigen::Vector3d pn1 = p->getPlaneNormal();
+	Eigen::Vector3d pn2 = n;
 
 	double tol = 0.0000001;
 
@@ -32,16 +33,29 @@ bool Plane::intersects(Plane* p)
 	return false;
 }
 
+double Plane::line_intersection_point(Eigen::ArrayXd r, Eigen::ArrayXd v)
+{
+	Eigen::Vector3d nv = n;
+	Eigen::Vector3d xv = x;
+	Eigen::Vector3d rv = r.matrix();
+	Eigen::Vector3d vv = v.matrix();
+
+	double num =(xv - rv).transpose() * nv; 
+	double denom = vv.transpose() * nv;
+
+	return num / denom;
+}
+
 Eigen::ArrayXd Plane::get_span()
 {
 	return Eigen::ArrayXd::Zero(6);
 }
 
-Eigen::ArrayXd Plane::getPlaneNormal()
+Eigen::Vector3d Plane::getPlaneNormal()
 {
 	return n;
 }
-Eigen::ArrayXd Plane::getPoint()
+Eigen::Vector3d Plane::getPoint()
 {
 	return x;
 }

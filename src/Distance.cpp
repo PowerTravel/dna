@@ -44,10 +44,12 @@ void Distance::apply()
 	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
+
+
 	Particle p = Particle(0.5, Eigen::Array3d(0,4,0), &cg);
-	for(int i = 0; i < 20; i++)
+	for(int i = 0; i < 500; i++)
 	{
-		p.update(0.1,Eigen::Array3d(0,-9.82,0) );
+		p.update(0.01, Eigen::Array3d(0,-9.82,0) );
 	}
 	
 	std::ofstream file;

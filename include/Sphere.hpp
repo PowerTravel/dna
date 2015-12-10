@@ -12,6 +12,7 @@ class Sphere: public CollisionGeometry
 
 		bool intersects(Sphere* s);	
 		bool intersects(Plane* p);
+		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
 	
 		double getRadius();

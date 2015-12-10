@@ -40,13 +40,16 @@ bool Sphere::intersects(Plane* p)
 	double plane_sphere_distance = ( ( sc - pc ).transpose() * pn);
 	if( plane_sphere_distance < r )
 	{
-		std::cout << "sphere coll: "<< plane_sphere_distance << "  " << r << std::endl;
 		return true;	
 	}
 
 	return false;
 }
 
+double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
+{
+	return 0;
+}
 // Returns min max values along the axis 
 Eigen::ArrayXd Sphere::get_span()
 {
