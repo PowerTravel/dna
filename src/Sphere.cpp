@@ -1,4 +1,5 @@
 #include "Sphere.hpp"
+#include "Plane.hpp"
 
 Sphere::Sphere()
 {
@@ -28,6 +29,23 @@ bool Sphere::intersects(Sphere* s)
 		return false;
 	}
 }
+#include <iostream>
+bool Sphere::intersects(Plane* p)
+{
+	Eigen::Vector3d sc = x.matrix();
+	Eigen::Vector3d pc = p->getPoint().matrix();
+	Eigen::Vector3d pn = p->getPlaneNormal().matrix();
+
+	// Find the distance from the plane to the sphere center
+	double plane_sphere_distance = ( ( sc - pc ).transpose() * pn);
+	if( plane_sphere_distance < r )
+	{
+		std::cout << "sphere coll: "<< plane_sphere_distance << "  " << r << std::endl;
+		return true;	
+	}
+
+	return false;
+}
 
 // Returns min max values along the axis 
 Eigen::ArrayXd Sphere::get_span()
@@ -41,12 +59,13 @@ Eigen::ArrayXd Sphere::get_span()
 	ret(5) = x(2)+r; // z_max
 	return ret;
 }
-
 double Sphere::getRadius()
 {
 	return r;
 }
+/*
 Eigen::Array3d Sphere::getCenter()
 {
 	return x;
 }
+*/

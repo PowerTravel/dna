@@ -1,5 +1,5 @@
-#ifndef RCHAIN_HPP
-#define RCHAIN_HPP
+#ifndef CHAIN_HPP
+#define CHAIN_HPP
 
 #ifndef MAX_GRID_SIZE
 #define MAX_GRID_SIZE 1000
@@ -70,4 +70,4 @@ class Chain
 
 };
 
-#endif // RCHAIN_HPP
+#endif // CHAIN_HPP

@@ -272,7 +272,7 @@ Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, std::vecto
 	double var_denominator = ((M-1)/(M)) * w_sum; 
 	double var_numerator   = ( s_weight * (in_data-ret(0)).pow(2) ).sum();
 	ret(1) = var_numerator / var_denominator;
-	
+
 	return ret;
 }
 

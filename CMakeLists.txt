@@ -15,10 +15,12 @@ add_executable(dna
 	src/Visualize.cpp
 	src/Distance.cpp
 
+	src/CollisionGrid.cpp
 	src/CollisionGeometry.cpp
 	src/Sphere.cpp
+	src/Plane.cpp
 
-	src/CollisionGrid.cpp
+	src/Particle.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

@@ -23,9 +23,12 @@ class CollisionGrid{
 		virtual ~CollisionGrid();
 
 		void set_up(Chain* c);
+		// Takes the collision geometry and preforms broad phase collisoin detection
+		// Returns a vector of all possible intersections.
+		std::vector< std::shared_ptr<CollisionGeometry> > get_collision_bodies(CollisionGeometry& g);
 
 	private:
-
+		Chain* _c;
 		double box_size;	
 		int max_idx;
 		std::map<idx_type, std::vector<int> > grid;
@@ -35,7 +38,8 @@ class CollisionGrid{
 		int get_max_axis(Chain* c);
 		void push_key_to_map(idx_type key, int val);
 
-		std::vector<idx_type> get_intersection_keys(Chain::link l);
+		//std::vector<idx_type> get_intersection_keys(Chain::link l);
+		std::vector<idx_type> get_intersection_keys(CollisionGeometry& g);
 };
 
 #endif

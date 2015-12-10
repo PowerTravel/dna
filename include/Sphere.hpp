@@ -11,10 +11,11 @@ class Sphere: public CollisionGeometry
 		virtual ~Sphere();
 
 		bool intersects(Sphere* s);	
+		bool intersects(Plane* p);
 		Eigen::ArrayXd get_span();
 	
 		double getRadius();
-		Eigen::Array3d getCenter();
+//		Eigen::Array3d getCenter();
 	private:
 
 		double r;				// Radious

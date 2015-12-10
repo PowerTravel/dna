@@ -44,6 +44,22 @@ void Distance::apply()
 	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
+	Particle p = Particle(0.5, Eigen::Array3d(0,4,0), &cg);
+	for(int i = 0; i < 20; i++)
+	{
+		p.update(0.1,Eigen::Array3d(0,-9.82,0) );
+	}
+	
+	std::ofstream file;
+	file.open(_outfile, std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << p << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
+	}
+
+	file.close();
+
 	print_post_info();
 	
 }

@@ -3,6 +3,7 @@
 
 #include "Simulation.hpp"
 #include "CollisionGrid.hpp"
+#include "Particle.hpp"
 class Distance: public Simulation
 {
 	public:
