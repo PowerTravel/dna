@@ -10,8 +10,8 @@ class Sphere: public CollisionGeometry
 		Sphere(Eigen::Array3d xp, double rad);
 		virtual ~Sphere();
 
-		bool intersects(Sphere* s);	
-		bool intersects(Plane* p);
+		bool intersects(Sphere* s, coll_struct& cs);
+		bool intersects(Plane* p, coll_struct& cs);
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
 	
@@ -20,7 +20,7 @@ class Sphere: public CollisionGeometry
 	private:
 
 		double r;				// Radious
-		Eigen::Array3d x;		// Position
+		Eigen::Vector3d x;		// Position
 };
 
 #endif // SPHERE_HPP

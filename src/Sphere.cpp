@@ -1,5 +1,6 @@
 #include "Sphere.hpp"
 #include "Plane.hpp"
+#include <iostream>
 
 Sphere::Sphere()
 {
@@ -10,7 +11,7 @@ Sphere::Sphere()
 Sphere::Sphere(Eigen::Array3d xp, double rad)
 {
 	r = rad;
-	x = xp;
+	x = xp.matrix();
 }
 
 Sphere::~Sphere()
@@ -19,7 +20,7 @@ Sphere::~Sphere()
 }
 
 
-bool Sphere::intersects(Sphere* s)
+bool Sphere::intersects(Sphere* s, coll_struct& cs)
 {
 	Eigen::Vector3d R =  s->x.matrix() - this-> x.matrix();
 	if( R.norm() < (s->r+this->r) )
@@ -29,18 +30,18 @@ bool Sphere::intersects(Sphere* s)
 		return false;
 	}
 }
-#include <iostream>
-bool Sphere::intersects(Plane* p)
+bool Sphere::intersects(Plane* p, coll_struct& cs)
 {
-	Eigen::Vector3d sc = x.matrix();
-	Eigen::Vector3d pc = p->getPoint().matrix();
-	Eigen::Vector3d pn = p->getPlaneNormal().matrix();
+	Eigen::Vector3d pc = p->getPoint();
+	Eigen::Vector3d pn = p->getPlaneNormal();
 
 	// Find the distance from the plane to the sphere center
-	double plane_sphere_distance = ( ( sc - pc ).transpose() * pn);
+	double plane_sphere_distance =std::abs( ( x - pc ).transpose() * pn);
 	if( plane_sphere_distance < r )
 	{
-		return true;	
+		cs.p = r - plane_sphere_distance; // Penetration depth
+		cs.n = pn;						  // Collision plane normal
+		return true;
 	}
 
 	return false;

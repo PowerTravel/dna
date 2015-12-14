@@ -1,11 +1,17 @@
 data = load('../../data/default_distance.dna');
 
-N = size(data,1)
+    N = size(data,1);
+animate = true;
 
-
-plot3(data(:,1),data(:,2),data(:,3),'.','markersize',15)
-%for i = 1:N
-%    plot3(data(i,1:3))
-%    pause
-%end
-
+r = 5;
+axis([-r,r,-r,r,-r,r]);
+if(~animate)
+    plot(data(:,1),data(:,2),'.','markersize',15)
+else
+    for i = 1:N
+        plot(data(i,1),data(i,2),'.','markersize',15);
+        hold on
+        pause(0.01);
+    end
+    hold off
+end

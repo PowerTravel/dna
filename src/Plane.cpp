@@ -12,12 +12,12 @@ Plane::~Plane()
 
 }
 
-bool Plane::intersects(Sphere* s)
+bool Plane::intersects(Sphere* s, coll_struct& cs)
 {
-	return s->intersects(this);	
+	return s->intersects(this, cs);	
 }
 
-bool Plane::intersects(Plane* p)
+bool Plane::intersects(Plane* p, coll_struct& cs)
 {
 	// Any plane that is not parallell intersects at some point
 	Eigen::Vector3d pn1 = p->getPlaneNormal();
