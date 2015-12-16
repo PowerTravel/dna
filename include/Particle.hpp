@@ -35,13 +35,17 @@ class Particle{
 		bool first_step_taken;
 
 		CollisionGrid* grid;
-		double r;
-		Eigen::Vector3d v;
-		Eigen::Vector3d x;
+		double _r;
+		Eigen::Vector3d _v;
+		Eigen::Vector3d _x;
 		std::vector< Eigen::VectorXd > traj;
 		std::list< intersections > collisions;
 
-		void do_one_collision(intersections is);
+		intersections align_normal(intersections is, Eigen::Vector3d v);
+
+		Eigen::VectorXd do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a, intersections is);
+
+		std::list<intersections> get_coll_list(std::vector<std::shared_ptr< CollisionGeometry> > v, Sphere s);
 
 		std::vector< std::shared_ptr<CollisionGeometry> > build_sphere_and_plane();
 };

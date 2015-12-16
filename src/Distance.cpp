@@ -46,13 +46,13 @@ void Distance::apply()
 
 	int N = 2000;
 	double dt = 0.01;
-
+	double g = 0;
 	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(10,2,0), &cg);
-//	Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(10,10.01,0), &cg);
-	Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(0,0,0), &cg);
+	Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(1,1,0), &cg);
+	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(1,0,0), &cg);
 	for(int i = 0; i < N; i++)
 	{
-		p.update(dt, Eigen::Array3d(0,-9.82,0) );
+		p.update(dt, Eigen::Array3d(0,g,0) );
 	}
 	
 	std::ofstream file;
