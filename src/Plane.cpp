@@ -12,6 +12,12 @@ Plane::~Plane()
 
 }
 
+bool Plane::intersects(Cylinder* s, coll_struct& cs)
+{
+	std::cerr << "intersects plane -> Cylinder not implemented " << std::endl;
+	return false;
+}
+
 bool Plane::intersects(Sphere* s, coll_struct& cs)
 {
 	return s->intersects(this, cs);	
@@ -23,11 +29,21 @@ bool Plane::intersects(Plane* p, coll_struct& cs)
 	Eigen::Vector3d pn1 = p->getPlaneNormal();
 	Eigen::Vector3d pn2 = n;
 
+	
+	Eigen::Vector3d x1 = p->getPoint();
+	Eigen::Vector3d x2 = x;
+
+
 	double tol = 0.0000001;
 
+	// if the planes are not parallel they intersect at some point
 	if( (std::abs(pn1.transpose()*pn2) - 1.0 )< tol  )
 	{
 		return true;
+
+	// If the planes are paralell lie on top of each other they intersect everywhere
+	}else if( ( (x1 - x2).transpose() * pn2 )< tol  ){
+		return true;	
 	}
 
 	return false;

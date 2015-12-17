@@ -67,21 +67,24 @@ void Particle::update(double dt, Eigen::Array3d a)
 //	if(collisions.size()>0){
 	bool next = false;
 	while(collisions.size() > 0){
-		if(collisions.size() > 1 || next)
-		{
-			std::cout << collisions.size() << std::endl;
-			if(collisions.size() > 1 )
-			{
-				next = true;
-			}else{
-				next = false;
-			}
-		}
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
 		// The assumption being that that was the first collision.
 		collisions.sort(sort_after_penetration_depth);
-
+		if(collisions.size() > 1 || next)
+		{
+			std::cout << collisions.size() << std::endl;
+			for(auto it = collisions.begin(); it != collisions.end(); it++)
+			{
+				std::cout << it->cs.n.transpose() << "  " << it->cs.p << std::endl; 
+				std::cout << "Need to determine what happens if a collisin is truly simultaneous!" << std::endl;
+				std::cout << "Maybe calculate collision time for all overlaping collisions and if they are truly equal we set the collision normals to the sum of all simultaneous collisions. " << std::endl;
+			}
+			next = true;
+			if(collisions.size() == 0){
+				next = false;
+			}
+		}
 
 		// Handle the first collision, update the position of the particle and do this all over again
 		// Flip the normal of the collision - geometry such that v dot n < 0
@@ -91,33 +94,22 @@ void Particle::update(double dt, Eigen::Array3d a)
 		X = tmp.segment(0,7);
 		X_P = tmp.segment(7,7);
 	
-	//	std::cout << X.transpose() << std::endl;
-	//	std::cout << X_P.transpose() << std::endl;
-	//	exit(0);
-		
 		S = Sphere(X_P.segment(1,3), _r);
 		collisions = get_coll_list(coll_geom_vec, S);
 
-		//if( i > 10)
-		//{
-		//	std::cout << "program failed" << std::endl;
-		//	exit(1);
-		//}else{
-		//	i++;
-		//}
 	}
 
 	_x = X_P.segment(1,3);
 	_v = X_P.segment(4,3);
-	traj.push_back(X_P.segment(1,6));
+	_E = get_energy(a.matrix());
 
-//	x = xp;
-//	v = vp;
-//	Eigen::VectorXd tt = Eigen::VectorXd::Zero(6);
-//	tt.segment(0,3) = x;
-//	tt.segment(3,3) = v;
-//	traj.push_back(tt);
-//	std::cout << tt.transpose() << std::endl;
+	Eigen::VectorXd log = Eigen::VectorXd::Zero(9);
+	log.segment(0,3) = _x;
+	log.segment(3,3) = _v;
+	log.segment(6,3) = _E;
+
+	//traj.push_back(X_P.segment(1,6));
+	traj.push_back(log);
 }
 
 Particle::intersections Particle::align_normal(intersections is, Eigen::Vector3d v)
@@ -200,6 +192,21 @@ bool Particle::sort_after_penetration_depth(const Particle::intersections& first
 	return (p1>p2);
 }
 
+Eigen::Vector3d Particle::get_energy(Eigen::Vector3d g)
+{
+	Eigen::Vector3d E;
+	// Ek
+	double a = _v.transpose()*_v;
+	E(0) = a/ 2.0;
+	// Ep
+	//E(1) = g.transpose() * _x;
+	E(1) =- g(1)* _x(1);
+	// Etot
+	E(2) = E(0) + E(1);
+	//std::cout << E.transpose() << std::endl;
+	return E;
+}
+
 std::ostream& operator<<(std::ostream& os, const Particle& p)
 {
 	for(auto it = p.traj.begin(); it != p.traj.end(); it++)
@@ -216,12 +223,12 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 		std::vector<std::shared_ptr<CollisionGeometry> >();
 
 		// Floor and roof
+		/*
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Plane(Eigen::Vector3d(0,box_r,0), Eigen::Vector3d(0,-1,0)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Plane(Eigen::Vector3d(0,-box_r,0), Eigen::Vector3d(0,1,0)) ));
 			
-
 
 		// Left and right wall
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
@@ -235,6 +242,11 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Plane(Eigen::Vector3d(0,0, -box_r), Eigen::Vector3d(0,0,1)) ));
 	
+	*/
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Eigen::Vector3d(-5,-22,0), 20.0) ));
 	return coll_geom_vec;
 }
 

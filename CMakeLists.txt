@@ -18,6 +18,7 @@ add_executable(dna
 	src/CollisionGrid.cpp
 	src/Sphere.cpp
 	src/Plane.cpp
+	src/Cylinder.cpp
 
 	src/Particle.cpp
 )

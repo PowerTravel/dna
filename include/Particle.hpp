@@ -16,7 +16,7 @@ class Particle{
 
 		Eigen::Array3d get_position();
 		Eigen::Array3d get_velocity();
-		
+		Eigen::Vector3d get_energy(Eigen::Vector3d g);	
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
 	private:
 
@@ -40,6 +40,8 @@ class Particle{
 		Eigen::Vector3d _x;
 		std::vector< Eigen::VectorXd > traj;
 		std::list< intersections > collisions;
+		
+		Eigen::Vector3d _E;
 
 		intersections align_normal(intersections is, Eigen::Vector3d v);
 
