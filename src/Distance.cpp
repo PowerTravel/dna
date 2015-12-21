@@ -44,7 +44,7 @@ void Distance::apply()
 	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
-	int N = 3000;
+	int N = 30000;
 	
 	double dt = 0.001;
 	double g = -1.00;

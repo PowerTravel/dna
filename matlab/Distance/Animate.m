@@ -1,7 +1,7 @@
 data = load('../../data/default_distance.dna');
 
 N = size(data,1);
-animate = false;
+animate = true;
 x = 1:N;
 figure(1)
 plot(x, data(:,9),x, data(:,8),x, data(:,7));
@@ -9,23 +9,36 @@ legend({'e_tot', 'Ep', 'Ek'})
 
 f = @(t,r,x,y) sqrt(r.^2-(t-x).^2)+y;
 
+plane = @(p,k, x) k*(p(1)-x) + p(2);
+
 figure(2)
-frame_jump = 5;
+frame_jump = 20;
 if(~animate)
+    T = -10:0.1:10;
     %plot(data(:,1),data(:,2),'.','markersize',15)
     plot(data(:,1),data(:,2),'.');
     hold on
-    T = 0:0.1:20;
-    plot(T , f(T,20,5,-22))
+    T = -10:0.1:10;
+    plot(T, plane([0,-3],-1,T) );
+    plot(T, plane([0,-3],1,T) );
+    %plot(T , f(T,20,5,-22))
     %plot(T , f(T,20,-5,-22))
 else
     r = 5;
     
     for i = 1:N
         if(mod(i,frame_jump) == 0)
-        plot(data(i,1),data(i,2),'.','markersize',15);
+        A = data(i,1)-0.4999:0.01:data(i,1)+0.4999;
+        %plot(data(i,1),data(i,2),'.','markersize',15);
+        plot(A,f(A,0.5,data(i,1),data(i,2)));
+        hold on
+        plot(A,-f(A,0.5,data(i,1),-data(i,2)));
+        T = -10:0.1:10;
+        plot(T, plane([0,-3],-1,T) );
+        plot(T, plane([0,-3],1,T) );
         axis([-r,r,-r,r]);
         pause(0.001);
+        hold off
         end
     end
     hold off

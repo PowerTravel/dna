@@ -65,27 +65,45 @@ void Particle::update(double dt, Eigen::Array3d a)
 	collisions = get_coll_list(coll_geom_vec, S);
 	
 //	if(collisions.size()>0){
-	bool next = false;
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
 		// The assumption being that that was the first collision.
 		collisions.sort(sort_after_penetration_depth);
-		if(collisions.size() > 1 || next)
-		{
-			std::cout << collisions.size() << std::endl;
-			for(auto it = collisions.begin(); it != collisions.end(); it++)
-			{
-				std::cout << it->cs.n.transpose() << "  " << it->cs.p << std::endl; 
-				std::cout << "Need to determine what happens if a collisin is truly simultaneous!" << std::endl;
-				std::cout << "Maybe calculate collision time for all overlaping collisions and if they are truly equal we set the collision normals to the sum of all simultaneous collisions. " << std::endl;
-			}
-			next = true;
-			if(collisions.size() == 0){
-				next = false;
-			}
-		}
 
+		auto it = collisions.begin();
+		
+		intersections s = align_normal(*it, vp);
+		collisions.pop_front();
+		collisions.push_front(s);
+
+		Eigen::Vector3d contact_point = xp - _r * it->cs.n;
+		double dt_t1 = it->geom->line_intersection_point(contact_point, vp);
+		it++;
+		while( it != collisions.end() )
+		{
+			Eigen::Vector3d contact_point = xp - _r * it->cs.n;
+			double dt_t2 = it->geom->line_intersection_point(contact_point, vp);
+			if( std::abs(dt_t2 - dt_t1) < 0.0000000001 )
+			{
+				intersections tmp_i = collisions.front();
+				tmp_i = align_normal(tmp_i, vp);
+				// std::cerr << "SOMETHING WEIRD IS GOING ON HERE WITH PLANES BEING TOO CLOSE TO THE PART LOOL << std::endl;"
+				CollisionGeometry::coll_struct cs_tmp = tmp_i.cs;
+				/// Need to align the normal of the intersection struct used to calculate dt_t1, aka the one that lies in the front
+				//tmp = align_normal(tmp, _vp);
+				cs_tmp.n = (cs_tmp.n + it->cs.n).normalized();
+
+//				Eigen::Vector3d eff_n = (cs_tmp.n + it->cs.n).normalized();
+
+				tmp_i.cs = cs_tmp;
+				collisions.pop_front();
+				collisions.push_front(tmp_i);
+				std::cerr  << "bajs "  << collisions.size() << " dt =  " << dt_t1<<" norm =" << cs_tmp.n.transpose()  << std::endl;
+			}
+			it++;
+		}
+		std::cerr  << "kiss "  << collisions.size()<< std::endl;
 		// Handle the first collision, update the position of the particle and do this all over again
 		// Flip the normal of the collision - geometry such that v dot n < 0
 		intersections c = align_normal(collisions.front(), _v);
@@ -96,6 +114,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 	
 		S = Sphere(X_P.segment(1,3), _r);
 		collisions = get_coll_list(coll_geom_vec, S);
+		
 
 	}
 
@@ -155,6 +174,7 @@ Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eig
 
 	// Den punkt på sfären som först träffar collisionsplanet
 	Eigen::Vector3d contact_point = x - _r * cs.n;
+	std::cout << "Contact point:"  << contact_point.transpose() << std::endl;
 	double dt_t = is.geom->line_intersection_point(contact_point, v);
 
 	// Center på sfären när den kolliderar
@@ -244,9 +264,14 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 	
 	*/
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));
+				new Plane(Eigen::Vector3d(0,-3,0), Eigen::Vector3d(-2,1,0)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Sphere(Eigen::Vector3d(-5,-22,0), 20.0) ));
+				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(2,1,0)) ));
+	
+//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+//				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));
+//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+//				new Sphere(Eigen::Vector3d(-5,-22,0), 20.0) ));
 	return coll_geom_vec;
 }
 

@@ -27,6 +27,7 @@ class Particle{
 			}
 			std::shared_ptr<CollisionGeometry> geom;
 			CollisionGeometry::coll_struct cs; 
+			Eigen::Vector3d effective_n;
 		};
 
 
