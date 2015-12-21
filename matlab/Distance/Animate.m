@@ -1,7 +1,7 @@
 data = load('../../data/default_distance.dna');
 
 N = size(data,1);
-animate = true;
+animate = false;
 x = 1:N;
 figure(1)
 plot(x, data(:,9),x, data(:,8),x, data(:,7));
@@ -16,11 +16,13 @@ frame_jump = 20;
 if(~animate)
     T = -10:0.1:10;
     %plot(data(:,1),data(:,2),'.','markersize',15)
-    plot(data(:,1),data(:,2),'.');
+    plot3(data(:,1),data(:,2),data(:,3),'.');
     hold on
     T = -10:0.1:10;
-    plot(T, plane([0,-3],-1,T) );
-    plot(T, plane([0,-3],1,T) );
+    %plot(T, plane([0,-3],-1,T) );
+    %plot(T, plane([0,-3],1,T) );
+    xlabel('x')
+    ylabel('y')
     %plot(T , f(T,20,5,-22))
     %plot(T , f(T,20,-5,-22))
 else

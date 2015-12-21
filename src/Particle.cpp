@@ -64,7 +64,6 @@ void Particle::update(double dt, Eigen::Array3d a)
 	Sphere S = Sphere(X_P.segment(1,3), _r);
 	collisions = get_coll_list(coll_geom_vec, S);
 	
-//	if(collisions.size()>0){
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
@@ -77,33 +76,28 @@ void Particle::update(double dt, Eigen::Array3d a)
 		collisions.pop_front();
 		collisions.push_front(s);
 
-		Eigen::Vector3d contact_point = xp - _r * it->cs.n;
-		double dt_t1 = it->geom->line_intersection_point(contact_point, vp);
+		Eigen::Vector3d contact_point_1 = xp - _r * it->cs.n;
+		double dt_t1 = it->geom->line_intersection_point(contact_point_1, vp);
 		it++;
 		while( it != collisions.end() )
 		{
-			Eigen::Vector3d contact_point = xp - _r * it->cs.n;
-			double dt_t2 = it->geom->line_intersection_point(contact_point, vp);
+			Eigen::Vector3d contact_point_2 = xp - _r * it->cs.n;
+			double dt_t2 = it->geom->line_intersection_point(contact_point_2, vp);
 			if( std::abs(dt_t2 - dt_t1) < 0.0000000001 )
 			{
 				intersections tmp_i = collisions.front();
 				tmp_i = align_normal(tmp_i, vp);
-				// std::cerr << "SOMETHING WEIRD IS GOING ON HERE WITH PLANES BEING TOO CLOSE TO THE PART LOOL << std::endl;"
-				CollisionGeometry::coll_struct cs_tmp = tmp_i.cs;
-				/// Need to align the normal of the intersection struct used to calculate dt_t1, aka the one that lies in the front
-				//tmp = align_normal(tmp, _vp);
-				cs_tmp.n = (cs_tmp.n + it->cs.n).normalized();
+				tmp_i.effective_n = tmp_i.cs.n;
 
-//				Eigen::Vector3d eff_n = (cs_tmp.n + it->cs.n).normalized();
+				tmp_i.effective_n = (tmp_i.effective_n + it->cs.n).normalized();
 
-				tmp_i.cs = cs_tmp;
 				collisions.pop_front();
 				collisions.push_front(tmp_i);
-				std::cerr  << "bajs "  << collisions.size() << " dt =  " << dt_t1<<" norm =" << cs_tmp.n.transpose()  << std::endl;
+
+				std::cerr << "Simultaneous collision with many collisionbodies, may contain errors. This is printed mainly because I don't bother making this work perfectly untill I know it will happen in real simulations. So if I see this later when diffusing particles in a fractal. Check it out in particle " << std::endl;
 			}
 			it++;
 		}
-		std::cerr  << "kiss "  << collisions.size()<< std::endl;
 		// Handle the first collision, update the position of the particle and do this all over again
 		// Flip the normal of the collision - geometry such that v dot n < 0
 		intersections c = align_normal(collisions.front(), _v);
@@ -174,7 +168,6 @@ Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eig
 
 	// Den punkt på sfären som först träffar collisionsplanet
 	Eigen::Vector3d contact_point = x - _r * cs.n;
-	std::cout << "Contact point:"  << contact_point.transpose() << std::endl;
 	double dt_t = is.geom->line_intersection_point(contact_point, v);
 
 	// Center på sfären när den kolliderar
@@ -183,8 +176,14 @@ Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eig
 	Eigen::Vector3d v_c = v +  dt_t * a;
 
 	// Reflektera hastigheten runt kollisionsplanet
-	double len = v_c.transpose() * cs.n;
-	Eigen::Vector3d v_norm  = len * cs.n;
+	Eigen::Vector3d n = cs.n;
+	if(is.effective_n != Eigen::Vector3d::Zero())
+	{
+		n = is.effective_n;
+	}
+
+	double len = v_c.transpose() * n;
+	Eigen::Vector3d v_norm  = len * n;
 	Eigen::Vector3d v_paralell  = v_c - v_norm;
 	v_c = v_paralell - v_norm;
 
@@ -264,9 +263,10 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 	
 	*/
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,-3,0), Eigen::Vector3d(-2,1,0)) ));
+				new Plane(Eigen::Vector3d(0,-3,0), Eigen::Vector3d(-1,1,0)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(2,1,0)) ));
+				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
+	
 	
 //	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 //				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));

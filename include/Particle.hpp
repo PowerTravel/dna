@@ -24,6 +24,7 @@ class Particle{
 			intersections()
 			{
 				geom = NULL;
+				effective_n = Eigen::Vector3d::Zero();
 			}
 			std::shared_ptr<CollisionGeometry> geom;
 			CollisionGeometry::coll_struct cs; 

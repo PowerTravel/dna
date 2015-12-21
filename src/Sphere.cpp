@@ -76,6 +76,7 @@ double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 		std::cerr << "Immaginary solution to sphere - line intersection" << std::endl;
 		return 0;
 	}
+	
 	double ret_1 = - p/2.0 - std::sqrt( p2 - q );
 	double ret_2 = - p/2.0 + std::sqrt( p2 - q );
 
