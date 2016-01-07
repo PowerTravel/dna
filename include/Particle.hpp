@@ -6,6 +6,7 @@
 #include "CollisionGrid.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
+#include "Cylinder.hpp"
 class Particle{
 
 	public:

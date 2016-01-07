@@ -66,7 +66,6 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 
 bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 {
-
 	// Cylinder
 	double rho_c = c->_r;
 	double h = c->_h;
@@ -136,11 +135,14 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 
 	// P->B->Q
 	}else{
+	//std::cout << _x.transpose() << std::endl; 
 		
 		cs.n = -c->_d;
 		rho_sp = rho_s;
 	}
 
+		//std::cout << rho_sp << std::endl;
+	//	std::cout << delta << std::endl;
 	if(delta < rho_sp +rho_c)
 	{
 		cs.p = (rho_sp + rho_c) - delta;
@@ -171,8 +173,8 @@ bool Sphere::intersects(Sphere* s, coll_struct& cs)
 
 bool Sphere::intersects(Plane* p, coll_struct& cs)
 {
-	Eigen::Vector3d pc = p->getPoint();
-	Eigen::Vector3d pn = p->getPlaneNormal();
+	Eigen::Vector3d pc = p->x;
+	Eigen::Vector3d pn = p->n;
 
 	// Find the distance from the plane to the sphere center
 	double plane_sphere_distance =std::abs( ( _x - pc ).transpose() * pn);
@@ -238,13 +240,3 @@ Eigen::ArrayXd Sphere::get_span()
 	ret(5) = _x(2)+_r; // z_max
 	return ret;
 }
-double Sphere::getRadius()
-{
-	return _r;
-}
-/*
-Eigen::Array3d Sphere::getCenter()
-{
-	return x;
-}
-*/

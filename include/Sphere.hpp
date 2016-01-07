@@ -16,11 +16,9 @@ class Sphere: public CollisionGeometry
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
 	
-		double getRadius();
-//		Eigen::Array3d getCenter();
 	private:
 
-		double _r;				// Radious
+		double _r;				// Radius
 		Eigen::Vector3d _x;		// Position
 };
 

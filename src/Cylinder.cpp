@@ -1,5 +1,6 @@
 #include "Cylinder.hpp"
 #include "Sphere.hpp"
+#include "Plane.hpp"
 
 Cylinder::Cylinder(double r, Eigen::Vector3d P, Eigen::Vector3d Q)
 {
@@ -33,7 +34,7 @@ double Cylinder::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 	double bb = beta.transpose()*beta;
 	double ab = alpha.transpose() * beta;
 
-	if(aa == 0)
+	if(std::abs(aa) < 0.00000001 )
 	{
 		return 0;
 	}
@@ -44,87 +45,81 @@ double Cylinder::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 	double t_1 = -p/2 - std::sqrt( std::pow((p/2),2) - q );
 	double t_2 = -p/2 + std::sqrt( std::pow((p/2),2) - q );
 
-	Eigen::Vector3d v1 =  xv + t_1 * vv;
-	Eigen::Vector3d v2 =  xv + t_2 * vv;
+	Eigen::Vector3d vec =  xv + t_1 * vv;
 
-
-	// RIGHT NOW THE CYLINDER IS TREATED AS BEING INFINITELY LONG
-
-
-	// Check if V1 and V2 hits the lower edge of the cylinder
-	// If it hits the lower edge we can create a sphere with the same r
-	// located at the edge and and return intersection with that instead
-	// Note: lower edge means the base of the cylinder.
-	// This wont't be a pure cylinder but a cylinder with a sphere
-	// attached at the base. Each cylinder will be attached to another
-	// cylinder such that there are no holes.
-
-
-	//double h2 = _h*_h;
-	if( vv.transpose() *  (v1 - xv ) >= 0)
+	double t_ret = 0;
+	if( vv.transpose() *  (vec - xv ) >= 0)
 	{
-/*
-		// We check if the 'intersection point' lies above the cylinder
-		Eigen::Vector3d PQ = Q-P;
-		Eigen::Vector3d PV = v1-P;
-		double PQPV = PQ.dot(PV);
-		if(PQPV > h2)
-		{
-			Plane p = Plane(Q, _d);
-			return p.line_intersection_point(x,v);
-		}
-*/
-		return t_1;
+		t_ret = t_1;
 	}else{
-		return t_2;
+		vec =  xv + t_2 * vv;
+		t_ret = t_2;
 	}
+
+	// Check if 'vec' falls below '_P' or above '_Q'
+	double PQPV = (_Q-_P).dot(vec-_P);
+	// On Top
+	double h2 = _h*_h;
+	if(PQPV > h2)
+	{
+		Plane p = Plane(_Q, _d);
+		t_ret = p.line_intersection_point(x,v);
+		vec =  xv + t_ret * vv;
+		PQPV = (_Q-_P).dot(vec-_P);
+		Eigen::Vector3d B = (PQPV/h2) * (_Q-_P);
+
+		if( (B-vec).norm() > _r )
+		{
+			return 0;
+		}
+	// Below
+	}else if(PQPV < 0){
+		Plane p = Plane(_P, -_d);
+		t_ret = p.line_intersection_point(x,v);
+		vec =  xv + t_ret * vv;
+		PQPV = (_Q-_P).dot(vec-_P);
+		Eigen::Vector3d B = (PQPV/h2) * (_Q-_P);
+
+		if( (B-vec).norm() > _r )
+		{
+			return 0;
+		}
+	}
+
+	return t_ret;
 }
 
+
+// Not a tight fit but good enogh.
 Eigen::ArrayXd Cylinder::get_span()
 {
-	Eigen::Vector3d ex = Eigen::Vector3d(1,0,0);
-	Eigen::Vector3d ey = Eigen::Vector3d(0,1,0);
-	Eigen::Vector3d ez = Eigen::Vector3d(0,0,1);
-
-	Eigen::Vector3d rd = _r*_d;
-	double r_x = ex.dot(rd);
-	double r_y = ey.dot(rd);
-	double r_z = ez.dot(rd);
-
-
-	Eigen::Vector3d cz = Eigen::Vector3d(1,0,0);
-
-	
-
-
 	Eigen::ArrayXd ret = Eigen::ArrayXd::Zero(6);
-
 	
 	if( _P(0) < _Q(0) )
 	{
-		ret(0) = _P(0) -  r_x;				// x_min
-		ret(1) = _Q(0) +  r_x;				// x_max
+		ret(0) = _P(0) - _r;				// x_min
+		ret(1) = _Q(0) + _r;				// x_max
 	}else{
-		ret(0) = _Q(0) - r_x;				// x_min
-		ret(1) = _P(0) + r_x;				// x_max
+		ret(0) = _Q(0) - _r;				// x_min
+		ret(1) = _P(0) + _r;				// x_max
 	}
 
 	if( _P(1) < _Q(1) )
 	{
-		ret(2) = _P(1) - r_y;				// y_min
-		ret(3) = _Q(1) + r_y;				// y_max
+		ret(2) = _P(1) - _r;				// y_min
+		ret(3) = _Q(1) + _r;				// y_max
 	}else{
-		ret(2) = _Q(1) - r_y;				// y_min
-		ret(3) = _P(1) + r_y;				// y_max
+		ret(2) = _Q(1) - _r;				// y_min
+		ret(3) = _P(1) + _r;				// y_max
 	}
 	
 	if( _P(2) < _Q(2))
 	{
-		ret(4) = _P(2) - r_z;				// z_min
-		ret(5) = _Q(2) + r_z;				// z_max
+		ret(4) = _P(2) - _r;				// z_min
+		ret(5) = _Q(2) + _r;				// z_max
 	}else{
-		ret(4) = _Q(2) - r_z;				// z_min
-		ret(5) = _P(2) + r_z;				// z_max
+		ret(4) = _Q(2) - _r;				// z_min
+		ret(5) = _P(2) + _r;				// z_max
 	}
 	
 	return ret;

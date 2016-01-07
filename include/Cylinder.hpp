@@ -21,8 +21,8 @@ class Cylinder: public CollisionGeometry
 		double _r;			// Radius
 		double _h;			// Height
 		Eigen::Vector3d _d;	// 'direction'
-		Eigen::Vector3d _P;	
-		Eigen::Vector3d _Q;
+		Eigen::Vector3d _P;	// Bottom
+		Eigen::Vector3d _Q; // Top
 };
 
 #endif
