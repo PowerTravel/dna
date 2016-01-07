@@ -8,6 +8,7 @@
 class Sphere;
 class Plane;
 class Cylinder;
+class Capsule;
 
 class CollisionGeometry
 {
@@ -17,10 +18,10 @@ class CollisionGeometry
 			Eigen::Vector3d n; // Collision-plane-normal
 		};
 	
-		virtual bool intersects(Cylinder* s, coll_struct& cs) = 0;
-		virtual bool intersects(Sphere* s, coll_struct& cs) = 0;
-		virtual bool intersects(Plane* p, coll_struct& cs) = 0;
-		virtual double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v) = 0;
+		virtual bool intersects(Cylinder* s, coll_struct& cs);
+		virtual bool intersects(Sphere* s, coll_struct& cs);
+		virtual bool intersects(Plane* p, coll_struct& cs);
+		virtual double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		virtual Eigen::ArrayXd get_span() = 0;
 		
 };

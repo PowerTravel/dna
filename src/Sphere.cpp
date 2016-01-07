@@ -1,5 +1,6 @@
 #include "Sphere.hpp"
 #include "Plane.hpp"
+#include "Cylinder.hpp"
 #include <iostream>
 
 Sphere::Sphere()
@@ -19,11 +20,136 @@ Sphere::~Sphere()
 
 }
 
-
-bool Sphere::intersects(Cylinder* s, coll_struct& cs)
+/*
+bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 {
-	std::cerr << "intersects Cylinder -> Cylinder not implemented " << std::endl;
+	Eigen::Vector3d cx = c->get_pos();
+	Eigen::Vector3d cd = c->get_orientation();
+	double cr = c->get_radius();
+	double ch = c->get_height();
+
+	Eigen::Vector3d scs = _x - cx;
+	double len = scs.transpose() * cd;
+	Eigen::Vector3d scs_parallel = len * cd;
+	Eigen::Vector3d scs_anti_parallel = scs - scs_parallel;
+
+	// This means that the sphere lies outside the cylinder radius
+	if( scs_anti_parallel.norm() > (_r+cr) )
+	{
+		return false;
+	}
+
+
+	// The sphere lies below of the cylinder
+	if( scs_parallel.dot( cd ) <= 0 )
+	{
+		if( scs.norm() < (cr+_r)  )
+		{
+			// Set the collision struct
+			return true;
+		}
+			
+	}else{
+	
+		// The sphere lies above the top of the cylinder
+		if(scs_parallel.norm() < ( ch+_r ) )
+		{
+			return false;
+		}
+		
+	}
+
+	//std::cerr << "intersects Sphere -> Cylinder not implemented " << std::endl;
 	return false;
+}
+*/
+
+bool Sphere::intersects(Cylinder* c, coll_struct& cs)
+{
+
+	// Cylinder
+	double rho_c = c->_r;
+	double h = c->_h;
+	Eigen::Vector3d P = c->_P;
+	Eigen::Vector3d Q = c->_Q;
+	
+	// Sphere
+	Eigen::Vector3d A = _x;
+	double rho_s = _r;
+
+	Eigen::Vector3d PQ = Q-P;
+	Eigen::Vector3d PA = A-P;
+
+
+	double PQPA = PQ.dot(PA);
+	double h2 = h*h;
+	
+	Eigen::Vector3d B = (PQPA/h2) * PQ;
+
+	// radial vec from sphere center towards cylinder axis
+	Eigen::Vector3d er = (B-A);
+	double delta = er.norm();
+	er = er/delta;
+
+	double rho_sp = 0;
+
+	// P->Q->B
+	if(PQPA > h2)
+	{	
+		double d = (PQPA-h2)/h;
+		rho_sp =std::sqrt(rho_s*rho_s - d*d);
+	
+		// Sphere is bumping into cylinder corner.
+		if(delta > rho_c )
+		{
+			cs.n = -(er*rho_sp - c->_d*d).normalized();
+		// Sphere is bumping into the top
+		}else{
+			cs.n = c->_d;
+		}
+
+	// B->P->Q
+	}else if(PQPA < 0){
+		Eigen::Vector3d QA = A-Q;
+		Eigen::Vector3d QP = P-Q;
+		double QPQA = QP.dot(QA);
+
+		// This is not supposed to happen normally
+		// But if it does ill print out this line just for saftey.
+		if(QPQA < h2)
+		{
+			std::cerr << "Something weird going on with cylinder intersection test" << std::endl;
+		}
+
+		double d = (QPQA-h2)/h;
+
+		rho_sp =std::sqrt(rho_s*rho_s - d*d);
+
+		// Sphere is bumping into cylinder corner.
+		if(delta > rho_c )
+		{
+			cs.n = -(er*rho_sp + c->_d*d).normalized();
+		// Sphere is bumping into the bottom 
+		}else{
+			cs.n = -c->_d;
+		}
+
+	// P->B->Q
+	}else{
+		
+		cs.n = -c->_d;
+		rho_sp = rho_s;
+	}
+
+	if(delta < rho_sp +rho_c)
+	{
+		cs.p = (rho_sp + rho_c) - delta;
+		return true;
+	}else{
+		cs.p = 0;
+		cs.n = Eigen::Vector3d::Zero();
+		return false;
+	}
 }
 
 bool Sphere::intersects(Sphere* s, coll_struct& cs)

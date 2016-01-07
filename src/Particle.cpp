@@ -108,8 +108,6 @@ void Particle::update(double dt, Eigen::Array3d a)
 	
 		S = Sphere(X_P.segment(1,3), _r);
 		collisions = get_coll_list(coll_geom_vec, S);
-		
-
 	}
 
 	_x = X_P.segment(1,3);
@@ -121,7 +119,6 @@ void Particle::update(double dt, Eigen::Array3d a)
 	log.segment(3,3) = _v;
 	log.segment(6,3) = _E;
 
-	//traj.push_back(X_P.segment(1,6));
 	traj.push_back(log);
 }
 

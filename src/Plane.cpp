@@ -11,13 +11,13 @@ Plane::~Plane()
 {
 
 }
-
+/*
 bool Plane::intersects(Cylinder* s, coll_struct& cs)
 {
 	std::cerr << "intersects plane -> Cylinder not implemented " << std::endl;
 	return false;
 }
-
+*/
 bool Plane::intersects(Sphere* s, coll_struct& cs)
 {
 	return s->intersects(this, cs);	
