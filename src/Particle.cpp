@@ -30,13 +30,8 @@ Eigen::Array3d Particle::get_velocity()
 
 void Particle::update(double dt, Eigen::Array3d a)
 {
-	//Static Collision Geometries
-	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
-		build_sphere_and_plane();
-	
+		
 
-	// Gonna implement som basic newtonian bouncing just to se that it works
-	// Using leapfrog
 	double h = dt;
 
 	if(!first_step_taken)
@@ -47,7 +42,6 @@ void Particle::update(double dt, Eigen::Array3d a)
 
 	Eigen::Vector3d vp = _v + h*a.matrix();
 	Eigen::Vector3d xp = _x + dt*vp;
-	//std::cout << x.transpose() << std::endl;
 	// X is the position of the sphere somewhere in the timestep. At this point
 	// in the program it is in the very beginning.
 	Eigen::VectorXd X = Eigen::VectorXd::Zero(7);
@@ -62,8 +56,18 @@ void Particle::update(double dt, Eigen::Array3d a)
 	X_P.segment(4,3) = vp; 
 	int i =0;
 	Sphere S = Sphere(X_P.segment(1,3), _r);
-	collisions = get_coll_list(coll_geom_vec, S);
+
 	
+	//Static Collision Geometries
+	//std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
+	//	build_sphere_and_plane();
+
+	// dynamic cg
+	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = grid->get_collision_bodies(S);
+
+
+	collisions = get_coll_list(coll_geom_vec, S);
+	//std::cout << collisions.size() <<"  " <<coll_geom_vec.size() <<"  " << 200-1 <<std::endl;
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
@@ -95,6 +99,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 				collisions.push_front(tmp_i);
 
 				std::cerr << "Simultaneous collision with many collisionbodies, may contain errors. This is printed mainly because I don't bother making this work perfectly untill I know it will happen in real simulations. So if I see this later when diffusing particles in a fractal. Check it out in particle " << std::endl;
+				std::cerr << "I just realized that this may indeed happen if we have a knot in the chain. Then two identical collision-geometries will be on the exact same place. This is different from the particle colliding with two different geometries at the same time and should be able to be handled as a special case. But lets see how it works in practice" << std::endl;
 			}
 			it++;
 		}

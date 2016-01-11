@@ -5,6 +5,9 @@
 #include <ctime>
 #include <limits>
 
+#include "Cylinder.hpp"
+#include "Sphere.hpp"
+
 std::default_random_engine Chain::_generator = std::default_random_engine(time(NULL));
 
 Chain::Chain()
@@ -76,10 +79,39 @@ void Chain::set_radius(double r)
 
 Chain::link Chain::get_link(int i)
 {
+	double length = 1.0;
 	link l;
 	l.idx = i;
 	l.p = _chain.block(0,i,3,1);
-	l.geom = std::shared_ptr<CollisionGeometry>(new Sphere(l.p,_rad) );
+
+	if(i == 0)
+	{
+		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
+		Eigen::Vector3d Q = _chain.block(0,i+1,3,1).matrix() * length;
+
+		l.cyl1 = NULL;
+		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
+		l.cyl2 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, A , Q));
+
+	}else if(i==len()-1){
+	
+		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * length;
+		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
+
+		l.cyl1 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, P , A));
+		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
+		l.cyl2 = NULL;
+
+	}else{
+
+		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * length;
+		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
+		Eigen::Vector3d Q = _chain.block(0,i+1,3,1).matrix() * length;
+
+		l.cyl1 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, P , A));
+		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
+		l.cyl2 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, A , Q));
+	}
 	return l;
 }
 
@@ -164,3 +196,27 @@ bool Chain::ok()
 }
 	
 
+std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec(double r, double l)
+{
+	if(!_ok)
+	{
+		return std::vector< std::shared_ptr<CollisionGeometry> >();
+	}
+
+	// one for each site + each link
+	//int nr_geoms = 2*len() - 1;
+	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
+
+	cv.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(_chain.block(0,0,3,1).matrix(), r) ));
+	for( int i = 1; i < len(); i++ )
+	{
+		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * l;
+		Eigen::Vector3d Q = _chain.block(0,i,3,1).matrix() * l;
+		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
+		cv.push_back(std::shared_ptr<CollisionGeometry>(new Sphere( Q , r) ));
+	}
+
+	return cv;
+
+}

@@ -44,13 +44,15 @@ void Distance::apply()
 	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
-	int N = 400;
+	
+
+	int N = 4000;
 	
 	double dt = 0.01;
 	double g = -1.00;
 	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(10,2,0), &cg);
 	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(1,1,0), &cg);
-	Particle p = Particle(0.5, Eigen::Array3d(0,1,0), Eigen::Array3d(0,0,0), &cg);
+	Particle p = Particle(0.1, Eigen::Array3d(0.5,0.5,0.5), Eigen::Array3d(1,1,1), &cg);
 	for(int i = 0; i < N; i++)
 	{
 		p.update(dt, Eigen::Array3d(0,g,0) );

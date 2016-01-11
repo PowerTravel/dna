@@ -26,13 +26,22 @@ void CollisionGrid::set_up(Chain* c)
 	// Get the distance of hte longest axis of the chain
 	max_idx = get_max_axis(c);
 
-	for(int i = 0; i < c->len(); i++)
-	{
-		
-//		std::vector<idx_type> v = get_intersection_keys(c->get_link(i));
-		std::shared_ptr<CollisionGeometry> g = c->get_link(i).geom;
-		std::vector<idx_type> v = get_intersection_keys( *g );
+	Chain::link l =  c->get_link(0);
+	std::vector<idx_type> v = get_intersection_keys( *l.sphere );
 
+
+	for(int i = 1; i < c->len(); i++)
+	{
+		l = c->get_link(i);
+		
+		v = get_intersection_keys( *l.cyl1 );
+		
+		for(auto key = v.begin(); key != v.end(); key++)
+		{
+			push_key_to_map(*key,i);
+		}
+
+		v = get_intersection_keys( *l.sphere );
 		for(auto key = v.begin(); key != v.end(); key++)
 		{
 			push_key_to_map(*key,i);
@@ -96,20 +105,21 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(CollisionGeometry& g)
 	}
 	return ret;
 }
-
+/*
 int CollisionGrid::grid_map(int link, Eigen::Vector3d v)
 {
 	 return 0;	
 }
-
+*/
 std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_bodies(CollisionGeometry& g)
 {	
 	std::vector< std::shared_ptr<CollisionGeometry> > ret;
-	if(_c == NULL)
+	if(_c == NULL || !_c->ok())
 	{
 		std::cerr << "Error: grid not set up. Error thrown from CollisionGrid::get_collision_bodies()" << std::endl;
 		return ret;
 	}
+
 	std::vector<idx_type> v1 = get_intersection_keys(g);
 	for(auto key = v1.begin(); key != v1.end(); key++)
 	{
@@ -119,10 +129,17 @@ std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_b
 			std::vector<int> l = grid[*key];
 			for(auto link_idx = l.begin(); link_idx != l.end(); link_idx++ ) 
 			{
-				ret.push_back( _c->get_link(*link_idx).geom );
+				ret.push_back( _c->get_link(*link_idx).sphere );
+				if(*link_idx != 0)
+				{
+					ret.push_back( _c->get_link(*link_idx).cyl1 );
+				}
+				if(*link_idx != _c->len()-1 ){
+					ret.push_back( _c->get_link(*link_idx).cyl2 );
+				}
 			}
 		}
 	}
+
 	return ret;
 }
-	

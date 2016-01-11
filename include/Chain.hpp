@@ -28,7 +28,9 @@ class Chain
 		struct link{
 			int idx;
 			Eigen::Array3d p;
-			std::shared_ptr<CollisionGeometry> geom;
+			std::shared_ptr<CollisionGeometry> sphere;
+			std::shared_ptr<CollisionGeometry> cyl1;
+			std::shared_ptr<CollisionGeometry> cyl2;
 		};
 
 		Chain();
@@ -48,6 +50,9 @@ class Chain
 
 		void set_radius(double r);
 		link get_link(int i);
+
+		std::vector< std::shared_ptr<CollisionGeometry> > 
+								get_collision_vec(double r, double l);
 
 		int len();
 
