@@ -83,7 +83,7 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	double PQPA = PQ.dot(PA);
 	double h2 = h*h;
 	
-	Eigen::Vector3d B = (PQPA/h2) * PQ;
+	Eigen::Vector3d B = (PQPA/h2) * PQ + P;
 
 	// radial vec from sphere center towards cylinder axis
 	Eigen::Vector3d er = (B-A);
@@ -91,11 +91,17 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	er = er/delta;
 
 	double rho_sp = 0;
-
+//	std::cout << "=====================" << std::endl;
+//	std::cout << delta<< std::endl;
 	// P->Q->B
 	if(PQPA > h2)
 	{	
+//		std::cout <<"A = " << A.transpose()<< std::endl;
+//		std::cout <<"P = " << P.transpose();
+//		std::cout <<"; Q = " << Q.transpose();
+//		std::cout <<"; B = " << B.transpose() << std::endl;
 		double d = (PQPA-h2)/h;
+	//	std::cout << "d = " << d << "  r_s = " << rho_s << std::endl;
 		rho_sp =std::sqrt(rho_s*rho_s - d*d);
 	
 		// Sphere is bumping into cylinder corner.
@@ -106,9 +112,13 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 		}else{
 			cs.n = c->_d;
 		}
-
 	// B->P->Q
 	}else if(PQPA < 0){
+//		std::cout <<"A = " << A.transpose()<< std::endl;
+//		std::cout <<"B = " << B.transpose();
+//		std::cout <<"; P = " << P.transpose();
+//		std::cout <<"; Q = " << Q.transpose() << std::endl;
+
 		Eigen::Vector3d QA = A-Q;
 		Eigen::Vector3d QP = P-Q;
 		double QPQA = QP.dot(QA);
@@ -119,7 +129,6 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 		{
 			std::cerr << "Something weird going on with cylinder intersection test" << std::endl;
 		}
-
 		double d = (QPQA-h2)/h;
 
 		rho_sp =std::sqrt(rho_s*rho_s - d*d);
@@ -136,8 +145,12 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	// P->B->Q
 	}else{
 	//std::cout << _x.transpose() << std::endl; 
+//		std::cout <<"A = " << A.transpose()<< std::endl;
+//		std::cout <<"P = " << P.transpose();
+//		std::cout <<"; B = " << B.transpose();
+//		std::cout <<"; Q = " << Q.transpose() << std::endl;
 		
-		cs.n = -c->_d;
+		cs.n = er;
 		rho_sp = rho_s;
 	}
 
@@ -145,7 +158,12 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	//	std::cout << delta << std::endl;
 	if(delta < rho_sp +rho_c)
 	{
+		std::cout <<"A = " << A.transpose();
+		std::cout <<"; P = " << P.transpose();
+		std::cout <<"; B = " << B.transpose();
+		std::cout <<"; Q = " << Q.transpose() << std::endl;
 		cs.p = (rho_sp + rho_c) - delta;
+		std::cout << "cs.p = " << cs.p << " cs.n =  " << cs.n.transpose() << std::endl;
 		return true;
 	}else{
 		cs.p = 0;

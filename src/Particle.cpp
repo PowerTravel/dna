@@ -33,7 +33,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 	//Static Collision Geometries
 	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
 		build_sphere_and_plane();
-
+	
 
 	// Gonna implement som basic newtonian bouncing just to se that it works
 	// Using leapfrog
@@ -265,7 +265,13 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 //				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
 	
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Cylinder(3.0, Eigen::Vector3d(0,-4,0), Eigen::Vector3d(0,0,0)) ));
+				new Cylinder(3.0, Eigen::Vector3d(-0.5,-4,2), Eigen::Vector3d(-0.5,-3,-2)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Eigen::Vector3d(-0.5,-4, 2), 3.0) ));
+
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Eigen::Vector3d(-0.5,-3,-2), 3.0) ));
+
 	//coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 	//			new Cylinder(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
 	

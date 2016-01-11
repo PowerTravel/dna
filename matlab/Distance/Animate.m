@@ -1,7 +1,7 @@
 data = load('../../data/default_distance.dna');
 
 N = size(data,1);
-animate = false;
+animate = true;
 x = 1:N;
 figure(1)
 plot(x, data(:,9),x, data(:,8),x, data(:,7));
@@ -12,7 +12,7 @@ f = @(t,r,x,y) sqrt(r.^2-(t-x).^2)+y;
 plane = @(p,k, x) k*(p(1)-x) + p(2);
 
 figure(2)
-frame_jump = 20;
+frame_jump = 1;
 if(~animate)
     T = -10:0.1:10;
     %plot(data(:,1),data(:,2),'.','markersize',15)
@@ -36,8 +36,9 @@ else
         hold on
         plot(A,-f(A,0.5,data(i,1),-data(i,2)));
         T = -10:0.1:10;
-        plot(T, plane([0,-3],-1,T) );
-        plot(T, plane([0,-3],1,T) );
+     %   plot(T, plane([0,-3],-1,T) );
+     %   plot(T, plane([0,-3],1,T) );
+        plot(T, plane([0,0],0,T) );
         axis([-r,r,-r,r]);
         pause(0.001);
         hold off

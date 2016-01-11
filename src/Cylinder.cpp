@@ -94,7 +94,12 @@ double Cylinder::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 Eigen::ArrayXd Cylinder::get_span()
 {
 	Eigen::ArrayXd ret = Eigen::ArrayXd::Zero(6);
-	
+
+	std::cout << _P.transpose() << std::endl;
+	std::cout << _Q.transpose() << std::endl;
+	std::cout << _r << std::endl;
+
+
 	if( _P(0) < _Q(0) )
 	{
 		ret(0) = _P(0) - _r;				// x_min
