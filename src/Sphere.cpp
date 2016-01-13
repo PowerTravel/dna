@@ -20,6 +20,11 @@ Sphere::~Sphere()
 
 }
 
+std::string Sphere::text_type()
+{
+	return std::string("Sphere");
+}
+
 /*
 bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 {

@@ -44,8 +44,21 @@ void Distance::apply()
 	CollisionGrid cg = CollisionGrid(_box_size);
 	cg.set_up(_c);
 
-	
+	for(auto A = cg.geoms.begin(); A != cg.geoms.end(); A++)
+	{
+		cg_ptr cgp = A->cg;
+		std::cout << cgp->text_type();
+		std::cout <<" span = " << cgp->get_span().transpose() << std::endl;
+		std::cout <<" grid = " << std::endl;
+		for(auto B = A->idx.begin(); B!=A->idx.end(); B++)
+		{
+			Eigen::Array3d ax = *B;
+			ax = (ax - A->m_idx)*A->s;
+			std::cout << ax.transpose() << std::endl;
+		}
+	}
 
+/*
 	int N = 4000;
 	
 	double dt = 0.01;
@@ -69,7 +82,7 @@ void Distance::apply()
 	file.close();
 
 	print_post_info();
-	
+*/	
 }
 
 void Distance::print(std::ostream& os)

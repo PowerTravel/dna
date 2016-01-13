@@ -12,6 +12,11 @@ Plane::~Plane()
 
 }
 
+std::string Plane::text_type()
+{
+	return std::string("Plane");
+}
+
 bool Plane::intersects(Sphere* s, coll_struct& cs)
 {
 	return s->intersects(this, cs);	

@@ -5,6 +5,11 @@
 #include <vector>
 #include <iostream>
 
+#ifndef COLLISIONGEOMETRY_PTR
+class CollisionGeometry;
+typedef std::shared_ptr<CollisionGeometry> cg_ptr;
+#endif
+
 class Sphere;
 class Plane;
 class Cylinder;
@@ -23,6 +28,7 @@ class CollisionGeometry
 		virtual bool intersects(Plane* p, coll_struct& cs);
 		virtual double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		virtual Eigen::ArrayXd get_span() = 0;
+		virtual std::string text_type() = 0;
 		
 };
 

@@ -3,7 +3,7 @@
 
 
 RUN: distance
-	SIZE: 100
+	SIZE: 20
 	BOX_SIZE: 2.0
 	RADIUS: 0.1
 
@@ -19,10 +19,10 @@ RUN: distance
 %	EXP: true
 %	SELFINTERSECTION: true
 %
-%	TYPE: fg
+%	TYPE: saw
 %	VERBOSE: true
 %	OUTFILE: ../matlab/phantom/Rfgi.dna
-%
+
 %RUN: verify
 %	SIZE: 5000
 %	STRIDES: 10

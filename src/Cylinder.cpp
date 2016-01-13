@@ -17,6 +17,10 @@ Cylinder::~Cylinder()
 
 }
 
+std::string Cylinder::text_type()
+{
+	return std::string("Cylinder");
+}
 bool Cylinder::intersects(Sphere* s, coll_struct& cs)
 {
 	return s->intersects(this, cs);

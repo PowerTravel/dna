@@ -16,6 +16,7 @@ class Plane: public CollisionGeometry{
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
 
+		std::string text_type();
 	private:
 
 		Eigen::Vector3d n;

@@ -18,6 +18,18 @@ typedef unsigned int idx_type;
 #include <map>
 
 class CollisionGrid{
+	struct geom_struct{
+		// pointer to a collision geometry
+		std::shared_ptr<CollisionGeometry> cg;
+		// Key to all the boxes where it appears
+		std::vector<idx_type> key;
+		// the lower left corners of the boxes
+		std::vector<Eigen::Vector3d> idx;
+		// the length of the box sides
+		double s;
+		// The max idx
+		double m_idx;
+	};
 	public:
 		CollisionGrid(double bs);
 		virtual ~CollisionGrid();
@@ -25,13 +37,18 @@ class CollisionGrid{
 		void set_up(Chain* c);
 		// Takes the collision geometry and preforms broad phase collisoin detection
 		// Returns a vector of all possible intersections.
-		std::vector< std::shared_ptr<CollisionGeometry> > get_collision_bodies(CollisionGeometry& g);
+		std::vector< std::shared_ptr<CollisionGeometry> > get_collision_bodies(std::shared_ptr<CollisionGeometry> g);
 
+
+		// debug functions
+		void print_box_corners(std::string path);
+		std::vector<geom_struct> geoms;
 	private:
 		Chain* _c;
 		double box_size;	
 		int max_idx;
 		std::map<idx_type, std::vector<int> > grid;
+
 
 //		int grid_map(int link, Eigen::Vector3d v);
 
@@ -39,7 +56,9 @@ class CollisionGrid{
 		void push_key_to_map(idx_type key, int val);
 
 		//std::vector<idx_type> get_intersection_keys(Chain::link l);
-		std::vector<idx_type> get_intersection_keys(CollisionGeometry& g);
+		std::vector<idx_type> get_intersection_keys(std::shared_ptr<CollisionGeometry> g);
+
+		idx_type map_key(int i, int j, int k);
 };
 
 #endif

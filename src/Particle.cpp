@@ -55,7 +55,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 	X_P.segment(1,3) = xp;
 	X_P.segment(4,3) = vp; 
 	int i =0;
-	Sphere S = Sphere(X_P.segment(1,3), _r);
+	std::shared_ptr<CollisionGeometry> sps = std::shared_ptr<CollisionGeometry>(new  Sphere(X_P.segment(1,3), _r));
 
 	
 	//Static Collision Geometries
@@ -63,10 +63,10 @@ void Particle::update(double dt, Eigen::Array3d a)
 	//	build_sphere_and_plane();
 
 	// dynamic cg
-	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = grid->get_collision_bodies(S);
+	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = grid->get_collision_bodies(sps);
+	Sphere S = *( (Sphere*) sps.get() );
 
-
-	collisions = get_coll_list(coll_geom_vec, S);
+	collisions = get_coll_list(coll_geom_vec, S );
 	//std::cout << collisions.size() <<"  " <<coll_geom_vec.size() <<"  " << 200-1 <<std::endl;
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be

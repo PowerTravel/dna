@@ -13,6 +13,7 @@ class Cylinder: public CollisionGeometry
 		virtual ~Cylinder();
 
 		bool intersects(Sphere* s, coll_struct& cs);
+		std::string text_type();
 
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
