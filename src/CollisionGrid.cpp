@@ -98,7 +98,7 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<Colli
 {
 	Eigen::ArrayXd span = g->get_span(); // Get an AABB for the collision geometry
 	Eigen::ArrayXd idx = span/box_size; // Divide by the box size to get the box indexes 
-	idx = idx+max_idx; // Shift all the indices to be positive
+	idx = idx+max_idx +1/2.0; // Shift all the indices to be positive
 	//std::cout << idx.transpose() << std::endl;
 	std::vector<idx_type> ret = std::vector<idx_type>();
 
@@ -129,7 +129,6 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<Colli
 	gs.s = box_size;
 	gs.m_idx = max_idx;
 	geoms.push_back(gs);
-
 
 	return ret;
 }
@@ -188,11 +187,28 @@ void CollisionGrid::print_box_corners(std::string path)
 	std::ofstream file;
 	file.open(path, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
-		for(int i=0; i<_c->len(); i++)
+		for(auto A = geoms.begin(); A != geoms.end(); A++)
 		{
-			Eigen::Array3d p = _c->get_link(i).p;
+			cg_ptr cgp = A->cg;
+			if(cgp->text_type().compare("Sphere"))
+			{
+				//std::cout << "Sphere"<< std::endl;
+				file <<"1 ";
+			}
+			if(cgp->text_type().compare("Cylinder"))
+			{
+				//std::cout << "Cylinder"<< std::endl;
+				file  <<"2 ";
+			}
+			//file << cgp->text_type() << " " ;//<<std::endl;
+			file << cgp->get_span().transpose() << std::endl;
+			for(auto B = A->idx.begin(); B!=A->idx.end(); B++)
+			{
+				Eigen::Array3d ax = *B;
+				ax = (ax - A->m_idx-0.5)*A->s;
+				file << "0 " << ax.transpose() << " 0 0 0"  << std::endl;
 
-							
+			}
 		}
 	}else{
 		std::cerr << "Failed to open " << path << std::endl;

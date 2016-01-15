@@ -10,7 +10,7 @@ class Distance: public Simulation
 		Distance(std::map<std::string, std::string> sm);
 
 		void apply();
-		
+
 	private:
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		void print(std::ostream& os);
