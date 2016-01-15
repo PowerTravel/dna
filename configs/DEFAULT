@@ -7,7 +7,7 @@ RUN: distance
 	BOX_SIZE: 1.0
 	RADIUS: 0.15
 
-	TYPE: phantom
+	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../data/default_distance.dna
 	WEIGHT: true

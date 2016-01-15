@@ -45,8 +45,7 @@ void Distance::apply()
 	cg.set_up(_c);
 
 	cg.print_box_corners(std::string("grid.txt"));
-/*
-	int N = 4000;
+	int N = 1;
 	
 	double dt = 0.01;
 	double g = -1.00;
@@ -58,6 +57,7 @@ void Distance::apply()
 		p.update(dt, Eigen::Array3d(0,g,0) );
 	}
 
+/*
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){

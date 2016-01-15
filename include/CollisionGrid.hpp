@@ -43,11 +43,16 @@ class CollisionGrid{
 		// debug functions
 		void print_box_corners(std::string path);
 		std::vector<geom_struct> geoms;
+		void print_intersecting_box_corners(cg_ptr g);
+		geom_struct active_geom;
+		bool active;
+		
 	private:
 		Chain* _c;
 		double box_size;	
 		int max_idx;
 		std::map<idx_type, std::vector<int> > grid;
+		bool ok;
 
 
 //		int grid_map(int link, Eigen::Vector3d v);
@@ -59,6 +64,8 @@ class CollisionGrid{
 		std::vector<idx_type> get_intersection_keys(std::shared_ptr<CollisionGeometry> g);
 
 		idx_type map_key(int i, int j, int k);
+
+//		double get_box_corner_from_key(idx_type key);
 };
 
 #endif

@@ -12,8 +12,17 @@ for i=1:len
        w = [gridsize, gridsize, gridsize];
        draw_rect( gr( i, 2:4) , w, 'r', 1);
         
-    % cylinder
+    % sphere
     elseif(gr(i,1)==1)
+        p = (gr(i,3:2:7) + gr(i,2:2:6))./2;
+        w = (gr(i,3:2:7) - gr(i,2:2:6))./2;
+        [x,y,z]=ellipsoid(p(1),p(2),p(3),w(1),w(2),w(3),20);
+        hold on
+        surf(x, y, z,'FaceColor','c');
+        hold off
+        
+    % cylinder
+    elseif(gr(i,1)==2)
         
         %p = [gr(i, 2), gr(i, 4), gr(i, 6)];
         %w = [gr(i, 3)-gr(i, 2), gr(i, 5)-gr(i, 4),...
@@ -25,17 +34,6 @@ for i=1:len
         hold on
         surf(x, y, z,'FaceColor','c');
         hold off
-  
-        
-    % sphere
-    elseif(gr(i,1)==2)
-        p = (gr(i,3:2:7) + gr(i,2:2:6))./2;
-        w = (gr(i,3:2:7) - gr(i,2:2:6))./2;
-        [x,y,z]=ellipsoid(p(1),p(2),p(3),w(1),w(2),w(3),20);
-        hold on
-        surf(x, y, z,'FaceColor','c');
-        hold off
-        
     end
     grid on
     axis equal

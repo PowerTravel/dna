@@ -67,6 +67,28 @@ void Particle::update(double dt, Eigen::Array3d a)
 	Sphere S = *( (Sphere*) sps.get() );
 
 	collisions = get_coll_list(coll_geom_vec, S );
+	grid->print_intersecting_box_corners(sps);
+	// NOW PRINT THE DATA FOR THE ACTUAL 
+/*
+	for(auto it = coll_geom_vec.begin(); it != coll_geom_vec.end(); it++)
+	{
+		std::shared_ptr< CollisionGeometry> cgptr = *it;
+		if(cgptr->text_type().compare("Sphere"))
+		{
+			std::cout << "S: ";	
+		}else if(cgptr->text_type().compare("Cylinder")){
+			std::cout << "C: ";	
+		}
+		std::cout << (*it)->get_span().transpose() << std::endl;
+	}
+*/
+	std::cout << "Actual Collisions" << std::endl;
+	for(auto it = collisions.begin(); it != collisions.end(); it++)
+	{
+		std::cout << it->geom->get_span().transpose() << std::endl;
+	}
+
+
 	//std::cout << collisions.size() <<"  " <<coll_geom_vec.size() <<"  " << 200-1 <<std::endl;
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be

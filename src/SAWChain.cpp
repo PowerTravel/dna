@@ -138,24 +138,3 @@ void SAWChain::set_grid(Eigen::Array3d pos)
 	INT_TYPE idx = pos_to_idx(pos);
 	_grid[idx] = 1;
 }
-/*
-PFloat SAWChain::mult_weights(Eigen::ArrayXd w)
-{
-	PFloat w_tmp = w[0];
-	for(int i =1; i<_w.size(); i++)
-	{
-		if(_w[i] == 0)
-		{
-			return PFloat();
-		}
-
-		w_tmp = w_tmp * w[i];
-
-		if(w_tmp == 0 )
-		{
-			std::cerr << "WEIGHT ROUNDED TO ZERO IN SAWCHAIN.CPP " << std::endl;
-		}
-	}
-	return w_tmp;
-}
-*/

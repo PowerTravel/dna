@@ -51,8 +51,7 @@ class Chain
 		void set_radius(double r);
 		link get_link(int i);
 
-		std::vector< std::shared_ptr<CollisionGeometry> > 
-								get_collision_vec(double r, double l);
+		std::vector< cg_ptr > get_collision_vec(double r, double l);
 
 		int len();
 
@@ -67,9 +66,7 @@ class Chain
 		Eigen::ArrayXXd _chain;
 		Eigen::ArrayXd _w;
 		double _rad;
-		//double _a;
-
-		//PFloat mult_weights();
+		
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
 

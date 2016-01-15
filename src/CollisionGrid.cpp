@@ -5,6 +5,8 @@ CollisionGrid::CollisionGrid(double bs)
 {
 	box_size = bs;
 	_c = NULL;
+	ok = false;
+	active = false;
 }
 
 CollisionGrid::~CollisionGrid()
@@ -55,6 +57,8 @@ void CollisionGrid::set_up(Chain* c)
 		}
 	}
 
+	ok = true;
+
 }
 
 
@@ -93,7 +97,6 @@ int CollisionGrid::get_max_axis(Chain* c)
 	return std::floor(max_axis/box_size) + 1;
 }
 
-//std::vector<idx_type> CollisionGrid::get_intersection_keys(Chain::link l)
 std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<CollisionGeometry> g)
 {
 	Eigen::ArrayXd span = g->get_span(); // Get an AABB for the collision geometry
@@ -122,14 +125,27 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<Colli
 		}
 	}
 
-	geom_struct gs;
-	gs.cg = g;
-	gs.key = keyv;
-	gs.idx = idxv;
-	gs.s = box_size;
-	gs.m_idx = max_idx;
-	geoms.push_back(gs);
-
+	if(!ok)
+	{
+		geom_struct gs;
+		gs.cg = g;
+		gs.key = keyv;
+		gs.idx = idxv;
+		gs.s = box_size;
+		gs.m_idx = max_idx;
+		geoms.push_back(gs);
+	}
+	
+	if(active)
+	{
+		geom_struct ags;
+		ags.cg = g;
+		ags.key = keyv;
+		ags.idx = idxv;
+		ags.s = box_size;
+		ags.m_idx = max_idx;
+		active_geom = ags;
+	}
 	return ret;
 }
 
@@ -177,6 +193,45 @@ std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_b
 	return ret;
 }
 
+void CollisionGrid::print_intersecting_box_corners(cg_ptr g)
+{
+//	std::ostream os;
+	// get_intersection_keys updates the active_geoms vector with the 
+	// debug data 
+
+	// Active är en variabel som bestämmer om vi ska uppdatera active_geom när vi
+	// kallar get_intersection_keys
+	active = true;
+	get_intersection_keys(g);
+	acive = false;
+	//std::vector< cg_ptr > CollisionGrid::get_collision_bodies(std::shared_ptr<CollisionGeometry> g)
+	if(active_geom.cg->text_type().compare("Sphere")==0)
+	{
+		std::cout << "1 ";
+	}
+	if(active_geom.cg->text_type().compare("Cylinder")==0)
+	{
+		std::cout << "2 ";
+	}
+	std::cout << active_geom.cg->get_span().transpose();
+	int len = active_geom.idx.size();
+	for(int i = 0; i < len; i++)
+	{
+			Eigen::Array3d ax = active_geom.idx[i];
+			// transpose the indices to actucal positions
+			ax = (ax - active_geom.m_idx-0.5)*active_geom.s;
+			// a box
+			std::cout << "0 "<< ax.transpose() << " 0 0 0 " <<std::endl;
+
+
+
+
+
+			//os << *key << std::endl;
+	}
+//	return os;
+}
+
 void CollisionGrid::print_box_corners(std::string path)
 {
 	if(_c == NULL)
@@ -190,12 +245,12 @@ void CollisionGrid::print_box_corners(std::string path)
 		for(auto A = geoms.begin(); A != geoms.end(); A++)
 		{
 			cg_ptr cgp = A->cg;
-			if(cgp->text_type().compare("Sphere"))
+			if(cgp->text_type().compare("Sphere")==0)
 			{
 				//std::cout << "Sphere"<< std::endl;
 				file <<"1 ";
 			}
-			if(cgp->text_type().compare("Cylinder"))
+			if(cgp->text_type().compare("Cylinder")==0)
 			{
 				//std::cout << "Cylinder"<< std::endl;
 				file  <<"2 ";
@@ -207,7 +262,6 @@ void CollisionGrid::print_box_corners(std::string path)
 				Eigen::Array3d ax = *B;
 				ax = (ax - A->m_idx-0.5)*A->s;
 				file << "0 " << ax.transpose() << " 0 0 0"  << std::endl;
-
 			}
 		}
 	}else{
