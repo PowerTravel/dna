@@ -18,6 +18,9 @@ class Capsule;
 class CollisionGeometry
 {
 	public:
+		CollisionGeometry();
+		virtual ~CollisionGeometry();
+
 		struct coll_struct{
 			double p; // Penetration_depth
 			Eigen::Vector3d n; // Collision-plane-normal
@@ -29,7 +32,10 @@ class CollisionGeometry
 		virtual double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		virtual Eigen::ArrayXd get_span() = 0;
 		virtual std::string text_type() = 0;
-		
+		int get_id();
+	private:
+		static int c_id;
+		int id;
 };
 
 #endif // COLLISION_GEOMETRY_HPP

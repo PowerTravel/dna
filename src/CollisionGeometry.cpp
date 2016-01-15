@@ -1,5 +1,22 @@
 #include "CollisionGeometry.hpp"
 
+int CollisionGeometry::c_id = 0;
+
+CollisionGeometry::CollisionGeometry()
+{
+	id= c_id;
+	c_id++;
+}
+CollisionGeometry::~CollisionGeometry()
+{
+
+}
+
+int CollisionGeometry::get_id()
+{
+	return id;
+}
+
 bool CollisionGeometry::intersects(Cylinder* s, coll_struct& cs)
 {
 	std::cerr << "ERROR: Intersection not implemented." << std::endl;

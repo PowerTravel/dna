@@ -30,6 +30,20 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 	}
 }
 
+int Distance::get_max(Eigen::Array3d v)
+{
+	double max = v(0);
+	if( max < v(1) )
+	{
+		max = v(1);	
+	}
+	if( max < v(2) )
+	{
+		max = v(2);	
+	}
+	return max;
+}
+
 void Distance::apply()
 {
 	print_pre_info();
@@ -39,13 +53,18 @@ void Distance::apply()
 		return;
 	}
 	std::cout << this << std::endl;
+
+	// Build chain and setup collision grid
 	_c->set_radius(_rad);
+	_c->set_link_length(1.0);
 	_c->build(_size);
 	CollisionGrid cg = CollisionGrid(_box_size);
-	cg.set_up(_c);
+
+	int  max_axis = get_max(_c->axis_length());
+	cg.set_up(_c->get_collision_vec() , max_axis );
 
 	cg.print_box_corners(std::string("grid.txt"));
-	int N = 1;
+	int N = 0;
 	
 	double dt = 0.01;
 	double g = -1.00;

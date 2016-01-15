@@ -4,7 +4,6 @@
 CollisionGrid::CollisionGrid(double bs)
 {
 	box_size = bs;
-	_c = NULL;
 	ok = false;
 	active = false;
 }
@@ -14,53 +13,27 @@ CollisionGrid::~CollisionGrid()
 
 }
 
-void CollisionGrid::set_up(Chain* c)
+void CollisionGrid::set_up(std::vector<cg_ptr> v, idx_type m_axis)
 {
-	if(!c->ok())
-	{
-		std::cerr << "ERROR: Chain not OK." << std::endl;
-		std::cerr << "Error posted from CollisionGrid::set_chain." << std::endl;
-		exit(1);
-	}else{
-		_c = c;
-	}
+	geom_vec = v;
+	set_max_axis(m_axis);
 
-	
 	grid = std::map<idx_type, std::vector<int> >();
 	geoms = std::vector< geom_struct >();
 
-	// Get the distance of hte longest axis of the chain
-	max_idx = get_max_axis(c);
-
-	Chain::link l =  c->get_link(0);
-	std::vector<idx_type> v = get_intersection_keys( l.sphere );
-	for(auto key = v.begin(); key != v.end(); key++)
+	int c_len = geom_vec.size();
+	for(int i = 0; i<c_len; i++)
 	{
-			push_key_to_map(*key,0);
-	}
-
-	for(int i = 1; i < c->len(); i++)
-	{
-		l = c->get_link(i);
-		
-		v = get_intersection_keys( l.cyl1 );
-		
+		cg_ptr cptr = geom_vec[i];
+		std::vector<idx_type> v = get_intersection_keys( cptr );
 		for(auto key = v.begin(); key != v.end(); key++)
 		{
-			push_key_to_map(*key,i);
-		}
-
-		v = get_intersection_keys( l.sphere );
-		for(auto key = v.begin(); key != v.end(); key++)
-		{
-			push_key_to_map(*key,i);
+			push_key_to_map(*key, i);
 		}
 	}
 
 	ok = true;
-
 }
-
 
 void CollisionGrid::push_key_to_map(idx_type key, int val)
 {
@@ -74,27 +47,20 @@ void CollisionGrid::push_key_to_map(idx_type key, int val)
 	grid[key] = vec;
 }
 
-int CollisionGrid::get_max_axis(Chain* c)
+void CollisionGrid::set_max_axis( idx_type max_axis )
 {
-	Eigen::ArrayXd span  = c->axis_length();
-	double max_axis = span(0);
-	if( max_axis < span(1) )
+	if( std::pow(2*max_axis,3) >= MAX_MAP_SIZE )
 	{
-		max_axis = span(1);	
-	}
-	if( max_axis < span(2) )
-	{
-		max_axis = span(2);	
-	}
-
-	if(std::pow(2*max_axis,3) >= MAX_MAP_SIZE)
-	{
-		std::cerr << "ERROR: Chain not too large to work with." << std::endl;
-		std::cerr << "Error posted from CollisionGrid::set_chain." << std::endl;
+		idx_type m = std::pow( MAX_MAP_SIZE , 1.0/3.0)/2.0;
+		std::cerr << "ERROR: Chain too large to work with." << std::endl;
+		std::cerr << "input size is: " << max_axis << std::endl;
+		std::cerr << "max allowed size is: " << m << std::endl;
+		std::cerr << "Error posted from CollisionGrid::set_max_axis." << std::endl;
+		std::cerr << "exiting." << std::endl;
 		exit(1);
 	}
 
-	return std::floor(max_axis/box_size) + 1;
+	max_idx = std::floor(max_axis/box_size) + 1;
 }
 
 std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<CollisionGeometry> g)
@@ -163,7 +129,7 @@ int CollisionGrid::grid_map(int link, Eigen::Vector3d v)
 std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_bodies(std::shared_ptr<CollisionGeometry> g)
 {	
 	std::vector< std::shared_ptr<CollisionGeometry> > ret;
-	if(_c == NULL || !_c->ok())
+	if(!ok)
 	{
 		std::cerr << "Error: grid not set up. Error thrown from CollisionGrid::get_collision_bodies()" << std::endl;
 		return ret;
@@ -178,19 +144,26 @@ std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_b
 			std::vector<int> l = grid[*key];
 			for(auto link_idx = l.begin(); link_idx != l.end(); link_idx++ ) 
 			{
-				ret.push_back( _c->get_link(*link_idx).sphere );
-				if(*link_idx != 0)
-				{
-					ret.push_back( _c->get_link(*link_idx).cyl1 );
-				}
-				if(*link_idx != _c->len()-1 ){
-					ret.push_back( _c->get_link(*link_idx).cyl2 );
-				}
+				ret.push_back(geom_vec[*link_idx]);
 			}
 		}
 	}
 
 	return ret;
+}
+
+int CollisionGrid::get_max(Eigen::Array3d v)
+{
+	double max = v(0);
+	if( max < v(1) )
+	{
+		max = v(1);	
+	}
+	if( max < v(2) )
+	{
+		max = v(2);	
+	}
+	return max;
 }
 
 void CollisionGrid::print_intersecting_box_corners(cg_ptr g)
@@ -203,7 +176,7 @@ void CollisionGrid::print_intersecting_box_corners(cg_ptr g)
 	// kallar get_intersection_keys
 	active = true;
 	get_intersection_keys(g);
-	acive = false;
+	active = false;
 	//std::vector< cg_ptr > CollisionGrid::get_collision_bodies(std::shared_ptr<CollisionGeometry> g)
 	if(active_geom.cg->text_type().compare("Sphere")==0)
 	{
@@ -234,7 +207,7 @@ void CollisionGrid::print_intersecting_box_corners(cg_ptr g)
 
 void CollisionGrid::print_box_corners(std::string path)
 {
-	if(_c == NULL)
+	if(!ok)
 	{
 		return;
 	}

@@ -2,7 +2,7 @@
 #define COLLISION_GRID_HPP
 
 #ifndef DEFAULT_MAP_SIZE
-#define DEFAULT_MAP_SIZE 10000
+#define DEFAULT_MAP_SIZE 810
 #endif
 
 #ifndef MAX_MAP_SIZE
@@ -34,7 +34,7 @@ class CollisionGrid{
 		CollisionGrid(double bs);
 		virtual ~CollisionGrid();
 
-		void set_up(Chain* c);
+		void set_up(std::vector<cg_ptr> v, idx_type mid = DEFAULT_MAP_SIZE);
 		// Takes the collision geometry and preforms broad phase collisoin detection
 		// Returns a vector of all possible intersections.
 		std::vector< std::shared_ptr<CollisionGeometry> > get_collision_bodies(std::shared_ptr<CollisionGeometry> g);
@@ -48,16 +48,18 @@ class CollisionGrid{
 		bool active;
 		
 	private:
-		Chain* _c;
+//		Chain* _c;
 		double box_size;	
 		int max_idx;
 		std::map<idx_type, std::vector<int> > grid;
 		bool ok;
 
+		std::vector<cg_ptr> geom_vec;
 
 //		int grid_map(int link, Eigen::Vector3d v);
 
-		int get_max_axis(Chain* c);
+		void set_max_axis(idx_type i);
+		int get_max(Eigen::Array3d v);
 		void push_key_to_map(idx_type key, int val);
 
 		//std::vector<idx_type> get_intersection_keys(Chain::link l);

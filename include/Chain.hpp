@@ -25,6 +25,7 @@
 class Chain
 {
 	public:
+	/*
 		struct link{
 			int idx;
 			Eigen::Array3d p;
@@ -32,7 +33,7 @@ class Chain
 			std::shared_ptr<CollisionGeometry> cyl1;
 			std::shared_ptr<CollisionGeometry> cyl2;
 		};
-
+*/
 		Chain();
 		virtual ~Chain();
 
@@ -49,9 +50,11 @@ class Chain
 		Eigen::Array3d cm(int start, int size);
 
 		void set_radius(double r);
-		link get_link(int i);
+		void set_link_length(double l);
+		//link get_link(int i);
 
-		std::vector< cg_ptr > get_collision_vec(double r, double l);
+		std::vector< cg_ptr > get_collision_vec();
+
 
 		int len();
 
@@ -66,6 +69,7 @@ class Chain
 		Eigen::ArrayXXd _chain;
 		Eigen::ArrayXd _w;
 		double _rad;
+		double _link_len;
 		
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;

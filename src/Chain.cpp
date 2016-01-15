@@ -15,7 +15,8 @@ Chain::Chain()
 	_ok = false;
 	_selfint = false;
 	_use_weights = true;
-	_rad = 0.5;
+	_rad = 0.2;
+	_link_len = 1.0;
 }
 
 Chain::~Chain()
@@ -77,42 +78,9 @@ void Chain::set_radius(double r)
 	_rad = std::abs(r);
 }
 
-Chain::link Chain::get_link(int i)
+void Chain::set_link_length(double l)
 {
-	double length = 1.0;
-	link l;
-	l.idx = i;
-	l.p = _chain.block(0,i,3,1);
-
-	if(i == 0)
-	{
-		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
-		Eigen::Vector3d Q = _chain.block(0,i+1,3,1).matrix() * length;
-
-		l.cyl1 = NULL;
-		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
-		l.cyl2 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, A , Q));
-
-	}else if(i==len()-1){
-	
-		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * length;
-		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
-
-		l.cyl1 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, P , A));
-		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
-		l.cyl2 = NULL;
-
-	}else{
-
-		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * length;
-		Eigen::Vector3d A = _chain.block(0,i,3,1).matrix() * length;
-		Eigen::Vector3d Q = _chain.block(0,i+1,3,1).matrix() * length;
-
-		l.cyl1 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, P , A));
-		l.sphere = std::shared_ptr<CollisionGeometry>(new Sphere( A, _rad) );
-		l.cyl2 = std::shared_ptr<CollisionGeometry>( new Cylinder( _rad, A , Q));
-	}
-	return l;
+	_link_len = std::abs(l);
 }
 
 std::ostream& operator<<(std::ostream& os, const Chain& c)
@@ -196,8 +164,10 @@ bool Chain::ok()
 }
 	
 
-std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec(double r, double l)
+std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 {
+	double l = _link_len;
+	double r = _rad;
 	if(!_ok)
 	{
 		return std::vector< std::shared_ptr<CollisionGeometry> >();

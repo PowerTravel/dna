@@ -19,6 +19,7 @@ class Distance: public Simulation
 		double _box_size;
 		double _rad;
 
+		int get_max(Eigen::Array3d v);
 };
 
 #endif // MEAN_DISTANCE_HPP
