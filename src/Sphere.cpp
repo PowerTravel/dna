@@ -71,6 +71,7 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 
 bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 {
+//	std::cerr << "BAJSBAJSBAJSBAJSBAJS!!!!" << std::endl;
 	// Cylinder
 	double rho_c = c->_r;
 	double h = c->_h;

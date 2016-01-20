@@ -128,11 +128,11 @@ int CollisionGrid::grid_map(int link, Eigen::Vector3d v)
 */
 std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_bodies(std::shared_ptr<CollisionGeometry> g)
 {	
-	std::vector< std::shared_ptr<CollisionGeometry> > ret;
+	std::map< int , cg_ptr > tmp;
 	if(!ok)
 	{
 		std::cerr << "Error: grid not set up. Error thrown from CollisionGrid::get_collision_bodies()" << std::endl;
-		return ret;
+		return std::vector< cg_ptr >();
 	}
 
 	std::vector<idx_type> v1 = get_intersection_keys(g);
@@ -144,9 +144,16 @@ std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_b
 			std::vector<int> l = grid[*key];
 			for(auto link_idx = l.begin(); link_idx != l.end(); link_idx++ ) 
 			{
-				ret.push_back(geom_vec[*link_idx]);
+				cg_ptr cg = geom_vec[*link_idx];
+				tmp[ cg->get_id() ] = geom_vec[*link_idx];
 			}
 		}
+	}
+	
+	std::vector< cg_ptr > ret = std::vector< cg_ptr >();
+	for(auto cg_it = tmp.begin();  cg_it != tmp.end(); cg_it++ )
+	{
+		ret.push_back(cg_it->second );
 	}
 
 	return ret;

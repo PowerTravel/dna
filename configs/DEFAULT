@@ -3,7 +3,7 @@
 
 
 RUN: distance
-	SIZE: 20
+	SIZE: 2000
 	BOX_SIZE: 1.0
 	RADIUS: 0.15
 

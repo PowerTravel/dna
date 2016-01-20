@@ -66,38 +66,58 @@ void Particle::update(double dt, Eigen::Array3d a)
 	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = grid->get_collision_bodies(sps);
 	Sphere S = *( (Sphere*) sps.get() );
 
-	collisions = get_coll_list(coll_geom_vec, S );
-	grid->print_intersecting_box_corners(sps);
-	// NOW PRINT THE DATA FOR THE ACTUAL 
+	// NEXT UP: FOR EACH CALL TO UPDATE(), PRINT OUT TO A FILE THE COLLISIONGOMETRIES IN COLL_GEOM_VEC SO WE CAN TRACK THE SPHERE AND THE COLLISIONGEOMETRIES IT TESTSINTERSECTION AGAINST AS WE MAKE IT MOVE
 /*
 	for(auto it = coll_geom_vec.begin(); it != coll_geom_vec.end(); it++)
 	{
 		std::shared_ptr< CollisionGeometry> cgptr = *it;
-		if(cgptr->text_type().compare("Sphere"))
+		if(cgptr->text_type().compare("Sphere") == 0)
 		{
-			std::cout << "S: ";	
-		}else if(cgptr->text_type().compare("Cylinder")){
-			std::cout << "C: ";	
+			std::cout << "1 ";	
+		}else if(cgptr->text_type().compare("Cylinder") == 0){
+			std::cout << "2 ";	
 		}
+		std::cout << (*it)->get_id() <<" ";
 		std::cout << (*it)->get_span().transpose() << std::endl;
 	}
 */
-	std::cout << "Actual Collisions" << std::endl;
-	for(auto it = collisions.begin(); it != collisions.end(); it++)
+
+	// Remove all cylidnders for debugging purposes
+	std::vector<cg_ptr> ctmp;
+	for(auto its = coll_geom_vec.begin(); its != coll_geom_vec.end(); its++)
 	{
-		std::cout << it->geom->get_span().transpose() << std::endl;
+		if((*its)->text_type().compare("Sphere")==0)
+		{
+			ctmp.push_back(*its);
+		}
 	}
+	coll_geom_vec = ctmp;
+
+	collisions = get_coll_list(coll_geom_vec, S );
+	
+	//std::cout << "Actual Collisions" << std::endl;
+	//for(auto it = collisions.begin(); it != collisions.end(); it++)
+//	{
+	//	std::cout << it->geom->get_span().transpose() << std::endl;
+//	}
 
 
 	//std::cout << collisions.size() <<"  " <<coll_geom_vec.size() <<"  " << 200-1 <<std::endl;
+
+
+	
 	while(collisions.size() > 0){
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
 		// The assumption being that that was the first collision.
+		
+
+
+		
 		collisions.sort(sort_after_penetration_depth);
 
 		auto it = collisions.begin();
-		
+
 		intersections s = align_normal(*it, vp);
 		collisions.pop_front();
 		collisions.push_front(s);
@@ -130,6 +150,13 @@ void Particle::update(double dt, Eigen::Array3d a)
 		intersections c = align_normal(collisions.front(), _v);
 
 		Eigen::VectorXd tmp = do_one_collision(dt, X,a, c);
+	
+		if( tmp(7) != tmp(7))
+		{
+			std::cerr << tmp.transpose() << std::endl;
+			exit(1);
+		}
+
 		X = tmp.segment(0,7);
 		X_P = tmp.segment(7,7);
 	
@@ -140,6 +167,12 @@ void Particle::update(double dt, Eigen::Array3d a)
 	_x = X_P.segment(1,3);
 	_v = X_P.segment(4,3);
 	_E = get_energy(a.matrix());
+
+	if( _x(0) != _x(0))
+	{
+		std::cerr << _x.transpose() << std::endl;
+		exit(1);
+	}
 
 	Eigen::VectorXd log = Eigen::VectorXd::Zero(9);
 	log.segment(0,3) = _x;
@@ -168,6 +201,7 @@ std::list<Particle::intersections> Particle::get_coll_list(std::vector<std::shar
 		//Plane P = Plane(Eigen::Vector3d(0,0,0), Eigen::Vector3d(0,1,0));
 		CollisionGeometry::coll_struct cs;
 		std::shared_ptr<CollisionGeometry> c = *cg;
+
 		if(c->intersects(&s, cs))
 		{
 			intersections is;
@@ -176,6 +210,7 @@ std::list<Particle::intersections> Particle::get_coll_list(std::vector<std::shar
 			ret.push_back(is);
 		}
 	}
+
 	return ret;
 }
 

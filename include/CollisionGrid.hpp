@@ -48,7 +48,6 @@ class CollisionGrid{
 		bool active;
 		
 	private:
-//		Chain* _c;
 		double box_size;	
 		int max_idx;
 		std::map<idx_type, std::vector<int> > grid;
@@ -56,18 +55,14 @@ class CollisionGrid{
 
 		std::vector<cg_ptr> geom_vec;
 
-//		int grid_map(int link, Eigen::Vector3d v);
-
 		void set_max_axis(idx_type i);
 		int get_max(Eigen::Array3d v);
 		void push_key_to_map(idx_type key, int val);
 
-		//std::vector<idx_type> get_intersection_keys(Chain::link l);
 		std::vector<idx_type> get_intersection_keys(std::shared_ptr<CollisionGeometry> g);
 
 		idx_type map_key(int i, int j, int k);
 
-//		double get_box_corner_from_key(idx_type key);
 };
 
 #endif
