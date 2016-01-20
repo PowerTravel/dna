@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <iostream>
+#include <memory>
 
 #ifndef COLLISIONGEOMETRY_PTR
 class CollisionGeometry;

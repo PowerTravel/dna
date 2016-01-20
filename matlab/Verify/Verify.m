@@ -1,5 +1,5 @@
  
-chain = importdata('Rw.dna');
+chain = importdata('R.dna');
 
 
 na = chain(:,1);

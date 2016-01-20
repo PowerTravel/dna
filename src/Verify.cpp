@@ -1,5 +1,10 @@
 #include "Verify.hpp"
 #include <iomanip>
+
+#include "Statistics.hpp"
+typedef Statistics stat;
+
+
 Verify::Verify()
 {
 
@@ -190,8 +195,8 @@ void Verify::apply()
 			return;
 		}
 
+		// Vector containing the weight for each individual link
 		Eigen::VectorXd w_tmp = _c->weights();
-
 		// bin values
 		for(int j = 0; j<steps; j++)
 		{
@@ -230,11 +235,11 @@ void Verify::apply()
 
 	for(int i = 0; i<steps; i++)
 	{
-		Eigen::Vector2d mv = get_mean_and_variance(R_tmp.row(i), w[i]);
+		Eigen::Vector2d mv = stat::get_mean_and_variance(R_tmp.row(i), w[i]);
 		R(i) = mv(0);
 		R_var(i) = mv(1);
 		
-		mv = get_mean_and_variance(Rg_tmp.row(i), w[i]);
+		mv = stat::get_mean_and_variance(Rg_tmp.row(i), w[i]);
 		Rg(i) = mv(0);
 		//std::cout << Rg_tmp.row(i).mean() <<"  " << Rg(i) <<"  "<< Rg_theo(i) << std::endl;
 		Rg_var(i) = mv(1);
@@ -242,38 +247,6 @@ void Verify::apply()
 
 	write_to_file();
 	print_post_info();
-}
-
-Eigen::Vector2d Verify::get_mean_and_variance(Eigen::ArrayXd in_data, std::vector<PFloat>& weight)
-{
-	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
-	
-	// Mean
-	double M = weight.size();
-	double N = in_data.size();
-
-	PFloat sum = PFloat();
-	for(int i=0; i < M; i++ )
-	{
-		sum = sum + weight[i];
-	}
-
-	PFloat unity = 1;
-	PFloat scale = unity / sum;
-	Eigen::ArrayXd s_weight = Eigen::ArrayXd(M);
-	for(int i=0; i<M; i++)
-	{
-		PFloat tmp = scale * weight[i];
-		s_weight(i) = tmp.as_float();
-	}
-	// Weights are scaled to be unity and are written out just for clarity
-	double w_sum = 1.0;
-	ret(0) = (in_data * s_weight).sum() / w_sum;
-	double var_denominator = ((M-1)/(M)) * w_sum; 
-	double var_numerator   = ( s_weight * (in_data-ret(0)).pow(2) ).sum();
-	ret(1) = var_numerator / var_denominator;
-
-	return ret;
 }
 
 void Verify::write_to_file()

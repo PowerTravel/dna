@@ -5,23 +5,23 @@
 RUN: distance
 	SIZE: 2000
 	BOX_SIZE: 1.0
-	RADIUS: 0.15
+	RADIUS: 0.2
 
 	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../data/default_distance.dna
-	WEIGHT: true
 
 %RUN: verify
-%	SIZE: 5000
+%	SIZE: 2000
 %	STRIDES: 10
 %	SAMPLES: 1000
 %	EXP: true
 %	SELFINTERSECTION: true
+%	WEIGHT: true % Not sure what this does :S
 %
 %	TYPE: saw
 %	VERBOSE: true
-%	OUTFILE: ../matlab/phantom/Rfgi.dna
+%	OUTFILE: ../matlab/verify/R.dna
 
 %RUN: verify
 %	SIZE: 5000

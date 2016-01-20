@@ -93,9 +93,6 @@ class Verify : public  Simulation{
 		void write_to_file();
 		void set_chain_type();
 
-
-		Eigen::Vector2d get_mean_and_variance(Eigen::ArrayXd in_data, std::vector<PFloat >& weight );
-
 		PFloat mult_weights(Eigen::ArrayXd w);
 };
 

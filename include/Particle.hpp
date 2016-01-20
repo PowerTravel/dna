@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <list>
+#include <random>
 #include "CollisionGrid.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
@@ -20,6 +21,9 @@ class Particle{
 		Eigen::Vector3d get_energy(Eigen::Vector3d g);	
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
 	private:
+		Eigen::VectorXd do_collisions(Eigen::VectorXd x_p);
+
+		Eigen::Vector3d get_random_vector(double min_len, double max_len);
 
 		struct intersections{
 			intersections()
@@ -44,6 +48,8 @@ class Particle{
 		std::vector< Eigen::VectorXd > traj;
 		std::list< intersections > collisions;
 		
+		static std::default_random_engine _generator;
+		
 		Eigen::Vector3d _E;
 
 		intersections align_normal(intersections is, Eigen::Vector3d v);
@@ -53,6 +59,8 @@ class Particle{
 		std::list<intersections> get_coll_list(std::vector<std::shared_ptr< CollisionGeometry> > v, Sphere s);
 
 		std::vector< std::shared_ptr<CollisionGeometry> > build_sphere_and_plane();
+		
 };
+		
 
 #endif // PARTICLE_HPP

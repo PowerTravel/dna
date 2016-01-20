@@ -22,6 +22,8 @@ add_executable(dna
 	src/Cylinder.cpp
 
 	src/Particle.cpp
+	
+	src/Statistics.cpp
 )
 
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )

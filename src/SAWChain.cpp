@@ -33,11 +33,16 @@ void SAWChain::build(int N)
 		_chain.block(0,0,3,1) = Eigen::Array3d(0,0,0);
 		_w(0) = 1;
 		set_grid(Eigen::Array3d(0,0,0));
-	
+
 		for(_n = 1; _n<N; _n++)
 		{
 			Eigen::Array4d next_step = get_next_step();
-			_w(_n) = next_step(0);
+			if(_n == 1)
+			{
+				_w(_n) = 1;
+			}else{
+				_w(_n) = next_step(0);
+			}
 			_chain.block(0,_n,3,1) = _chain.block(0,_n-1,3,1) + 
 										next_step.segment(1,DIM);
 			set_grid(_chain.block(0,_n,3,1));
@@ -67,10 +72,12 @@ Eigen::Array4d SAWChain::get_next_step()
 	{
 		Eigen::Array3d step = int_to_coord(i);
 		step = step + _chain.block(0,_n-1,3,1);
+
 		if(is_occupied(step))
 		{
 			occupied++;
 		}else{
+
 			f(i) = 1;
 		}
 	}

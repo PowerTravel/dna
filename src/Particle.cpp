@@ -1,6 +1,9 @@
 #include "Particle.hpp"
 
 #include <iostream>
+
+std::default_random_engine Particle::_generator = std::default_random_engine(time(NULL));
+
 Particle::Particle(double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionGrid* gr)
 {
 	grid = gr;
@@ -28,44 +31,26 @@ Eigen::Array3d Particle::get_velocity()
 	return _v;
 }
 
-void Particle::update(double dt, Eigen::Array3d a)
+Eigen::Vector3d Particle::get_random_vector(double min_len, double max_len)
 {
-		
-
-	double h = dt;
-
-	if(!first_step_taken)
-	{
-		first_step_taken = true;
-		h = dt/2;
-	}
-
-	Eigen::Vector3d vp = _v + h*a.matrix();
-	Eigen::Vector3d xp = _x + dt*vp;
-	// X is the position of the sphere somewhere in the timestep. At this point
-	// in the program it is in the very beginning.
-	Eigen::VectorXd X = Eigen::VectorXd::Zero(7);
-	X(0) = 0;
-	X.segment(1,3) = _x; 
-	X.segment(4,3) = _v; 
-
-	// X_P is always the position of the sphere at the end of the timestep
-	Eigen::VectorXd X_P = Eigen::VectorXd::Zero(7);
-	X_P(0) = dt;
-	X_P.segment(1,3) = xp;
-	X_P.segment(4,3) = vp; 
-	int i =0;
-	std::shared_ptr<CollisionGeometry> sps = std::shared_ptr<CollisionGeometry>(new  Sphere(X_P.segment(1,3), _r));
-
-	
-	//Static Collision Geometries
-	//std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
-	//	build_sphere_and_plane();
-
+	std::uniform_real_distribution<double> scale(min_len, max_len);
+	double s= scale(_generator);
+	std::uniform_real_distribution<double> direction(-1, 1);
+	double x = direction(_generator);
+	double y = direction(_generator);
+	double z = direction(_generator);
+	Eigen::Vector3d dir = Eigen::Vector3d(x,y,z);
+	dir.normalize();
+	return dir*s;
+}
+/*
+Eigen::VectorXd do_collisions(Eigen::VectorXd x_p)
+{
+	Eigen::VectorXd X_P = x_p;
 	// dynamic cg
 	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = grid->get_collision_bodies(sps);
 	Sphere S = *( (Sphere*) sps.get() );
-
+*/
 	// NEXT UP: FOR EACH CALL TO UPDATE(), PRINT OUT TO A FILE THE COLLISIONGOMETRIES IN COLL_GEOM_VEC SO WE CAN TRACK THE SPHERE AND THE COLLISIONGEOMETRIES IT TESTSINTERSECTION AGAINST AS WE MAKE IT MOVE
 /*
 	for(auto it = coll_geom_vec.begin(); it != coll_geom_vec.end(); it++)
@@ -83,6 +68,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 */
 
 	// Remove all cylidnders for debugging purposes
+/*
 	std::vector<cg_ptr> ctmp;
 	for(auto its = coll_geom_vec.begin(); its != coll_geom_vec.end(); its++)
 	{
@@ -92,27 +78,15 @@ void Particle::update(double dt, Eigen::Array3d a)
 		}
 	}
 	coll_geom_vec = ctmp;
+*/
 
+/*
 	collisions = get_coll_list(coll_geom_vec, S );
-	
-	//std::cout << "Actual Collisions" << std::endl;
-	//for(auto it = collisions.begin(); it != collisions.end(); it++)
-//	{
-	//	std::cout << it->geom->get_span().transpose() << std::endl;
-//	}
 
-
-	//std::cout << collisions.size() <<"  " <<coll_geom_vec.size() <<"  " << 200-1 <<std::endl;
-
-
-	
-	while(collisions.size() > 0){
+	while(collisions.size() > 0 ){
 		// Move the collision with highest penetration-depth to the top to be
 		// resolved first.
 		// The assumption being that that was the first collision.
-		
-
-
 		
 		collisions.sort(sort_after_penetration_depth);
 
@@ -163,6 +137,48 @@ void Particle::update(double dt, Eigen::Array3d a)
 		S = Sphere(X_P.segment(1,3), _r);
 		collisions = get_coll_list(coll_geom_vec, S);
 	}
+	
+	return X_P;
+}
+*/
+void Particle::update(double dt, Eigen::Array3d a)
+{
+	double h = dt;
+
+	double max_len = 2;
+	double min_len = 0;
+	Eigen::Vector3d brownian = get_random_vector(min_len,max_len); 
+
+	if(!first_step_taken)
+	{
+		first_step_taken = true;
+		h = dt/2;
+	}
+
+	//Eigen::Vector3d vp = _v + h*a.matrix();
+	Eigen::Vector3d vp = _v + brownian*dt;
+	Eigen::Vector3d xp = _x + dt*vp;
+	// X is the position of the sphere somewhere in the timestep. At this point
+	// in the program it is in the very beginning.
+	Eigen::VectorXd X = Eigen::VectorXd::Zero(7);
+	X(0) = 0;
+	X.segment(1,3) = _x; 
+	X.segment(4,3) = _v; 
+
+	// X_P is always the position of the sphere at the end of the timestep
+	Eigen::VectorXd X_P = Eigen::VectorXd::Zero(7);
+	X_P(0) = dt;
+	X_P.segment(1,3) = xp;
+	X_P.segment(4,3) = vp; 
+	int i =0;
+	std::shared_ptr<CollisionGeometry> sps = std::shared_ptr<CollisionGeometry>(new  Sphere(X_P.segment(1,3), _r));
+
+	
+	//Static Collision Geometries
+	//std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
+	//	build_sphere_and_plane();
+//	X_P = do_One_collision(X_P);
+
 
 	_x = X_P.segment(1,3);
 	_v = X_P.segment(4,3);

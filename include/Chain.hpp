@@ -25,15 +25,6 @@
 class Chain
 {
 	public:
-	/*
-		struct link{
-			int idx;
-			Eigen::Array3d p;
-			std::shared_ptr<CollisionGeometry> sphere;
-			std::shared_ptr<CollisionGeometry> cyl1;
-			std::shared_ptr<CollisionGeometry> cyl2;
-		};
-*/
 		Chain();
 		virtual ~Chain();
 
