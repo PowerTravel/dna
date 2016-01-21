@@ -12,6 +12,12 @@ class Distance: public Simulation
 		void apply();
 
 	private:
+
+		Eigen::ArrayXXd run_simulation_once(double radius, 
+							Eigen::Vector3d x_ini, Eigen::Vector3d v_ini, 
+							double tot_time, double dt, 
+							CollisionGrid* cg);
+
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		void print(std::ostream& os);
 

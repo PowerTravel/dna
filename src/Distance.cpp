@@ -1,4 +1,5 @@
 #include "Distance.hpp"
+#include "Statistics.hpp"
 
 Distance::Distance(std::map<std::string, std::string> sm) : Simulation(sm)
 {
@@ -62,20 +63,58 @@ void Distance::apply()
 
 	int  max_axis = get_max(_c->axis_length());
 	cg.set_up(_c->get_collision_vec() , max_axis );
+	cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
-	cg.print_box_corners(std::string("grid.txt"));
-	int N = 20000;
-	
+
+
+	double radius = 0.2;
+	Eigen::Vector3d x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
+	Eigen::Vector3d v_ini = Eigen::Vector3d(0, 0, 0);
+	double tot_time = 10;
 	double dt = 0.01;
-	double g = -0.00;
-	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(10,2,0), &cg);
-	//Particle p = Particle(0.5, Eigen::Array3d(0,0,0), Eigen::Array3d(1,1,0), &cg);
-	Particle p = Particle(0.2, Eigen::Array3d(0.5,0.5,0.5), Eigen::Array3d(0,0.0,0.0), &cg);
-	for(int i = 0; i < N; i++)
-	{
-		p.update(dt, Eigen::Array3d(0,0,0) );
-	}
+	
+	int Nr_simulations = 1000;
 
+	Eigen::ArrayXd distance = Eigen::ArrayXd::Zero(Nr_simulations);
+	Eigen::ArrayXXd final_pos_arr = Eigen::ArrayXXd::Zero(3,Nr_simulations);
+	
+	for(int i = 0; i < Nr_simulations; i++)
+	{
+		Eigen::ArrayXXd trajectory = run_simulation_once(radius, x_ini, v_ini, tot_time, dt, &cg);
+		// Nr of columns
+		int N = trajectory.outerSize();
+		Eigen::Vector3d final_pos_tmp = trajectory.block(0,N-1, 3, 1);
+		final_pos_arr.block(0,i,3,1) = final_pos_tmp;
+		distance(i) = final_pos_tmp.norm();
+	}
+	Eigen::Vector3d final_average_pos;
+	Eigen::Vector3d final_average_pos_var;
+
+	// X
+	Eigen::VectorXd data_1d = final_pos_arr.block(0,0,1,Nr_simulations).transpose();
+	Eigen::Vector2d	tmp2d = Statistics::get_mean_and_variance(data_1d);
+	final_average_pos(0) = tmp2d(0);
+	final_average_pos_var(0) = tmp2d(1);
+
+	// Y
+	data_1d = final_pos_arr.block(1,0,1,Nr_simulations).transpose();
+	tmp2d = Statistics::get_mean_and_variance(data_1d);
+	final_average_pos(1) = tmp2d(0);
+	final_average_pos_var(1) = tmp2d(1);
+
+	// Z
+	data_1d = final_pos_arr.block(2,0,1,Nr_simulations).transpose();
+	tmp2d = Statistics::get_mean_and_variance(data_1d);
+	final_average_pos(2) = tmp2d(0);
+	final_average_pos_var(2) = tmp2d(1);
+
+
+	Eigen::Vector2d meanVar = Statistics::get_mean_and_variance(distance);
+	std::cout << meanVar.transpose() << std::endl;
+	std::cout << final_average_pos.transpose() << std::endl;
+	std::cout << final_average_pos_var.transpose() << std::endl;
+
+/*
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
@@ -85,10 +124,27 @@ void Distance::apply()
 	}
 
 	file.close();
-
+*/
 	print_post_info();
 }
 
+
+Eigen::ArrayXXd Distance::run_simulation_once(double radius, 
+							Eigen::Vector3d x_ini, Eigen::Vector3d v_ini, 
+							double tot_time, double dt, 
+							CollisionGrid* cg)
+{
+	Particle p = Particle(radius, x_ini, v_ini, cg);
+	int N = int(tot_time/dt);
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+	for(int i = 0; i < N; i++)
+	{
+		p.update(dt, Eigen::Array3d(0,0,0) );
+		trajectory.block(0,i,3,1) = p.get_position();
+	}
+
+	return trajectory;
+}
 
 void Distance::print(std::ostream& os)
 {

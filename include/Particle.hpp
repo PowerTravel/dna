@@ -20,6 +20,8 @@ class Particle{
 		Eigen::Array3d get_velocity();
 		Eigen::Vector3d get_energy(Eigen::Vector3d g);	
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
+
+		
 	private:
 		Eigen::VectorXd do_collisions(Eigen::VectorXd x_p);
 

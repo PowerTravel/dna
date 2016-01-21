@@ -124,7 +124,7 @@ Eigen::VectorXd do_collisions(Eigen::VectorXd x_p)
 		intersections c = align_normal(collisions.front(), _v);
 
 		Eigen::VectorXd tmp = do_one_collision(dt, X,a, c);
-	
+		
 		if( tmp(7) != tmp(7))
 		{
 			std::cerr << tmp.transpose() << std::endl;
@@ -147,6 +147,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 
 	double max_len = 2;
 	double min_len = 0;
+
 	Eigen::Vector3d brownian = get_random_vector(min_len,max_len); 
 
 	if(!first_step_taken)

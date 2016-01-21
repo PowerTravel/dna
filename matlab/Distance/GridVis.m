@@ -1,6 +1,6 @@
 % Visualize the collisionGrid
 
-gr = load('../../_build/grid.txt');
+gr = load('grid.txt');
 gridsize = 1;
 
 pointsPerGeom = 4;
