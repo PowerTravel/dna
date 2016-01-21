@@ -84,7 +84,7 @@ Eigen::ArrayXd Statistics::make_linear_points_array(double N, double steps, doub
 	double dn = (N - start_point) / steps; // linear
 
 	for(int i = 0; i<steps+1; i++){
-		n(i) = i * dn + start_point;	
+		n(i) = i * dn + start_point;
 	}
 		
 	return n;

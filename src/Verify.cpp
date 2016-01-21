@@ -139,7 +139,7 @@ void Verify::print(std::ostream& os)
 void Verify::apply()
 {
 	print_pre_info();
-	if(!_valid)
+	if(!_valid || _c == NULL)
 	{
 		std::cerr << "Verify not valid. Exiting" << std::endl;
 		return;
@@ -169,14 +169,8 @@ void Verify::apply()
 
 	for(int i = 0; i < samples; i++)
 	{	
-		if(_c != NULL)
-		{
-			_c->build(N);
-		}else{
-			std::cerr << "ERROR: VERIFY::APPLY Chain IS NULL" << std::endl;
-			return;
-		}
-
+		_c->build(N);
+		
 		// Vector containing the weight for each individual link
 		Eigen::VectorXd w_tmp = _c->weights();
 		// bin values
@@ -223,7 +217,6 @@ void Verify::apply()
 		
 		mv = stat::get_mean_and_variance(Rg_tmp.row(i), w[i]);
 		Rg(i) = mv(0);
-		//std::cout << Rg_tmp.row(i).mean() <<"  " << Rg(i) <<"  "<< Rg_theo(i) << std::endl;
 		Rg_var(i) = mv(1);
 	}
 

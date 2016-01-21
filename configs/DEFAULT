@@ -2,26 +2,26 @@
 % This config is if no other configfile is called
 
 
-%RUN: distance
-%	SIZE: 2000
-%	BOX_SIZE: 1.0
-%	RADIUS: 0.2
-%
-%	TYPE: fg
-%	VERBOSE: true
-%	OUTFILE: ../data/default_distance.dna
-
-RUN: verify
+RUN: distance
 	SIZE: 2000
-	STRIDES: 10
-	SAMPLES: 1000
-	EXP: true
-	SELFINTERSECTION: true
-	WEIGHT: true % Not sure what this does :S
+	BOX_SIZE: 1.0
+	RADIUS: 0.2
 
-	TYPE: saw
+	TYPE: fg
 	VERBOSE: true
-	OUTFILE: ../matlab/Verify/R.dna
+	OUTFILE: ../data/default_distance.dna
+
+%RUN: verify
+%	SIZE: 2000
+%	STRIDES: 10
+%	SAMPLES: 1000
+%	EXP: false
+%	SELFINTERSECTION: true
+%	WEIGHT: true % Not sure what this does :S
+
+%	TYPE: saw
+%	VERBOSE: true
+%	OUTFILE: ../matlab/Verify/R.dna
 
 %RUN: verify
 %	SIZE: 5000
