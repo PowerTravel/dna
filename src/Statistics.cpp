@@ -11,7 +11,6 @@ Statistics::~Statistics()
 
 Eigen::Vector2d Statistics::get_mean_and_variance(Eigen::ArrayXd in_data)
 {
-
 	Eigen::Vector2d ret = Eigen::Vector2d::Zero();
 	// Mean
 	double N = in_data.size();
@@ -65,4 +64,28 @@ Eigen::Vector2d Statistics::get_mean_and_variance(Eigen::ArrayXd in_data, std::v
 
 	return ret;
 
+}
+
+Eigen::ArrayXd Statistics::make_exponential_points_array(double N, double steps, double start_point )
+{
+	Eigen::ArrayXd n = Eigen::ArrayXd::Zero(steps+1);
+	double k = log(N / start_point) / steps; // exponential
+	
+	for(int i = 0; i<steps+1; i++){
+		n(i) = start_point * exp(k*i);
+	}
+	return n;
+}
+
+Eigen::ArrayXd Statistics::make_linear_points_array(double N, double steps, double start_point )
+{
+	Eigen::ArrayXd n = Eigen::ArrayXd::Zero(steps+1);
+	
+	double dn = (N - start_point) / steps; // linear
+
+	for(int i = 0; i<steps+1; i++){
+		n(i) = i * dn + start_point;	
+	}
+		
+	return n;
 }

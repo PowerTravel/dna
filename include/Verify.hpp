@@ -62,7 +62,6 @@ class Verify : public  Simulation{
 		double _theoretical_slope;
 		double _theoretical_Rg_slope;
 	
-		void set_plot_points();
 		void set_theoretical_values();
 		
 		// Global

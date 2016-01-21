@@ -75,31 +75,6 @@ void Verify::set_chain_type()
 	}
 }
 
-void Verify::set_plot_points()
-{
-	Eigen::ArrayXd n = Eigen::ArrayXd::Zero(_strides+1);
-
-	double start_point = double( START_POINT );
-	double N = (double) _size;
-	double steps =(double) _strides;
-
-	double k = log(N / start_point) / steps; // exponential
-	
-	double dn = (N - start_point) / steps; // linear
-
-	for(int i = 0; i<steps+1; i++){
-		if(_exp)
-		{
-			n(i) = start_point * exp(k*i);
-		}else{
-			n(i) = i * dn + start_point;	
-		}
-	}
-		
-	nr_links = n;
-	link_mean = (n.segment(0,steps) + n.segment(1,steps)) / 2;
-}
-
 
 void Verify::set_theoretical_values()
 {
@@ -174,9 +149,16 @@ void Verify::apply()
 	int samples = _samples;
 	int N = _size;
 
-	set_plot_points();
-	set_theoretical_values();
 
+	if(_exp){
+		nr_links = stat::make_exponential_points_array( N, steps, START_POINT );
+	}else{
+		nr_links = stat::make_linear_points_array( N, steps, START_POINT );
+	}
+	link_mean = (nr_links.segment(0, steps) + nr_links.segment(1, steps)) / 2;
+
+
+	set_theoretical_values();
 	Eigen::ArrayXXd binned_chain = Eigen::ArrayXXd::Zero(steps,3*samples);
 	std::vector< std::vector<PFloat> > w = std::vector< std::vector<PFloat> >(steps);
 	for(int i = 0; i < steps; i++)
