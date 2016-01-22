@@ -1,5 +1,6 @@
 #include "Distance.hpp"
 #include "Statistics.hpp"
+#include <iomanip>
 
 Distance::Distance(std::map<std::string, std::string> sm) : Simulation(sm)
 {
@@ -55,7 +56,6 @@ void Distance::apply()
 	}
 	std::cout << this << std::endl;
 
-	// Build chain and setup collision grid
 	_c->set_radius(_rad);
 	_c->set_link_length(1.0);
 	_c->build(_size);
@@ -70,27 +70,22 @@ void Distance::apply()
 	double radius = 0.2;
 	Eigen::Vector3d x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	Eigen::Vector3d v_ini = Eigen::Vector3d(0, 0, 0);
-	double tot_time = 10;
+	double tot_time = 40;
 	double dt = 0.01;
 	int T = int(tot_time /dt);
 
 	
-	int nr_simulations = 100;
-	int nr_data_points = T/100.0;
-	int start_point = 0;
+	nr_simulations = 20;
+	nr_data_points = 50.0;
+	int start_point = 100;
 
 
-	Eigen::ArrayXd time_steps = Statistics::make_linear_points_array(T, nr_data_points, start_point );
-	Eigen::ArrayXd time_step_mean = (time_steps.segment(0, nr_data_points) + time_steps.segment(1, nr_data_points)) / 2;
+	time_steps = Statistics::make_exponential_points_array(T, nr_data_points, start_point );
+	time_step_mean = (time_steps.segment(0, nr_data_points) + time_steps.segment(1, nr_data_points)) / 2;
 
-
-	// Mean Distance
-//	Eigen::ArrayXd distance = Eigen::ArrayXd::Zero(nr_simulations);
 	Eigen::ArrayXXd binned_distance_data = 
 							Eigen::ArrayXXd::Zero(nr_data_points, 3*nr_simulations);
-//	Eigen::ArrayXXd final_pos_arr = Eigen::ArrayXXd::Zero(nr_simulations,3);
-//	Eigen::ArrayXXd binned_position_data = Eigen::ArrayXXd::Zero(nr_data_points,
-//															3*nr_simulations);
+
 
 	for(int i = 0; i < nr_simulations; i++)
 	{
@@ -98,36 +93,38 @@ void Distance::apply()
 
 		for(int j = 0; j<nr_data_points; j++)
 		{
-			int start = time_steps(j);
-			int len = time_steps(j+1) - start;
+			int start = floor(time_steps(j));
+			int len = floor(time_steps(j+1) - start);
+			if(len == 0)
+			{
+				len = 1;
+			}
+
 			Eigen::ArrayXXd tmp_mat = 
-					trajectory.block(0, start, 3, len);
+				trajectory.block(0, start, 3, len);
 			tmp_mat.row(0) = tmp_mat.row(0) - x_ini(0);
 			tmp_mat.row(1) = tmp_mat.row(1) - x_ini(1);
 			tmp_mat.row(2) = tmp_mat.row(2) - x_ini(2);
 
-
 			binned_distance_data(j,3*i+0) = tmp_mat.row(0).mean();
 			binned_distance_data(j,3*i+1) = tmp_mat.row(1).mean();	
 			binned_distance_data(j,3*i+2) = tmp_mat.row(2).mean();
+
+
 		}
+		write_to_terminal(i,nr_data_points);
 	}
 
-	Eigen::ArrayXd D = Eigen::ArrayXd::Zero(nr_data_points);
-	Eigen::ArrayXd D_var = Eigen::ArrayXd::Zero(nr_data_points);
+	D = Eigen::ArrayXd::Zero(nr_data_points);
+	D_var = Eigen::ArrayXd::Zero(nr_data_points);
 	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
 	
 
-	Eigen::ArrayXXd P = Eigen::ArrayXXd::Zero(nr_data_points, 3);
-	Eigen::ArrayXXd P_var = Eigen::ArrayXXd::Zero(nr_data_points, 3);
+	P = Eigen::ArrayXXd::Zero(nr_data_points, 3);
+	P_var = Eigen::ArrayXXd::Zero(nr_data_points, 3);
 	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
 	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
 	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
-
-	Eigen::ArrayXd P_n = Eigen::ArrayXd::Zero(nr_data_points);
-	Eigen::ArrayXXd P_tmp_n = Eigen::ArrayXXd::Zero(nr_data_points, 3);
-	//Eigen::ArrayXXd P_tmp_var_n = Eigen::ArrayXXd::Zero(nr_data_points,nr_simulations);
-
 
 	for(int i = 0; i < nr_data_points; i++)
 	{
@@ -135,10 +132,6 @@ void Distance::apply()
 		{
 			Eigen::Vector3d pos  = binned_distance_data.block(i,3*j,1,3).transpose();
 	
-			P_tmp_n(i,0) =P_tmp_n(i,0) + pos(0);
-			P_tmp_n(i,1) =P_tmp_n(i,1) + pos(1);
-			P_tmp_n(i,2) =P_tmp_n(i,2) + pos(2);
-
 			P_tmp_x(i,j) = pos(0);
 			P_tmp_y(i,j) = pos(1);
 			P_tmp_z(i,j) = pos(2);
@@ -147,13 +140,6 @@ void Distance::apply()
 		}
 	}
 	
-
-	P_tmp_n = P_tmp_n/nr_simulations;
-	for(int i = 0; i<nr_data_points; i++)
-	{
-		Eigen::Vector3d v = P_tmp_n.block(i,0,1,3).transpose();
-		P_n(i) = v.norm(); 
-	}
 
 	for(int i = 0; i<nr_data_points; i++)
 	{
@@ -177,49 +163,37 @@ void Distance::apply()
 		D_var(i) = mv(1);
 	}
 
-	std::cout << P << std::endl << std::endl;
-	std::cout << P_n << std::endl;
+	write_to_file();
+
+	print_post_info();
 	
-//	Eigen::Vector3d final_average_pos;
-//	Eigen::Vector3d final_average_pos_var;
+}
 
-/*
-	// X
-	Eigen::VectorXd data_1d = final_pos_arr.block(0,0,1,nr_simulations).transpose();
-	Eigen::Vector2d	tmp2d = Statistics::get_mean_and_variance(data_1d);
-	final_average_pos(0) = tmp2d(0);
-	final_average_pos_var(0) = tmp2d(1);
+void Distance::write_to_terminal(int i, int j)
+{
+	double p = ( ( double) i*time_steps(time_steps.size()-1) + j) / ((double) nr_simulations*time_steps(time_steps.size()-1)) * 100.f;
+	std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< p << std::fixed << "%] "
+			<<"Running..." << std::flush;
+}
+void Distance::write_to_file()
+{
+	int idx = time_steps.size()-1;
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 9);
 
-	// Y
-	data_1d = final_pos_arr.block(1,0,1,nr_simulations).transpose();
-	tmp2d = Statistics::get_mean_and_variance(data_1d);
-	final_average_pos(1) = tmp2d(0);
-	final_average_pos_var(1) = tmp2d(1);
-
-	// Z
-	data_1d = final_pos_arr.block(2,0,1,nr_simulations).transpose();
-	tmp2d = Statistics::get_mean_and_variance(data_1d);
-	final_average_pos(2) = tmp2d(0);
-	final_average_pos_var(2) = tmp2d(1);
-
-
-	Eigen::Vector2d meanVar = Statistics::get_mean_and_variance(distance);
-	std::cout << meanVar.transpose() << std::endl;
-	std::cout << final_average_pos.transpose() << std::endl;
-	std::cout << final_average_pos_var.transpose() << std::endl;
-*/
-/*
+	result.block(0,0,idx,1) = time_step_mean;
+	result.block(0,1,idx,1) = D;
+	result.block(0,2,idx,1) = D_var;
+	result.block(0,3,idx,3) = P;
+	result.block(0,6,idx,3) = P_var;
+	
 	std::ofstream file;
 	file.open(_outfile, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
-		file << p << std::endl;
+		file << result << std::endl;
 	}else{
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
 	}
-
 	file.close();
-*/
-	print_post_info();
 }
 
 
@@ -247,20 +221,6 @@ void Distance::print(std::ostream& os)
 	{
 		os <<"Out File   = " << _outfile << std::endl;
 		os <<"Chain Size = " << _size<< std::endl;
-		os <<"Use Weight = ";
-		if(_weight)
-		{
-			os << "true" << std::endl;
-		}else{
-			os << "false" << std::endl;
-		}
-		os <<"Allow selfintersection = ";
-		if(_selfint)
-		{
-			os << "true" << std::endl;
-		}else{
-			os << "false" << std::endl;
-		}
 		os <<"Box_Size of collision grid = " << _box_size << std::endl;
 		os <<"Radius of chain links  = " << _rad << std::endl;
 	}else{

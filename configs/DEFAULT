@@ -9,7 +9,7 @@ RUN: distance
 
 	TYPE: fg
 	VERBOSE: true
-	OUTFILE: ../data/default_distance.dna
+	OUTFILE: ../matlab/Distance/distance.dna
 
 %RUN: verify
 %	SIZE: 2000

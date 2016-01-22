@@ -157,8 +157,8 @@ void Particle::update(double dt, Eigen::Array3d a)
 	}
 
 	//Eigen::Vector3d vp = _v + h*a.matrix();
-	Eigen::Vector3d vp = _v + brownian*dt;
-	Eigen::Vector3d xp = _x + dt*vp;
+	Eigen::Vector3d vp = _v + h*brownian;
+	Eigen::Vector3d xp = _x + h*vp;
 	// X is the position of the sphere somewhere in the timestep. At this point
 	// in the program it is in the very beginning.
 	Eigen::VectorXd X = Eigen::VectorXd::Zero(7);
@@ -168,7 +168,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 
 	// X_P is always the position of the sphere at the end of the timestep
 	Eigen::VectorXd X_P = Eigen::VectorXd::Zero(7);
-	X_P(0) = dt;
+	X_P(0) = h;
 	X_P.segment(1,3) = xp;
 	X_P.segment(4,3) = vp; 
 	int i =0;
@@ -183,7 +183,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 
 	_x = X_P.segment(1,3);
 	_v = X_P.segment(4,3);
-	_E = get_energy(a.matrix());
+//	_E = get_energy(a.matrix());
 
 	if( _x(0) != _x(0))
 	{
@@ -194,7 +194,7 @@ void Particle::update(double dt, Eigen::Array3d a)
 	Eigen::VectorXd log = Eigen::VectorXd::Zero(9);
 	log.segment(0,3) = _x;
 	log.segment(3,3) = _v;
-	log.segment(6,3) = _E;
+//	log.segment(6,3) = _E;
 
 	traj.push_back(log);
 }
