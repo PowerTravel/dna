@@ -70,12 +70,12 @@ void Distance::apply()
 	double radius = 0.2;
 	Eigen::Vector3d x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	Eigen::Vector3d v_ini = Eigen::Vector3d(0, 0, 0);
-	double tot_time = 40;
+	double tot_time = 100;
 	double dt = 0.01;
 	int T = int(tot_time /dt);
 
 	
-	nr_simulations = 20;
+	nr_simulations = 1000;
 	nr_data_points = 50.0;
 	int start_point = 100;
 

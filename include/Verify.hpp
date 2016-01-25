@@ -75,7 +75,7 @@ class Verify : public  Simulation{
 
 		// Result arrays for mean Radious of gyration
 		Eigen::ArrayXd Rg;   		// Radius of gyration
-		Eigen::ArrayXd Rg_var; 	// Variance
+		Eigen::ArrayXd Rg_var; 		// Variance
 		Eigen::ArrayXd Rg_theo; 	// Theoretical value
 
 		// write progress to terminal

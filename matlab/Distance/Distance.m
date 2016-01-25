@@ -1,4 +1,5 @@
 hold off
+clear all
 DData = load('distance.dna');
 
 N = size(DData,1);
@@ -24,3 +25,6 @@ ylabel('Log diffusion distance');
 legend({'Data','Standard Deviation'});
 annotation('textbox', [.2 .8 .1 .1], 'String', ...
                      ['Measured slope: ', num2str(fitD_m.a) ]);
+                 
+figure(2)
+plot3(P(:,1),P(:,2),P(:,3))

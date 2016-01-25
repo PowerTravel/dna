@@ -1,0 +1,11 @@
+
+Typ: 	MH	Mycket Högt	- Hör allt tydligt Öronproppar hjälper inte
+		H	Högt 		- Hör allt, 	   öronproppar hjälper lite
+		M	Medium 		- Hör det mesta,   Öronproppar hjälper   
+		L	Lågt		- Svagt dunkande,  öronproppar hjälper
+
+
+Datum	Tid			Vittne	Vol	Stil
+21/01 	16.00-18.00	Julia	MH	Trance uds uds uds
+	  	19.00-21.00			M	
+22/01	18.00-				H	Ambient Trance uds uds uds
