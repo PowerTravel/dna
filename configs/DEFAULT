@@ -1,16 +1,35 @@
 % The default config which gives a basic fast simulation. 
 % This config is if no other configfile is called
 
-
 RUN: distance
-	SIZE: 1000
-	BOX_SIZE: 1.0
-	RADIUS: 0.2
-	
+
+	COLLISION_GRID_BOX_SIZE: 1.0
+
+	CHAIN_LENGTH: 1000
+	CHAIN_RADIUS: 0.25
+
+	PARTICLE_RADIUS: 0.2
+
+	SIMULATION_TIME: 30
+	DELTA_TIME: 0.01
+
+	STRIDES: 1000
+	SAMPLES: 1
+	EXP: false
 
 	TYPE: fg
 	VERBOSE: true
 	OUTFILE: ../matlab/Distance/distance.dna
+
+
+%RUN: distance
+%	SIZE: 1000
+%	BOX_SIZE: 1.0
+%	RADIUS: 0.2
+%
+%	TYPE: fg
+%	VERBOSE: true
+%	OUTFILE: ../matlab/Distance/distance.dna
 
 %RUN: verify
 %	SIZE: 2000

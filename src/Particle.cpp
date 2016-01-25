@@ -1,6 +1,7 @@
 #include "Particle.hpp"
 
 #include <iostream>
+#include <algorithm>
 
 std::default_random_engine Particle::_generator = std::default_random_engine(time(NULL));
 
@@ -11,7 +12,7 @@ Particle::Particle(double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionG
 	_x = pos.matrix();
 	_r = rad;
 	_v = vel.matrix();
-	first_step_taken = false;
+	first_step = true;
 
 	traj = std::vector<Eigen::VectorXd>();
 }
@@ -44,17 +45,112 @@ Eigen::Vector3d Particle::get_random_vector(double min_len, double max_len)
 	return dir*s;
 }
 
-
-
-Eigen::VectorXd Particle::do_collisions(Eigen::VectorXd x_p)
+Particle::particle_state Particle::do_one_collision(intersections I, particle_state state)
 {
-	Eigen::VectorXd X_P = x_p;
-	// dynamic cg
+	Eigen::Vector3d contact_point = state.pos - _r * I.cs.n;
 
-	// Previous name was sps
-	cg_ptr S = cg_ptr(new  Sphere(X_P.segment(1,3), _r));
-	std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
+	particle_state collision_state;
+	collision_state.dt = I.geom->line_intersection_point(
+					contact_point, state.vel);
+
+	collision_state.pos = state.pos +  collision_state.dt * state.vel;
+	
+
+	// Reflect Velocity
+	Eigen::Vector3d collision_normal = I.cs.n;
+	double len = state.vel.transpose() * collision_normal;
+	Eigen::Vector3d v_normal_to_plane  = len * collision_normal;
+	Eigen::Vector3d v_paralell  = state.vel - v_normal_to_plane;
+	collision_state.vel = v_paralell - v_normal_to_plane;
+
+	particle_state final_state;
+	state.vel = collision_state.vel;
+	state.pos = collision_state.pos + (state.dt-collision_state.dt)*state.vel;
+
+	return state;
+
 }
+
+Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a , intersections is )
+{
+	Eigen::Vector3d x,v;
+	double dt = dt_tot - X(0);
+	x = X.segment(1,3);
+	v = X.segment(4,3);
+
+	v = v + dt * a;
+
+	CollisionGeometry::coll_struct cs = is.cs;
+
+	// Den punkt på sfären som först träffar collisionsplanet
+	Eigen::Vector3d contact_point = x - _r * cs.n;
+	double dt_t = is.geom->line_intersection_point(contact_point, v);
+
+	// Center på sfären när den kolliderar
+	Eigen::Vector3d x_c = x +  dt_t * v;
+	// Hastigheten på sfären när den kolliderar
+	Eigen::Vector3d v_c = v +  dt_t * a;
+
+	// Reflektera hastigheten runt kollisionsplanet
+	Eigen::Vector3d n = cs.n;
+	if(is.effective_n != Eigen::Vector3d::Zero())
+	{
+		n = is.effective_n;
+	}
+
+	double len = v_c.transpose() * n;
+	Eigen::Vector3d v_norm  = len * n;
+	Eigen::Vector3d v_paralell  = v_c - v_norm;
+	v_c = v_paralell - v_norm;
+
+	// positionen efter kolissionen
+	Eigen::Vector3d vp = v_c +  (dt-dt_t) * a;
+	Eigen::Vector3d xp = x_c +  (dt-dt_t) * vp;
+
+	Eigen::VectorXd ret = Eigen::VectorXd::Zero(14);
+
+	ret(0) = (dt_t);
+	ret.segment(1,3)  = x_c;
+	ret.segment(4,3)  = v_c;
+	
+	ret(7) = dt;
+	ret.segment(8,3)  = xp;
+	ret.segment(11,3)  = vp;
+	
+	return ret;
+}
+
+Particle::particle_state Particle::do_collisions(particle_state state)
+{
+
+	std::vector<cg_ptr > coll_geom_vec = build_plane_test();
+	//std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
+
+	// Gets a vector of all actual collisions, sorted after penetration depth
+	// and with normals aligned
+	std::vector< intersections > collisions = 
+							get_coll_vec(coll_geom_vec, state );
+
+	if(collisions.size() > 1)
+	{
+		std::cerr << "bajs" << std::endl;
+	}
+
+	// Treat the top most collisions one by one
+	while(collisions.size() > 0 ){
+
+		intersections intersect = collisions[0];
+
+		// TODO: Handle case where two penetration depths are equal
+		state = do_one_collision(intersect, state);
+
+		collisions = get_coll_vec(coll_geom_vec, state);
+	}
+	
+	return state;
+}
+
+
 //	Sphere S = *( (Sphere*) sps.get() );
 
 	// NEXT UP: FOR EACH CALL TO UPDATE(), PRINT OUT TO A FILE THE COLLISIONGOMETRIES IN COLL_GEOM_VEC SO WE CAN TRACK THE SPHERE AND THE COLLISIONGEOMETRIES IT TESTSINTERSECTION AGAINST AS WE MAKE IT MOVE
@@ -147,59 +243,50 @@ Eigen::VectorXd Particle::do_collisions(Eigen::VectorXd x_p)
 	return X_P;
 }
 */
-void Particle::update(double dt, Eigen::Array3d a)
-{
-	double h = dt;
 
+
+void Particle::update(double dt)
+{
+
+	particle_state old_state = {};
+	old_state.dt = 0;
+	old_state.pos = _x;
+	old_state.vel = _v;
+
+
+
+	// Brownian Impulse
 	double max_len = 2;
 	double min_len = 0;
-
 	Eigen::Vector3d brownian = get_random_vector(min_len,max_len); 
 
-	if(!first_step_taken)
+
+	particle_state new_state = {};
+	// Leapfrog Euler
+	if(first_step)
 	{
-		first_step_taken = true;
-		h = dt/2;
+		new_state.vel = old_state.vel + (dt*0.5)*brownian;
+		first_step = false;
+	}else{
+		new_state.vel = old_state.vel + dt*brownian;
 	}
+	new_state.pos = old_state.pos + dt*new_state.vel;
+	new_state.dt = dt;
+	new_state = do_collisions(new_state);
 
-	//Eigen::Vector3d vp = _v + h*a.matrix();
-	Eigen::Vector3d vp = _v + h*brownian;
-	Eigen::Vector3d xp = _x + h*vp;
-	// X is the position of the sphere somewhere in the timestep. At this point
-	// in the program it is in the very beginning.
-	Eigen::VectorXd X = Eigen::VectorXd::Zero(7);
-	X(0) = 0;
-	X.segment(1,3) = _x; 
-	X.segment(4,3) = _v; 
-
-	// X_P is always the position of the sphere at the end of the timestep
-	Eigen::VectorXd X_P = Eigen::VectorXd::Zero(7);
-	X_P(0) = h;
-	X_P.segment(1,3) = xp;
-	X_P.segment(4,3) = vp; 
-
-	
-	//Static Collision Geometries
-	//std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
-	//	build_sphere_and_plane();
-//	X_P = do_One_collision(X_P);
-
-
-	_x = X_P.segment(1,3);
-	_v = X_P.segment(4,3);
-//	_E = get_energy(a.matrix());
-
-	if( _x(0) != _x(0))
+	// Checks for nan
+	if( new_state.pos(0) != new_state.pos(0))
 	{
-		std::cerr << _x.transpose() << std::endl;
+		std::cerr << new_state.pos.transpose() << std::endl;
 		exit(1);
 	}
+
+	_x = new_state.pos;
+	_v = new_state.vel;
 
 	Eigen::VectorXd log = Eigen::VectorXd::Zero(9);
 	log.segment(0,3) = _x;
 	log.segment(3,3) = _v;
-//	log.segment(6,3) = _E;
-
 	traj.push_back(log);
 }
 
@@ -214,75 +301,40 @@ Particle::intersections Particle::align_normal(intersections is, Eigen::Vector3d
 	is.cs = cs;
 	return is;
 }
-std::list<Particle::intersections> Particle::get_coll_list(std::vector<std::shared_ptr< CollisionGeometry> > v, Sphere s)
+std::vector<Particle::intersections> Particle::get_coll_vec(std::vector<cg_ptr > v, particle_state particle)
 {
-	std::list<intersections> ret;
-	for(auto cg = v.begin(); cg != v.end(); cg++)
+	Sphere S = Sphere(particle.pos, _r);
+	std::vector<intersections> ret;
+	for(int i = 0; i != v.size(); ++i)
 	{
 		//Plane P = Plane(Eigen::Vector3d(0,0,0), Eigen::Vector3d(0,1,0));
 		CollisionGeometry::coll_struct cs;
-		std::shared_ptr<CollisionGeometry> c = *cg;
+		std::shared_ptr<CollisionGeometry> c = v[i];
 
-		if(c->intersects(&s, cs))
+		if(c->intersects(&S, cs))
 		{
 			intersections is;
 			is.geom = c;
+
+			// Aligning the normal to be opposite the velocity
+			if( (particle.vel.transpose() * cs.n) > 0)
+			{
+				cs.n = -cs.n;
+			}
 			is.cs = cs;
 			ret.push_back(is);
 		}
 	}
 
-	return ret;
-}
-
-Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a , intersections is )
-{
-	Eigen::Vector3d x,v;
-	double dt = dt_tot - X(0);
-	x = X.segment(1,3);
-	v = X.segment(4,3);
-
-	v = v + dt * a;
-
-	CollisionGeometry::coll_struct cs = is.cs;
-
-	// Den punkt på sfären som först träffar collisionsplanet
-	Eigen::Vector3d contact_point = x - _r * cs.n;
-	double dt_t = is.geom->line_intersection_point(contact_point, v);
-
-	// Center på sfären när den kolliderar
-	Eigen::Vector3d x_c = x +  dt_t * v;
-	// Hastigheten på sfären när den kolliderar
-	Eigen::Vector3d v_c = v +  dt_t * a;
-
-	// Reflektera hastigheten runt kollisionsplanet
-	Eigen::Vector3d n = cs.n;
-	if(is.effective_n != Eigen::Vector3d::Zero())
+	if(ret.size() > 1)
 	{
-		n = is.effective_n;
+		std::sort(ret.begin(), ret.end(), sort_after_penetration_depth);
 	}
-
-	double len = v_c.transpose() * n;
-	Eigen::Vector3d v_norm  = len * n;
-	Eigen::Vector3d v_paralell  = v_c - v_norm;
-	v_c = v_paralell - v_norm;
-
-	// positionen efter kolissionen
-	Eigen::Vector3d vp = v_c +  (dt-dt_t) * a;
-	Eigen::Vector3d xp = x_c +  (dt-dt_t) * vp;
-
-	Eigen::VectorXd ret = Eigen::VectorXd::Zero(14);
-
-	ret(0) = (dt_t);
-	ret.segment(1,3)  = x_c;
-	ret.segment(4,3)  = v_c;
 	
-	ret(7) = dt;
-	ret.segment(8,3)  = xp;
-	ret.segment(11,3)  = vp;
-	
+
 	return ret;
 }
+
 
 bool Particle::sort_after_penetration_depth(const Particle::intersections& first, const intersections& second)
 {
@@ -315,12 +367,42 @@ std::ostream& operator<<(std::ostream& os, const Particle& p)
 	return os;
 }
 
-std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_plane()
+
+
+std::vector< cg_ptr > Particle::build_plane_test()
 {
 	double box_r = 5;
-	std::vector<std::shared_ptr< CollisionGeometry> > coll_geom_vec = 
-		std::vector<std::shared_ptr<CollisionGeometry> >();
+	std::vector< cg_ptr > coll_geom_vec;
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(0,box_r,0), Eigen::Vector3d(0,-1,0)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(0,-box_r,0), Eigen::Vector3d(0,1,0)) ));
+			
 
+	// Left and right wall
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(box_r,0,0), Eigen::Vector3d(-1,0,0)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(-box_r,0,0), Eigen::Vector3d(1,0,0)) ));
+
+	// Front back wall
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(0,0,box_r), Eigen::Vector3d(0,0,-1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Eigen::Vector3d(0,0, -box_r), Eigen::Vector3d(0,0,1)) ));
+
+	return coll_geom_vec;
+}
+
+
+
+std::vector< cg_ptr > Particle::build_sphere_and_plane()
+{
+	double box_r = 5;
+	std::vector< cg_ptr > coll_geom_vec = 
+		std::vector< cg_ptr >();
+	return coll_geom_vec;
+}
 		// Floor and roof
 		/*
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
@@ -346,7 +428,8 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 //				new Plane(Eigen::Vector3d(0,-3,0), Eigen::Vector3d(-1,1,0)) ));
 //	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 //				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
-	
+
+/*	
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Cylinder(3.0, Eigen::Vector3d(-0.5,-4,2), Eigen::Vector3d(-0.5,-3,-2)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
@@ -354,7 +437,7 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Sphere(Eigen::Vector3d(-0.5,-3,-2), 3.0) ));
-
+*/
 	//coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 	//			new Cylinder(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
 	
@@ -362,8 +445,8 @@ std::vector< std::shared_ptr<CollisionGeometry> > Particle::build_sphere_and_pla
 //				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));
 //	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 //				new Sphere(Eigen::Vector3d(-5,-22,0), 20.0) ));
-	return coll_geom_vec;
-}
+//	return coll_geom_vec;
+//}
 
 
 

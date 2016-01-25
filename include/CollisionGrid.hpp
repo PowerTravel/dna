@@ -31,6 +31,7 @@ class CollisionGrid{
 		double m_idx;
 	};
 	public:
+		CollisionGrid();
 		CollisionGrid(double bs);
 		virtual ~CollisionGrid();
 

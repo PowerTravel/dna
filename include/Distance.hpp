@@ -7,16 +7,17 @@
 class Distance: public Simulation
 {
 	public:
+		Distance();
 		Distance(std::map<std::string, std::string> sm);
-
+		virtual ~Distance();
 		void apply();
 
 	private:
 
-		Eigen::ArrayXXd run_simulation_once(double radius, 
-							Eigen::Vector3d x_ini, Eigen::Vector3d v_ini, 
-							double tot_time, double dt, 
-							CollisionGrid* cg);
+		CollisionGrid _cg; 
+		Eigen::Vector3d _particle_x_ini; 
+		Eigen::Vector3d _particle_v_ini;
+		Eigen::ArrayXXd run_simulation_once();
 
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		void print(std::ostream& os);
@@ -28,14 +29,21 @@ class Distance: public Simulation
 		Eigen::ArrayXd D;		// Distance
 		Eigen::ArrayXd D_var;	// Distance Variance
 
-		int nr_simulations;
-		int nr_data_points;
-		Eigen::ArrayXd time_steps;
-		Eigen::ArrayXd time_step_mean;
 
-		int _size;
-		double _box_size;
-		double _rad;
+		Eigen::ArrayXd _time_steps;
+		Eigen::ArrayXd _time_step_mean;
+		
+		int _nr_simulations;
+		int _nr_data_points;
+		int _chain_size;
+		double _chain_radius;
+
+		double _collision_box_size;
+		double _particle_radius;
+		double _tot_time = 100;
+		double _dt = 0.01;
+		bool _exp = false;
+
 
 		int get_max(Eigen::Array3d v);
 

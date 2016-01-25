@@ -2,6 +2,15 @@
 #include "Statistics.hpp"
 #include <iomanip>
 
+
+Distance::Distance()
+{
+
+}
+Distance::~Distance()
+{
+
+}
 Distance::Distance(std::map<std::string, std::string> sm) : Simulation(sm)
 {
 	_simulation_type = val_map.at("distance");
@@ -10,26 +19,70 @@ Distance::Distance(std::map<std::string, std::string> sm) : Simulation(sm)
 
 void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm)
 {
-	if( sm.find("SIZE") != sm.end() )
+
+	if( sm.find("COLLISION_GRID_BOX_SIZE") != sm.end() )
 	{
-		_size  = text_to_int(sm["SIZE"]);
+		_collision_box_size  = text_to_double(sm["COLLISION_GRID_BOX_SIZE"]);
 	}else{
 		_valid = false;
 	}
 
-	if( sm.find("BOX_SIZE") != sm.end() )
+	if( sm.find("CHAIN_LENGTH") != sm.end() )
 	{
-		_box_size  = text_to_double(sm["BOX_SIZE"]);
+		_chain_size  = text_to_int(sm["CHAIN_LENGTH"]);
 	}else{
 		_valid = false;
 	}
 
-	if( sm.find("RADIUS") != sm.end() )
+	if( sm.find("CHAIN_RADIUS") != sm.end() )
 	{
-		_rad  = text_to_double(sm["RADIUS"]);
+		_chain_radius  = text_to_double(sm["CHAIN_RADIUS"]);
 	}else{
 		_valid = false;
 	}
+
+	if( sm.find("PARTICLE_RADIUS") != sm.end() )
+	{
+		_particle_radius  = text_to_double(sm["PARTICLE_RADIUS"]);
+	}else{
+		_valid = false;
+	}
+
+	if( sm.find("SIMULATION_TIME") != sm.end() )
+	{
+		_tot_time  = text_to_double(sm["SIMULATION_TIME"]);
+	}else{
+		_valid = false;
+	}
+	
+	if( sm.find("DELTA_TIME") != sm.end() )
+	{
+		_dt  = text_to_double(sm["DELTA_TIME"]);
+	}else{
+		_valid = false;
+	}
+	
+	if( sm.find("STRIDES") != sm.end() )
+	{
+		_nr_data_points  = text_to_int(sm["STRIDES"]);
+	}else{
+		_valid = false;
+	}
+
+	if( sm.find("SAMPLES") != sm.end() )
+	{
+		_nr_simulations  = text_to_int(sm["SAMPLES"]);
+	}else{
+		_valid = false;
+	}
+
+	if( sm.find("EXP") != sm.end() )
+	{
+		_exp  = text_to_bool(sm["EXP"]);
+	}else{
+		_valid = false;
+	}
+
 }
 
 int Distance::get_max(Eigen::Array3d v)
@@ -46,55 +99,58 @@ int Distance::get_max(Eigen::Array3d v)
 	return max;
 }
 
+
 void Distance::apply()
 {
+
 	print_pre_info();
 	if(!_valid)
 	{
 		std::cerr << "Verify not valid. Exiting" << std::endl;
 		return;
 	}
-	std::cout << this << std::endl;
-
-	_c->set_radius(_rad);
-	_c->set_link_length(1.0);
-	_c->build(_size);
-	CollisionGrid cg = CollisionGrid(_box_size);
-
-	int  max_axis = get_max(_c->axis_length());
-	cg.set_up(_c->get_collision_vec() , max_axis );
-	cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
-
-
-	// TODO: Add some of these to the config file
-	double radius = 0.2;
-	Eigen::Vector3d x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
-	Eigen::Vector3d v_ini = Eigen::Vector3d(0, 0, 0);
-	double tot_time = 100;
-	double dt = 0.01;
-	int T = int(tot_time /dt);
-
+	if(verbose){
+		std::cout << this << std::endl;
+	}
 	
-	nr_simulations = 1000;
-	nr_data_points = 50.0;
-	int start_point = 100;
+	_c->set_radius(_chain_radius);
+	_c->set_link_length(1.0);
+	_c->build(_chain_size);
+
+	_cg = CollisionGrid(_collision_box_size);
+	int  max_axis = get_max(_c->axis_length());
+	_cg.set_up(_c->get_collision_vec() , max_axis );
+	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
 
-	time_steps = Statistics::make_exponential_points_array(T, nr_data_points, start_point );
-	time_step_mean = (time_steps.segment(0, nr_data_points) + time_steps.segment(1, nr_data_points)) / 2;
+
+	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
+	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
+
+	if(_nr_simulations==1){
+		_particle_v_ini = Eigen::Vector3d(0.1, 0.1, 0.1);
+	}
+
+	int T = int( _tot_time /_dt);
+	int start_point = 10;
+
+
+	_time_steps = Statistics::make_exponential_points_array(T, _nr_data_points, start_point );
+	_time_step_mean = (_time_steps.segment(0, _nr_data_points) + _time_steps.segment(1, _nr_data_points)) / 2;
+
 
 	Eigen::ArrayXXd binned_distance_data = 
-							Eigen::ArrayXXd::Zero(nr_data_points, 3*nr_simulations);
+							Eigen::ArrayXXd::Zero(_nr_data_points, 3*_nr_simulations);
 
 
-	for(int i = 0; i < nr_simulations; i++)
+	for(int i = 0; i < _nr_simulations; i++)
 	{
-		Eigen::ArrayXXd trajectory = run_simulation_once(radius, x_ini, v_ini, tot_time, dt, &cg);
+		Eigen::ArrayXXd trajectory = run_simulation_once();
 
-		for(int j = 0; j<nr_data_points; j++)
+		for(int j = 0; j<_nr_data_points; j++)
 		{
-			int start = floor(time_steps(j));
-			int len = floor(time_steps(j+1) - start);
+			int start = floor(_time_steps(j));
+			int len = floor(_time_steps(j+1) - start);
 			if(len == 0)
 			{
 				len = 1;
@@ -102,9 +158,9 @@ void Distance::apply()
 
 			Eigen::ArrayXXd tmp_mat = 
 				trajectory.block(0, start, 3, len);
-			tmp_mat.row(0) = tmp_mat.row(0) - x_ini(0);
-			tmp_mat.row(1) = tmp_mat.row(1) - x_ini(1);
-			tmp_mat.row(2) = tmp_mat.row(2) - x_ini(2);
+			tmp_mat.row(0) = tmp_mat.row(0) - _particle_x_ini(0);
+			tmp_mat.row(1) = tmp_mat.row(1) - _particle_x_ini(1);
+			tmp_mat.row(2) = tmp_mat.row(2) - _particle_x_ini(2);
 
 			binned_distance_data(j,3*i+0) = tmp_mat.row(0).mean();
 			binned_distance_data(j,3*i+1) = tmp_mat.row(1).mean();	
@@ -112,23 +168,25 @@ void Distance::apply()
 
 
 		}
-		write_to_terminal(i,nr_data_points);
+		if(verbose){
+			write_to_terminal(i,_nr_data_points);	
+		}
 	}
 
-	D = Eigen::ArrayXd::Zero(nr_data_points);
-	D_var = Eigen::ArrayXd::Zero(nr_data_points);
-	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
+	D = Eigen::ArrayXd::Zero(_nr_data_points);
+	D_var = Eigen::ArrayXd::Zero(_nr_data_points);
+	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
 	
 
-	P = Eigen::ArrayXXd::Zero(nr_data_points, 3);
-	P_var = Eigen::ArrayXXd::Zero(nr_data_points, 3);
-	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
-	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
-	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(nr_data_points, nr_simulations);
+	P = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
+	P_var = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
+	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
+	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
+	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
 
-	for(int i = 0; i < nr_data_points; i++)
+	for(int i = 0; i < _nr_data_points; i++)
 	{
-		for(int j = 0; j < nr_simulations; j++)
+		for(int j = 0; j < _nr_simulations; j++)
 		{
 			Eigen::Vector3d pos  = binned_distance_data.block(i,3*j,1,3).transpose();
 	
@@ -141,7 +199,7 @@ void Distance::apply()
 	}
 	
 
-	for(int i = 0; i<nr_data_points; i++)
+	for(int i = 0; i<_nr_data_points; i++)
 	{
 	
 		Eigen::Vector2d mv;
@@ -165,22 +223,26 @@ void Distance::apply()
 
 	write_to_file();
 
-	print_post_info();
+	if(verbose)
+	{
+		print_post_info();
+	}
+
 	
 }
 
 void Distance::write_to_terminal(int i, int j)
 {
-	double p = ( ( double) i*time_steps(time_steps.size()-1) + j) / ((double) nr_simulations*time_steps(time_steps.size()-1)) * 100.f;
+	double p = ( ( double) i*_time_steps(_time_steps.size()-1) + j) / ((double) _nr_simulations*_time_steps(_time_steps.size()-1)) * 100.f;
 	std::cout << "\r"<< "["<< std::setw(5)  << std::setprecision(1)<< p << std::fixed << "%] "
 			<<"Running..." << std::flush;
 }
 void Distance::write_to_file()
 {
-	int idx = time_steps.size()-1;
+	int idx = _time_steps.size()-1;
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 9);
 
-	result.block(0,0,idx,1) = time_step_mean;
+	result.block(0,0,idx,1) = _time_step_mean;
 	result.block(0,1,idx,1) = D;
 	result.block(0,2,idx,1) = D_var;
 	result.block(0,3,idx,3) = P;
@@ -197,18 +259,27 @@ void Distance::write_to_file()
 }
 
 
-Eigen::ArrayXXd Distance::run_simulation_once(double radius, 
-							Eigen::Vector3d x_ini, Eigen::Vector3d v_ini, 
-							double tot_time, double dt, 
-							CollisionGrid* cg)
+Eigen::ArrayXXd Distance::run_simulation_once()
 {
-	Particle p = Particle(radius, x_ini, v_ini, cg);
-	int N = int(tot_time/dt);
+	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
 	{
-		p.update(dt, Eigen::Array3d(0,0,0) );
+		p.update(_dt);
 		trajectory.block(0,i,3,1) = p.get_position();
+	}
+	if(_nr_simulations == 1)
+	{
+		std::ofstream file;
+		file.open("../matlab/Distance/particle_trajectory.dna", 
+						std::fstream::out | std::fstream::trunc);
+		if(file.is_open()){
+			file << trajectory.transpose() << std::endl;
+		}else{
+			std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
+		}
+		file.close();
 	}
 
 	return trajectory;
@@ -219,10 +290,26 @@ void Distance::print(std::ostream& os)
 	os <<"Simulation = Distance" << std::endl;
 	if(_valid)
 	{
+		os <<"Chain Size = " << _chain_size<< std::endl;
+		os <<"Chain Radius = " << _chain_radius << std::endl;
+
+		os <<"Particle Radius = " << _particle_radius << std::endl;
+		
+		os <<"Collision box-size = " << _collision_box_size << std::endl;
+
+		os <<"Number of Simulations  = " << _nr_simulations << std::endl;
+		os <<"Simulation time = " << _tot_time << std::endl;
+		os <<"Timestep Size = " << _dt << std::endl;
+		
+		os <<"Plot points = " << _nr_data_points << std::endl;
+		os <<"Exponential = " ;
+		if(_exp)
+		{
+			os << "true" << std::endl;
+		}else{
+			os << "false" << std::endl;
+		}
 		os <<"Out File   = " << _outfile << std::endl;
-		os <<"Chain Size = " << _size<< std::endl;
-		os <<"Box_Size of collision grid = " << _box_size << std::endl;
-		os <<"Radius of chain links  = " << _rad << std::endl;
 	}else{
 		os << "Simulation failed to load.";
 	}

@@ -1,6 +1,13 @@
 #include "CollisionGrid.hpp"
 #include <iostream>
 
+CollisionGrid::CollisionGrid()
+{
+	box_size = 1.0;
+	ok = false;
+	active = false;
+}
+
 CollisionGrid::CollisionGrid(double bs)
 {
 	box_size = bs;

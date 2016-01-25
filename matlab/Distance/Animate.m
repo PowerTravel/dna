@@ -1,6 +1,6 @@
-data = load('../../data/default_distance.dna');
+data = load('particle_trajectory.dna');
 
-N = size(data,1);
+N = size(data,2);
 animate = false;
 x = 1:N;
 %figure(1)
