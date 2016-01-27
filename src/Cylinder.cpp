@@ -16,7 +16,11 @@ Cylinder::~Cylinder()
 {
 
 }
-
+Vec3d Cylinder::get_center()
+{
+	Vec3d ret = _P + (0.5*_h*_d);
+	return ret;
+}
 std::string Cylinder::text_type()
 {
 	return std::string("Cylinder");

@@ -5,7 +5,7 @@
 
 std::default_random_engine Particle::_generator = std::default_random_engine(time(NULL));
 
-Particle::Particle(double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionGrid* gr)
+Particle::Particle(double rad, Arr3d pos,Arr3d vel, CollisionGrid* gr)
 {
 	grid = gr;
 
@@ -22,17 +22,17 @@ Particle::~Particle()
 
 }
 
-Eigen::Array3d Particle::get_position()
+Arr3d Particle::get_position()
 {
 	return _x;
 }
 
-Eigen::Array3d Particle::get_velocity()
+Arr3d Particle::get_velocity()
 {
 	return _v;
 }
 
-Eigen::Vector3d Particle::get_random_vector(double min_len, double max_len)
+Vec3d Particle::get_random_vector(double min_len, double max_len)
 {
 	std::uniform_real_distribution<double> scale(min_len, max_len);
 	double s= scale(_generator);
@@ -40,27 +40,45 @@ Eigen::Vector3d Particle::get_random_vector(double min_len, double max_len)
 	double x = direction(_generator);
 	double y = direction(_generator);
 	double z = direction(_generator);
-	Eigen::Vector3d dir = Eigen::Vector3d(x,y,z);
+	Vec3d dir = Vec3d(x,y,z);
 	dir.normalize();
 	return dir*s;
 }
 
 Particle::particle_state Particle::do_one_collision(intersections I, particle_state state)
 {
-	Eigen::Vector3d contact_point = state.pos - _r * I.cs.n;
+	Vec3d contact_point = state.pos - _r * I.cs.n;
 
 	particle_state collision_state;
 	collision_state.dt = I.geom->line_intersection_point(
 					contact_point, state.vel);
 
+	if(collision_state.dt == 0)
+	{
+		std::cerr << "Particle::do_one_collision"<< std::endl;
+		std::cerr <<	"	Collision Normal " << I.cs.n.transpose() << std::endl;
+		std::cerr <<	"	Contact Point" << contact_point.transpose() << std::endl;
+		std::cerr <<	"	Particle Pos " << state.pos.transpose() << std::endl;
+		std::cerr <<	"	Particle Vel  " << state.vel.transpose() << std::endl;
+		std::cerr <<	"	Particle rad  " << _r << std::endl;
+		std::cerr <<	"	Exiting  " << std::endl;
+		exit(0);
+	}
+
 	collision_state.pos = state.pos +  collision_state.dt * state.vel;
 	
 
 	// Reflect Velocity
-	Eigen::Vector3d collision_normal = I.cs.n;
+	Vec3d collision_normal;
+	if(I.composite == true){
+		collision_normal = I.effective_n;
+	}else{
+		collision_normal = I.cs.n;
+	}
+
 	double len = state.vel.transpose() * collision_normal;
-	Eigen::Vector3d v_normal_to_plane  = len * collision_normal;
-	Eigen::Vector3d v_paralell  = state.vel - v_normal_to_plane;
+	Vec3d v_normal_to_plane  = len * collision_normal;
+	Vec3d v_paralell  = state.vel - v_normal_to_plane;
 	collision_state.vel = v_paralell - v_normal_to_plane;
 
 	particle_state final_state;
@@ -71,178 +89,119 @@ Particle::particle_state Particle::do_one_collision(intersections I, particle_st
 
 }
 
-Eigen::VectorXd Particle::do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a , intersections is )
+
+std::vector<cg_ptr > Particle::remove_cylinders(std::vector<cg_ptr > vec)
 {
-	Eigen::Vector3d x,v;
-	double dt = dt_tot - X(0);
-	x = X.segment(1,3);
-	v = X.segment(4,3);
-
-	v = v + dt * a;
-
-	CollisionGeometry::coll_struct cs = is.cs;
-
-	// Den punkt på sfären som först träffar collisionsplanet
-	Eigen::Vector3d contact_point = x - _r * cs.n;
-	double dt_t = is.geom->line_intersection_point(contact_point, v);
-
-	// Center på sfären när den kolliderar
-	Eigen::Vector3d x_c = x +  dt_t * v;
-	// Hastigheten på sfären när den kolliderar
-	Eigen::Vector3d v_c = v +  dt_t * a;
-
-	// Reflektera hastigheten runt kollisionsplanet
-	Eigen::Vector3d n = cs.n;
-	if(is.effective_n != Eigen::Vector3d::Zero())
+	std::vector<cg_ptr> ret_vec;
+	for(int i=0; i<vec.size(); ++i )
 	{
-		n = is.effective_n;
+
+		if(vec[i]->text_type().compare("Cylinder")==0)
+		{
+			i++;
+		}else{
+			ret_vec.push_back(vec[i]);
+		}
 	}
-
-	double len = v_c.transpose() * n;
-	Eigen::Vector3d v_norm  = len * n;
-	Eigen::Vector3d v_paralell  = v_c - v_norm;
-	v_c = v_paralell - v_norm;
-
-	// positionen efter kolissionen
-	Eigen::Vector3d vp = v_c +  (dt-dt_t) * a;
-	Eigen::Vector3d xp = x_c +  (dt-dt_t) * vp;
-
-	Eigen::VectorXd ret = Eigen::VectorXd::Zero(14);
-
-	ret(0) = (dt_t);
-	ret.segment(1,3)  = x_c;
-	ret.segment(4,3)  = v_c;
-	
-	ret(7) = dt;
-	ret.segment(8,3)  = xp;
-	ret.segment(11,3)  = vp;
-	
-	return ret;
+	return ret_vec;
 }
 
 Particle::particle_state Particle::do_collisions(particle_state state)
 {
 
-	std::vector<cg_ptr > coll_geom_vec = build_plane_test();
-	//std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
+	//std::vector<cg_ptr > coll_geom_vec = build_plane_test();
+	//std::vector<cg_ptr > coll_geom_vec = build_cylinder_test_A();
+	cg_ptr S = cg_ptr(new Sphere(state.pos,_r));
+	std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
+	coll_geom_vec = remove_cylinders(coll_geom_vec);
 
 	// Gets a vector of all actual collisions, sorted after penetration depth
 	// and with normals aligned
 	std::vector< intersections > collisions = 
 							get_coll_vec(coll_geom_vec, state );
 
-	if(collisions.size() > 1)
-	{
-		std::cerr << "bajs" << std::endl;
-	}
 
 	// Treat the top most collisions one by one
-	while(collisions.size() > 0 ){
+	// Do more than 100 Collisions withut advancing timestep and we call the particle stuck.
+	int max_collision =100;
+	int coll_idx = 0;
+	while( (collisions.size() !=0) && (coll_idx < max_collision) ){
+#if 0
+		if(collisions.size() > 1)
+		{
+			std::cerr << "Printed Froom Particle::do_collisions(), More than one collision in the same timestep detected. Should work fine but not thoroughly tested." << std::endl;
 
+			int simultaneous_collisions = check_for_simultaneous_collisions(collisions, state);
+
+			if(simultaneous_collisions != 0)
+			{
+				std::cerr << "Printed Froom Particle::do_collisions(): "<< simultaneous_collisions << " o those are simultaneous collisions" << std::endl;
+			}
+		}
+#endif
 		intersections intersect = collisions[0];
 
 		// TODO: Handle case where two penetration depths are equal
 		state = do_one_collision(intersect, state);
 
 		collisions = get_coll_vec(coll_geom_vec, state);
+		coll_idx ++;
 	}
-	
+
 	return state;
 }
 
 
-//	Sphere S = *( (Sphere*) sps.get() );
 
-	// NEXT UP: FOR EACH CALL TO UPDATE(), PRINT OUT TO A FILE THE COLLISIONGOMETRIES IN COLL_GEOM_VEC SO WE CAN TRACK THE SPHERE AND THE COLLISIONGEOMETRIES IT TESTSINTERSECTION AGAINST AS WE MAKE IT MOVE
-/*
-	for(auto it = coll_geom_vec.begin(); it != coll_geom_vec.end(); it++)
-	{
-		std::shared_ptr< CollisionGeometry> cgptr = *it;
-		if(cgptr->text_type().compare("Sphere") == 0)
-		{
-			std::cout << "1 ";	
-		}else if(cgptr->text_type().compare("Cylinder") == 0){
-			std::cout << "2 ";	
-		}
-		std::cout << (*it)->get_id() <<" ";
-		std::cout << (*it)->get_span().transpose() << std::endl;
-	}
-*/
-
-	// Remove all cylidnders for debugging purposes
-/*
-	std::vector<cg_ptr> ctmp;
-	for(auto its = coll_geom_vec.begin(); its != coll_geom_vec.end(); its++)
-	{
-		if((*its)->text_type().compare("Sphere")==0)
-		{
-			ctmp.push_back(*its);
-		}
-	}
-	coll_geom_vec = ctmp;
-*/
-
-/*
-	collisions = get_coll_list(coll_geom_vec, S );
-
-	while(collisions.size() > 0 ){
-		// Move the collision with highest penetration-depth to the top to be
-		// resolved first.
-		// The assumption being that that was the first collision.
+int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, particle_state state)
+{
 		
-		collisions.sort(sort_after_penetration_depth);
 
-		auto it = collisions.begin();
+	int simultaneous_collisions=0;
+	double tol = 0.0000001;
+	if(v.size() != 0)
+	{
+		intersections I = v[0];
 
-		intersections s = align_normal(*it, vp);
-		collisions.pop_front();
-		collisions.push_front(s);
+		Vec3d contact_point = state.pos - _r * I.cs.n;	
+		double dt = I.geom->line_intersection_point(contact_point, state.vel);
 
-		Eigen::Vector3d contact_point_1 = xp - _r * it->cs.n;
-		double dt_t1 = it->geom->line_intersection_point(contact_point_1, vp);
-		it++;
-		while( it != collisions.end() )
+
+		if(dt == 0)
 		{
-			Eigen::Vector3d contact_point_2 = xp - _r * it->cs.n;
-			double dt_t2 = it->geom->line_intersection_point(contact_point_2, vp);
-			if( std::abs(dt_t2 - dt_t1) < 0.0000000001 )
+			std::cerr << "Particle::check_for_simultaneous_collisions::Collision Normal "<< I.cs.n.transpose() << std::endl;
+			std::cerr << "Particle::check_for_simultaneous_collisions::Contact Point "<< contact_point.transpose() << std::endl;
+		}
+#if 0
+		for(int i = 1; i<v.size(); i++)
+		{
+			intersections I_compare = v[i];
+
+			Vec3d contact_point_compare = state.pos - _r * I_compare.cs.n;	
+			double dt_compare = I_compare.geom->line_intersection_point(contact_point, state.vel);
+
+			if( std::abs(dt_compare-dt) < tol )
 			{
+				simultaneous_collisions++;
+
+				// Handle by adding together all collision normals into an
+				// "effective normal" and use that when evaluating collisions
+				/*
 				intersections tmp_i = collisions.front();
 				tmp_i = align_normal(tmp_i, vp);
 				tmp_i.effective_n = tmp_i.cs.n;
-
 				tmp_i.effective_n = (tmp_i.effective_n + it->cs.n).normalized();
+				
+				tmp_i.composite = true;
 
-				collisions.pop_front();
-				collisions.push_front(tmp_i);
-
-				std::cerr << "Simultaneous collision with many collisionbodies, may contain errors. This is printed mainly because I don't bother making this work perfectly untill I know it will happen in real simulations. So if I see this later when diffusing particles in a fractal. Check it out in particle " << std::endl;
-				std::cerr << "I just realized that this may indeed happen if we have a knot in the chain. Then two identical collision-geometries will be on the exact same place. This is different from the particle colliding with two different geometries at the same time and should be able to be handled as a special case. But lets see how it works in practice" << std::endl;
+				add effective_n to I and return it somehow 
+				*/
 			}
-			it++;
 		}
-		// Handle the first collision, update the position of the particle and do this all over again
-		// Flip the normal of the collision - geometry such that v dot n < 0
-		intersections c = align_normal(collisions.front(), _v);
-
-		Eigen::VectorXd tmp = do_one_collision(dt, X,a, c);
-		
-		if( tmp(7) != tmp(7))
-		{
-			std::cerr << tmp.transpose() << std::endl;
-			exit(1);
-		}
-
-		X = tmp.segment(0,7);
-		X_P = tmp.segment(7,7);
-	
-		S = Sphere(X_P.segment(1,3), _r);
-		collisions = get_coll_list(coll_geom_vec, S);
+#endif
 	}
-	
-	return X_P;
+	return simultaneous_collisions;
 }
-*/
 
 
 void Particle::update(double dt)
@@ -258,7 +217,7 @@ void Particle::update(double dt)
 	// Brownian Impulse
 	double max_len = 2;
 	double min_len = 0;
-	Eigen::Vector3d brownian = get_random_vector(min_len,max_len); 
+	Vec3d brownian = get_random_vector(min_len,max_len); 
 
 
 	particle_state new_state = {};
@@ -290,24 +249,14 @@ void Particle::update(double dt)
 	traj.push_back(log);
 }
 
-Particle::intersections Particle::align_normal(intersections is, Eigen::Vector3d v)
-{
-	CollisionGeometry::coll_struct cs = is.cs;
 
-	if( v.transpose() * cs.n > 0)
-	{
-		cs.n = -cs.n;
-	}
-	is.cs = cs;
-	return is;
-}
 std::vector<Particle::intersections> Particle::get_coll_vec(std::vector<cg_ptr > v, particle_state particle)
 {
 	Sphere S = Sphere(particle.pos, _r);
 	std::vector<intersections> ret;
 	for(int i = 0; i != v.size(); ++i)
 	{
-		//Plane P = Plane(Eigen::Vector3d(0,0,0), Eigen::Vector3d(0,1,0));
+		//Plane P = Plane(Vec3d(0,0,0), Vec3d(0,1,0));
 		CollisionGeometry::coll_struct cs;
 		std::shared_ptr<CollisionGeometry> c = v[i];
 
@@ -316,8 +265,9 @@ std::vector<Particle::intersections> Particle::get_coll_vec(std::vector<cg_ptr >
 			intersections is;
 			is.geom = c;
 
-			// Aligning the normal to be opposite the velocity
-			if( (particle.vel.transpose() * cs.n) > 0)
+			// Aligning the normal to be away from coll geom
+			Vec3d geom_to_sphere = particle.pos-c->get_center();
+			if( (geom_to_sphere.transpose() * cs.n) < 0)
 			{
 				cs.n = -cs.n;
 			}
@@ -343,21 +293,6 @@ bool Particle::sort_after_penetration_depth(const Particle::intersections& first
 	return (p1>p2);
 }
 
-Eigen::Vector3d Particle::get_energy(Eigen::Vector3d g)
-{
-	Eigen::Vector3d E;
-	// Ek
-	double a = _v.transpose()*_v;
-	E(0) = a/ 2.0;
-	// Ep
-	//E(1) = g.transpose() * _x;
-	E(1) =- g(1)* _x(1);
-	// Etot
-	E(2) = E(0) + E(1);
-	//std::cout << E.transpose() << std::endl;
-	return E;
-}
-
 std::ostream& operator<<(std::ostream& os, const Particle& p)
 {
 	for(auto it = p.traj.begin(); it != p.traj.end(); it++)
@@ -367,87 +302,56 @@ std::ostream& operator<<(std::ostream& os, const Particle& p)
 	return os;
 }
 
-
-
 std::vector< cg_ptr > Particle::build_plane_test()
 {
 	double box_r = 5;
 	std::vector< cg_ptr > coll_geom_vec;
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,box_r,0), Eigen::Vector3d(0,-1,0)) ));
+				new Plane(Vec3d(0,box_r,0), Vec3d(0,1,0)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,-box_r,0), Eigen::Vector3d(0,1,0)) ));
+				new Plane(Vec3d(0,-box_r,0), Vec3d(0,-1,0)) ));
 			
 
 	// Left and right wall
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(box_r,0,0), Eigen::Vector3d(-1,0,0)) ));
+				new Plane(Vec3d(box_r,0,0), Vec3d(1,0,0)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(-box_r,0,0), Eigen::Vector3d(1,0,0)) ));
+				new Plane(Vec3d(-box_r,0,0), Vec3d(-1,0,0)) ));
 
 	// Front back wall
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,0,box_r), Eigen::Vector3d(0,0,-1)) ));
+				new Plane(Vec3d(0,0,box_r), Vec3d(0,0,1)) ));
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,0, -box_r), Eigen::Vector3d(0,0,1)) ));
+				new Plane(Vec3d(0,0, -box_r), Vec3d(0,0,-1)) ));
 
 	return coll_geom_vec;
 }
 
-
-
-std::vector< cg_ptr > Particle::build_sphere_and_plane()
+std::vector< cg_ptr > Particle::build_cylinder_test_A()
 {
-	double box_r = 5;
-	std::vector< cg_ptr > coll_geom_vec = 
-		std::vector< cg_ptr >();
+	// Test where all tops of the cylinders are facing eachother creating a box as in
+	// plane test
+	double cyl_r = 5;
+	double rad = 5;
+	std::vector< cg_ptr > coll_geom_vec;
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(0,cyl_r,0), Vec3d(0,2*cyl_r,0)) ));
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(0,-cyl_r,0), Vec3d(0,-2*cyl_r,0)) ));
+	
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(cyl_r,0,0), Vec3d(2*cyl_r,0,0)) ));
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(-cyl_r,0,0), Vec3d(-2*cyl_r,0,0)) ));
+	
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(0,0,cyl_r), Vec3d(0, 0,2*cyl_r))));
+	coll_geom_vec.push_back( cg_ptr( 
+		new Cylinder(rad, Vec3d(0,0,-cyl_r), Vec3d(0, 0,-2*cyl_r))));
+	
+
 	return coll_geom_vec;
 }
-		// Floor and roof
-		/*
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,box_r,0), Eigen::Vector3d(0,-1,0)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,-box_r,0), Eigen::Vector3d(0,1,0)) ));
-			
-
-		// Left and right wall
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(box_r,0,0), Eigen::Vector3d(-1,0,0)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(-box_r,0,0), Eigen::Vector3d(1,0,0)) ));
-
-	// Front back wall
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,0,box_r), Eigen::Vector3d(0,0,-1)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Eigen::Vector3d(0,0, -box_r), Eigen::Vector3d(0,0,1)) ));
-	
-	*/
-//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-//				new Plane(Eigen::Vector3d(0,-3,0), Eigen::Vector3d(-1,1,0)) ));
-//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-//				new Plane(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
-
-/*	
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Cylinder(3.0, Eigen::Vector3d(-0.5,-4,2), Eigen::Vector3d(-0.5,-3,-2)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Sphere(Eigen::Vector3d(-0.5,-4, 2), 3.0) ));
-
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Sphere(Eigen::Vector3d(-0.5,-3,-2), 3.0) ));
-*/
-	//coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-	//			new Cylinder(Eigen::Vector3d(0, -3,0), Eigen::Vector3d(1,1,0)) ));
-	
-//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-//				new Sphere(Eigen::Vector3d(5,-22,0), 20.0) ));
-//	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-//				new Sphere(Eigen::Vector3d(-5,-22,0), 20.0) ));
-//	return coll_geom_vec;
-//}
-
 
 
 

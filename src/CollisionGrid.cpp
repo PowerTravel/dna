@@ -24,6 +24,7 @@ void CollisionGrid::set_up(std::vector<cg_ptr> v, idx_type m_axis)
 {
 	geom_vec = v;
 	set_max_axis(m_axis);
+	std::cout << "Printed From CollisionGrid::set_up. Max axis is: " << m_axis << std::endl;
 
 	grid = std::map<idx_type, std::vector<int> >();
 	geoms = std::vector< geom_struct >();
@@ -127,12 +128,6 @@ idx_type CollisionGrid::map_key(int i, int j, int k)
 	return i + j*max_idx + k * max_idx * max_idx;
 }
 
-/*
-int CollisionGrid::grid_map(int link, Eigen::Vector3d v)
-{
-	 return 0;	
-}
-*/
 std::vector< std::shared_ptr<CollisionGeometry> > CollisionGrid::get_collision_bodies(std::shared_ptr<CollisionGeometry> g)
 {	
 	std::map< int , cg_ptr > tmp;

@@ -15,6 +15,7 @@ class Plane: public CollisionGeometry{
 		bool intersects(Sphere* s, coll_struct& cs);
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
+		virtual Vec3d get_center();
 
 		std::string text_type();
 	private:

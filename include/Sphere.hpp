@@ -15,8 +15,10 @@ class Sphere: public CollisionGeometry
 		bool intersects(Plane* p, coll_struct& cs);
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
-	
+		Vec3d get_center();
 		std::string text_type();
+
+		int nr_collisions=0;
 	private:
 
 		double _r;				// Radius

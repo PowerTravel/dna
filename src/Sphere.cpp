@@ -214,44 +214,47 @@ bool Sphere::intersects(Plane* p, coll_struct& cs)
 
 double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 {
-	Eigen::Vector3d xv = x.matrix();
-	Eigen::Vector3d vv = v.matrix();
-	Eigen::Vector3d separation = _x-xv;
-	double v_dot_v = vv.transpose() * vv;
-	double p =   (vv.transpose() * separation);
-	p =2.0 * p / v_dot_v;
-	double q = (separation.transpose() * separation - _r*_r) / v_dot_v;
+	// Sphere data
+	Vec3d sphere_center = _x;
+	double sphere_radius = _r;
 
-	double p2 = std::pow(p/2.0,2);
+	// line data
+	Vec3d line_point = x.matrix();
+	Vec3d line_direction = v.matrix();
+
+	Eigen::Vector3d separation = line_point-sphere_center;
+	//  dotproducts
+	double ld_dot_ld = line_direction.transpose() * line_direction;
+	double ld_dot_separation =   (line_direction.transpose() * separation);
+	double sep_dot_sep = separation.transpose() * separation;
+	
+	double p =2.0 * ld_dot_separation / ld_dot_ld;
+	double q = (sep_dot_sep - sphere_radius*sphere_radius) / ld_dot_ld;
+
+	double p_half = (p*0.5);
+	double p2 = p_half * p_half;
+
 	if(p2 < q)
 	{
-		std::cerr << "Immaginary solution to sphere - line intersection" << std::endl;
+		std::cerr << "Sphere::line_intersection_point" << std::cerr;
+		std::cerr << "	Immaginary solution" << std::endl;
+		std::cerr << "	Sphere center: " << sphere_center.transpose() << std::endl;
+		std::cerr << "	Sphere radius: " << sphere_radius << std::endl;
+		std::cerr << "	line point: " << line_point.transpose() << std::endl;
+		std::cerr << "	line_direction: " << line_direction.transpose() << std::endl;
 		return 0;
 	}
 	
-	double ret_1 = - p/2.0 - std::sqrt( p2 - q );
-	double ret_2 = - p/2.0 + std::sqrt( p2 - q );
+	double intersection_scalar_1 = - p_half - std::sqrt( p2 - q );
+	double intersection_scalar_2 = - p_half + std::sqrt( p2 - q );
 
-	// May be overkill but always works
-	Eigen::Vector3d v1 =  xv + ret_1 * vv;
-	Eigen::Vector3d v2 =  xv + ret_2 * vv;
-	if( vv.transpose() *  (v1 - xv ) >= 0)
-	{
-		return ret_1;
+	if(intersection_scalar_1 < intersection_scalar_2){
+		return intersection_scalar_1;
 	}else{
-		return ret_2;
+		return intersection_scalar_2;
 	}
-
-/*
-// this assumes that the penetration depth is lower than the radius of the sphere.
-	if(ret_1 <= ret_2)
-	{
-		return ret_1;
-	}else{
-		return ret_2;
-	}
-*/	
 }
+
 // Returns min max values along the axis 
 Eigen::ArrayXd Sphere::get_span()
 {
@@ -263,4 +266,9 @@ Eigen::ArrayXd Sphere::get_span()
 	ret(4) = _x(2)-_r; // z_min
 	ret(5) = _x(2)+_r; // z_max
 	return ret;
+}
+
+Vec3d Sphere::get_center()
+{
+	return _x;
 }

@@ -119,6 +119,7 @@ void Distance::apply()
 
 	_cg = CollisionGrid(_collision_box_size);
 	int  max_axis = get_max(_c->axis_length());
+	std::cout << _c->axis_length().transpose() << std::endl;
 	_cg.set_up(_c->get_collision_vec() , max_axis );
 	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
@@ -128,7 +129,7 @@ void Distance::apply()
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	if(_nr_simulations==1){
-		_particle_v_ini = Eigen::Vector3d(0.1, 0.1, 0.1);
+		_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 	}
 
 	int T = int( _tot_time /_dt);

@@ -2,7 +2,6 @@
 #define PARTICLE_HPP
 
 #include <memory>
-#include <list>
 #include <random>
 #include "CollisionGrid.hpp"
 #include "Sphere.hpp"
@@ -21,7 +20,6 @@ class Particle{
 
 		Eigen::Array3d get_position();
 		Eigen::Array3d get_velocity();
-		Eigen::Vector3d get_energy(Eigen::Vector3d g);
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
 
 		
@@ -38,17 +36,20 @@ class Particle{
 			intersections()
 			{
 				geom = NULL;
+				composite = false;
 				effective_n = Eigen::Vector3d::Zero();
 			}
 			std::shared_ptr<CollisionGeometry> geom;
 			CollisionGeometry::coll_struct cs; 
 			Eigen::Vector3d effective_n;
+			bool composite;
 		};
 
 		particle_state do_collisions(particle_state state);
 		
 		Eigen::Vector3d get_random_vector(double min_len, double max_len);
 
+		int check_for_simultaneous_collisions(std::vector< intersections > v, particle_state state);
 
 
 		static bool sort_after_penetration_depth(const Particle::intersections& first, const intersections& second);
@@ -64,17 +65,17 @@ class Particle{
 		
 		static std::default_random_engine _generator;
 
-		intersections align_normal(intersections is, Eigen::Vector3d v);
-
 		particle_state do_one_collision(intersections I, particle_state state);
 		Eigen::VectorXd do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a, intersections is);
 
 		std::vector<intersections> get_coll_vec(std::vector<cg_ptr > v, particle_state particle);
 
-		std::vector< std::shared_ptr<CollisionGeometry> > build_sphere_and_plane();
+		// Debug funcs and tests
+		std::vector<cg_ptr > remove_cylinders(std::vector<cg_ptr > vec);
 
-		// C
+		// Collision test cases
 		std::vector< cg_ptr > build_plane_test();
+		std::vector< cg_ptr > build_cylinder_test_A();
 		
 };
 		

@@ -1,7 +1,8 @@
 #ifndef COLLISION_GEOMETRY_HPP
 #define COLLISION_GEOMETRY_HPP
 
-#include <Eigen/Dense>
+#include "EigenLibs.hpp"
+
 #include <vector>
 #include <iostream>
 #include <memory>
@@ -32,6 +33,7 @@ class CollisionGeometry
 		virtual bool intersects(Plane* p, coll_struct& cs);
 		virtual double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		virtual Eigen::ArrayXd get_span() = 0;
+		virtual Vec3d get_center() = 0;
 		virtual std::string text_type() = 0;
 		int get_id();
 	private:

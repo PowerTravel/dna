@@ -13,7 +13,7 @@
 typedef unsigned int idx_type;
 #endif 
 
-#include "Eigen/Dense" 
+#include "EigenLibs.hpp" 
 #include "Chain.hpp"
 #include <map>
 

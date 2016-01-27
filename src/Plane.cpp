@@ -35,6 +35,11 @@ double Plane::line_intersection_point(Eigen::ArrayXd r, Eigen::ArrayXd v)
 	return num / denom;
 }
 
+Vec3d Plane::get_center()
+{
+	return x;
+}
+
 Eigen::ArrayXd Plane::get_span()
 {
 	return Eigen::ArrayXd::Zero(6);
