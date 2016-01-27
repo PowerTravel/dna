@@ -45,17 +45,19 @@ Vec3d Particle::get_random_vector(double min_len, double max_len)
 	return dir*s;
 }
 
-Particle::particle_state Particle::do_one_collision(intersections I, particle_state state)
+Particle::particle_state Particle::get_collision_state(intersections I, particle_state state)
 {
+
 	Vec3d contact_point = state.pos - _r * I.cs.n;
 
-	particle_state collision_state;
-	collision_state.dt = I.geom->line_intersection_point(
+	double rewind_time_to_collision = I.geom->line_intersection_point(
 					contact_point, state.vel);
-
-	if(collision_state.dt == 0)
+	// rewind_time_to_collision should NEVER be zero and should ALWAYS be negative; This print will catch those situations if they occur
+	if(rewind_time_to_collision >= 0)
 	{
 		std::cerr << "Particle::do_one_collision"<< std::endl;
+		std::cerr << 	"	dt " << state.dt << std::endl;
+		std::cerr << 	"	rewind_time " << rewind_time_to_collision << std::endl;
 		std::cerr <<	"	Collision Normal " << I.cs.n.transpose() << std::endl;
 		std::cerr <<	"	Contact Point" << contact_point.transpose() << std::endl;
 		std::cerr <<	"	Particle Pos " << state.pos.transpose() << std::endl;
@@ -65,28 +67,40 @@ Particle::particle_state Particle::do_one_collision(intersections I, particle_st
 		exit(0);
 	}
 
-	collision_state.pos = state.pos +  collision_state.dt * state.vel;
-	
+	particle_state collision_state;
+	collision_state.dt = state.dt + rewind_time_to_collision; 
+	collision_state.pos = state.pos +  rewind_time_to_collision * state.vel;
 
 	// Reflect Velocity
 	Vec3d collision_normal;
-	if(I.composite == true){
-		collision_normal = I.effective_n;
-	}else{
-		collision_normal = I.cs.n;
-	}
+	collision_normal = I.cs.n;
 
 	double len = state.vel.transpose() * collision_normal;
 	Vec3d v_normal_to_plane  = len * collision_normal;
 	Vec3d v_paralell  = state.vel - v_normal_to_plane;
 	collision_state.vel = v_paralell - v_normal_to_plane;
 
-	particle_state final_state;
-	state.vel = collision_state.vel;
-	state.pos = collision_state.pos + (state.dt-collision_state.dt)*state.vel;
+	// TODO: handle the edgecase of truly simultaneous collisions by setting 
+	//		 collision_normal to intersections.effective_n if 
+	// 		 intersections.composite is true
 
-	return state;
 
+	// the state of particle the instance after collision
+	return collision_state;
+}
+
+Particle::particle_state Particle::do_one_collision(intersections I, particle_state state)
+{
+	particle_state collision_state = get_collision_state(I, state);
+
+	double remaining_dt = state.dt-collision_state.dt;
+
+	particle_state post_collision_state;
+	post_collision_state.dt = state.dt;
+	post_collision_state.vel = collision_state.vel;
+	post_collision_state.pos = collision_state.pos + remaining_dt*post_collision_state.vel;
+
+	return post_collision_state;
 }
 
 
@@ -109,11 +123,12 @@ std::vector<cg_ptr > Particle::remove_cylinders(std::vector<cg_ptr > vec)
 Particle::particle_state Particle::do_collisions(particle_state state)
 {
 
-	//std::vector<cg_ptr > coll_geom_vec = build_plane_test();
+	std::vector<cg_ptr > coll_geom_vec = build_plane_test();
 	//std::vector<cg_ptr > coll_geom_vec = build_cylinder_test_A();
-	cg_ptr S = cg_ptr(new Sphere(state.pos,_r));
-	std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
-	coll_geom_vec = remove_cylinders(coll_geom_vec);
+	
+	//cg_ptr S = cg_ptr(new Sphere(state.pos,_r));
+	//std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
+	//coll_geom_vec = remove_cylinders(coll_geom_vec);
 
 	// Gets a vector of all actual collisions, sorted after penetration depth
 	// and with normals aligned
@@ -125,40 +140,58 @@ Particle::particle_state Particle::do_collisions(particle_state state)
 	// Do more than 100 Collisions withut advancing timestep and we call the particle stuck.
 	int max_collision =100;
 	int coll_idx = 0;
-	while( (collisions.size() !=0) && (coll_idx < max_collision) ){
 #if 0
+
+	while( (collisions.size() !=0) && (coll_idx < max_collision) ){
+
 		if(collisions.size() > 1)
 		{
-			std::cerr << "Printed Froom Particle::do_collisions(), More than one collision in the same timestep detected. Should work fine but not thoroughly tested." << std::endl;
+			//	std::cerr << "Printed Froom Particle::do_collisions(), More than one collision in the same timestep detected. Should work fine but not thoroughly tested." << std::endl;
+
+			for(int i = 0; i < collisions.size(); ++i)
+			{
+				std::cout << collisions[i].cs.p << ", ";
+			}
+			std::cout<<std::endl;
 
 			int simultaneous_collisions = check_for_simultaneous_collisions(collisions, state);
 
 			if(simultaneous_collisions != 0)
 			{
-				std::cerr << "Printed Froom Particle::do_collisions(): "<< simultaneous_collisions << " o those are simultaneous collisions" << std::endl;
+				std::cerr << "Particle::do_collisions(): "<< simultaneous_collisions << " those are simultaneous collisions" << std::endl;
 			}
 		}
-#endif
+
 		intersections intersect = collisions[0];
 
 		// TODO: Handle case where two penetration depths are equal
 		state = do_one_collision(intersect, state);
 
-		collisions = get_coll_vec(coll_geom_vec, state);
+	collisions = get_coll_vec(coll_geom_vec, state);
 		coll_idx ++;
+	}
+	if(coll_idx >= max_collision)
+	{
+		std::cerr << "Particle::do_collisions(): Particle Stuck. Exiting" << std::endl; 
+		exit(0);
+
+	}
+#endif 
+	if( (collisions.size() !=0) ){
+		state = do_one_collision(collisions[0], state);
 	}
 
 	return state;
 }
 
 
-
+#if 0
 int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, particle_state state)
 {
 		
 
 	int simultaneous_collisions=0;
-	double tol = 0.0000001;
+	double tol = 0.0001;
 	if(v.size() != 0)
 	{
 		intersections I = v[0];
@@ -172,7 +205,7 @@ int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, 
 			std::cerr << "Particle::check_for_simultaneous_collisions::Collision Normal "<< I.cs.n.transpose() << std::endl;
 			std::cerr << "Particle::check_for_simultaneous_collisions::Contact Point "<< contact_point.transpose() << std::endl;
 		}
-#if 0
+
 		for(int i = 1; i<v.size(); i++)
 		{
 			intersections I_compare = v[i];
@@ -198,14 +231,15 @@ int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, 
 				*/
 			}
 		}
-#endif
+
 	}
 	return simultaneous_collisions;
 }
-
+#endif
 
 void Particle::update(double dt)
 {
+	static int timestep = 0;
 
 	particle_state old_state = {};
 	old_state.dt = 0;
@@ -217,7 +251,13 @@ void Particle::update(double dt)
 	// Brownian Impulse
 	double max_len = 2;
 	double min_len = 0;
-	Vec3d brownian = get_random_vector(min_len,max_len); 
+
+	bool use_brownian = true;
+	Vec3d brownian  = Vec3d::Zero();
+	if(use_brownian)
+	{
+		brownian = get_random_vector(min_len,max_len); 
+	}
 
 
 	particle_state new_state = {};
@@ -233,11 +273,13 @@ void Particle::update(double dt)
 	new_state.dt = dt;
 	new_state = do_collisions(new_state);
 
-	// Checks for nan
-	if( new_state.pos(0) != new_state.pos(0))
+	Vec3d diff = _x - new_state.pos;
+	if(diff.norm()>1)
 	{
-		std::cerr << new_state.pos.transpose() << std::endl;
-		exit(1);
+		std::cerr << "Particle::Update" << std::endl;
+		std::cerr << "	x: "<< _x.transpose() <<std::endl;
+		std::cerr << "	n: "<< new_state.pos.transpose() <<std::endl;
+		std::cerr << "	t: " << timestep << std::endl; 
 	}
 
 	_x = new_state.pos;
@@ -247,6 +289,7 @@ void Particle::update(double dt)
 	log.segment(0,3) = _x;
 	log.segment(3,3) = _v;
 	traj.push_back(log);
+	timestep++;
 }
 
 

@@ -66,7 +66,7 @@ class Particle{
 		static std::default_random_engine _generator;
 
 		particle_state do_one_collision(intersections I, particle_state state);
-		Eigen::VectorXd do_one_collision(double dt_tot, Eigen::VectorXd X, Eigen::Vector3d a, intersections is);
+		particle_state get_collision_state(intersections I, particle_state state);
 
 		std::vector<intersections> get_coll_vec(std::vector<cg_ptr > v, particle_state particle);
 

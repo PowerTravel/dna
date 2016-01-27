@@ -129,7 +129,7 @@ void Distance::apply()
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	if(_nr_simulations==1){
-		_particle_v_ini = Eigen::Vector3d(0, 0, 0);
+		_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
 	}
 
 	int T = int( _tot_time /_dt);
