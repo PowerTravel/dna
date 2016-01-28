@@ -1,5 +1,4 @@
 #include "Statistics.hpp"
-
 Statistics::Statistics()
 {
 

@@ -3,6 +3,7 @@
 
 #include "PFloat.hpp"
 #include <Eigen/Dense>
+#include <vector>
 
 class Statistics{
 

@@ -1,7 +1,7 @@
 data = load('particle_trajectory.dna');
 
 N = size(data,1);
-animate = 1;
+animate = 0;
 x = 1:N;
 
 frame_jump = 1;

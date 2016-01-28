@@ -32,6 +32,63 @@ Arr3d Particle::get_velocity()
 	return _v;
 }
 
+void Particle::update(double dt)
+{
+	static int timestep = 0;
+
+	particle_state old_state = {};
+	old_state.dt = 0;
+	old_state.pos = _x;
+	old_state.vel = _v;
+
+	// Brownian Impulse
+	double max_len = 2;
+	double min_len = 0;
+
+	bool use_brownian = false;
+	Vec3d brownian  = Vec3d::Zero();
+	if(use_brownian)
+	{
+		brownian = get_random_vector(min_len,max_len); 
+	}
+
+	particle_state new_state = {};
+	// Leapfrog Euler
+	if(first_step)
+	{
+		new_state.vel = old_state.vel + (dt*0.5)*brownian;
+		first_step = false;
+	}else{
+		new_state.vel = old_state.vel + dt*brownian;
+	}
+	new_state.pos = old_state.pos + dt*new_state.vel;
+	new_state.dt = dt;
+	new_state = do_collisions(new_state);
+
+
+	// DEBUGCODE - Checking for discontinuations in the trajectory
+	//				Not really working
+	Vec3d diff = _x - new_state.pos;
+	if(diff.norm()>1)
+	{
+		std::cerr << "Particle::Update" << std::endl;
+		std::cerr << "	x: "<< _x.transpose() <<std::endl;
+		std::cerr << "	n: "<< new_state.pos.transpose() <<std::endl;
+		std::cerr << "	t: " << timestep << std::endl; 
+	}
+	// END DEBUGCODE 
+
+	_x = new_state.pos;
+	_v = new_state.vel;
+
+	Eigen::VectorXd log = Eigen::VectorXd::Zero(6);
+	log.segment(0,3) = _x;
+	log.segment(3,3) = _v;
+	traj.push_back(log);
+	timestep++;
+}
+
+
 Vec3d Particle::get_random_vector(double min_len, double max_len)
 {
 	std::uniform_real_distribution<double> scale(min_len, max_len);
@@ -52,7 +109,7 @@ Particle::particle_state Particle::get_collision_state(intersections I, particle
 
 	double rewind_time_to_collision = I.geom->line_intersection_point(
 					contact_point, state.vel);
-	// rewind_time_to_collision should NEVER be zero and should ALWAYS be negative; This print will catch those situations if they occur
+	// DEBUGCODE - rewind_time_to_collision should NEVER be zero and should ALWAYS be negative; This print will catch those situations if they occur
 	if(rewind_time_to_collision >= 0)
 	{
 		std::cerr << "Particle::do_one_collision"<< std::endl;
@@ -66,6 +123,7 @@ Particle::particle_state Particle::get_collision_state(intersections I, particle
 		std::cerr <<	"	Exiting  " << std::endl;
 		exit(0);
 	}
+	// END DEBUGCODE
 
 	particle_state collision_state;
 	collision_state.dt = state.dt + rewind_time_to_collision; 
@@ -122,174 +180,52 @@ std::vector<cg_ptr > Particle::remove_cylinders(std::vector<cg_ptr > vec)
 
 Particle::particle_state Particle::do_collisions(particle_state state)
 {
-
-	std::vector<cg_ptr > coll_geom_vec = build_plane_test();
-	//std::vector<cg_ptr > coll_geom_vec = build_cylinder_test_A();
-	
-	//cg_ptr S = cg_ptr(new Sphere(state.pos,_r));
-	//std::vector<cg_ptr > coll_geom_vec = grid->get_collision_bodies(S);
-	//coll_geom_vec = remove_cylinders(coll_geom_vec);
+	std::vector<cg_ptr > coll_geom_vec;
+	if(test_coll_vec.size() == 0)
+	{
+		cg_ptr S = cg_ptr(new Sphere(state.pos,_r));
+		coll_geom_vec = grid->get_collision_bodies(S);
+		coll_geom_vec = remove_cylinders(coll_geom_vec);
+	}else{
+		coll_geom_vec = test_coll_vec;
+	}
 
 	// Gets a vector of all actual collisions, sorted after penetration depth
 	// and with normals aligned
 	std::vector< intersections > collisions = 
 							get_coll_vec(coll_geom_vec, state );
 
-
-	// Treat the top most collisions one by one
-	// Do more than 100 Collisions withut advancing timestep and we call the particle stuck.
-	int max_collision =100;
-	int coll_idx = 0;
-#if 0
-
-	while( (collisions.size() !=0) && (coll_idx < max_collision) ){
-
-		if(collisions.size() > 1)
-		{
-			//	std::cerr << "Printed Froom Particle::do_collisions(), More than one collision in the same timestep detected. Should work fine but not thoroughly tested." << std::endl;
-
-			for(int i = 0; i < collisions.size(); ++i)
-			{
-				std::cout << collisions[i].cs.p << ", ";
-			}
-			std::cout<<std::endl;
-
-			int simultaneous_collisions = check_for_simultaneous_collisions(collisions, state);
-
-			if(simultaneous_collisions != 0)
-			{
-				std::cerr << "Particle::do_collisions(): "<< simultaneous_collisions << " those are simultaneous collisions" << std::endl;
-			}
-		}
-
-		intersections intersect = collisions[0];
-
-		// TODO: Handle case where two penetration depths are equal
-		state = do_one_collision(intersect, state);
-
-	collisions = get_coll_vec(coll_geom_vec, state);
-		coll_idx ++;
-	}
-	if(coll_idx >= max_collision)
+	// DEBUGCODE
+	if( collisions.size() > 1)
 	{
-		std::cerr << "Particle::do_collisions(): Particle Stuck. Exiting" << std::endl; 
-		exit(0);
+		std::cerr << "-=Particle::do_collisions=- Size = " << collisions.size() << std::endl;
+		for(int j = 0;j < collisions.size(); ++j)
+		{
+			collisions[j].print();
+		}	
+
+		double penetration_depth = collisions[0]->cs.p;
+		int i = 1;
+		do
+		{
+			double compare_depth = collisions[i]->cs.p;
+			double diff = std::abs(penetration_depth - compare_depth);
+			double tol = 0.0001;
+			++i;
+			if((diff<tol))
+			{
+				// ADD EFFECTIVE N!	
+			}
+		}( (i < collisions.size()) && (diff<tol) )
 
 	}
-#endif 
+	// END DEBUGCODE
+
 	if( (collisions.size() !=0) ){
 		state = do_one_collision(collisions[0], state);
 	}
 
 	return state;
-}
-
-
-#if 0
-int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, particle_state state)
-{
-		
-
-	int simultaneous_collisions=0;
-	double tol = 0.0001;
-	if(v.size() != 0)
-	{
-		intersections I = v[0];
-
-		Vec3d contact_point = state.pos - _r * I.cs.n;	
-		double dt = I.geom->line_intersection_point(contact_point, state.vel);
-
-
-		if(dt == 0)
-		{
-			std::cerr << "Particle::check_for_simultaneous_collisions::Collision Normal "<< I.cs.n.transpose() << std::endl;
-			std::cerr << "Particle::check_for_simultaneous_collisions::Contact Point "<< contact_point.transpose() << std::endl;
-		}
-
-		for(int i = 1; i<v.size(); i++)
-		{
-			intersections I_compare = v[i];
-
-			Vec3d contact_point_compare = state.pos - _r * I_compare.cs.n;	
-			double dt_compare = I_compare.geom->line_intersection_point(contact_point, state.vel);
-
-			if( std::abs(dt_compare-dt) < tol )
-			{
-				simultaneous_collisions++;
-
-				// Handle by adding together all collision normals into an
-				// "effective normal" and use that when evaluating collisions
-				/*
-				intersections tmp_i = collisions.front();
-				tmp_i = align_normal(tmp_i, vp);
-				tmp_i.effective_n = tmp_i.cs.n;
-				tmp_i.effective_n = (tmp_i.effective_n + it->cs.n).normalized();
-				
-				tmp_i.composite = true;
-
-				add effective_n to I and return it somehow 
-				*/
-			}
-		}
-
-	}
-	return simultaneous_collisions;
-}
-#endif
-
-void Particle::update(double dt)
-{
-	static int timestep = 0;
-
-	particle_state old_state = {};
-	old_state.dt = 0;
-	old_state.pos = _x;
-	old_state.vel = _v;
-
-
-
-	// Brownian Impulse
-	double max_len = 2;
-	double min_len = 0;
-
-	bool use_brownian = false;
-	Vec3d brownian  = Vec3d::Zero();
-	if(use_brownian)
-	{
-		brownian = get_random_vector(min_len,max_len); 
-	}
-
-
-	particle_state new_state = {};
-	// Leapfrog Euler
-	if(first_step)
-	{
-		new_state.vel = old_state.vel + (dt*0.5)*brownian;
-		first_step = false;
-	}else{
-		new_state.vel = old_state.vel + dt*brownian;
-	}
-	new_state.pos = old_state.pos + dt*new_state.vel;
-	new_state.dt = dt;
-	new_state = do_collisions(new_state);
-
-	Vec3d diff = _x - new_state.pos;
-	if(diff.norm()>1)
-	{
-		std::cerr << "Particle::Update" << std::endl;
-		std::cerr << "	x: "<< _x.transpose() <<std::endl;
-		std::cerr << "	n: "<< new_state.pos.transpose() <<std::endl;
-		std::cerr << "	t: " << timestep << std::endl; 
-	}
-
-	_x = new_state.pos;
-	_v = new_state.vel;
-
-	Eigen::VectorXd log = Eigen::VectorXd::Zero(9);
-	log.segment(0,3) = _x;
-	log.segment(3,3) = _v;
-	traj.push_back(log);
-	timestep++;
 }
 
 
@@ -345,29 +281,10 @@ std::ostream& operator<<(std::ostream& os, const Particle& p)
 	return os;
 }
 
-std::vector< cg_ptr > Particle::build_plane_test()
+
+void Particle::set_test_collision_vector(std::vector<cg_ptr> v )
 {
-	double box_r = 5;
-	std::vector< cg_ptr > coll_geom_vec;
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(0,box_r,0), Vec3d(0,1,0)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(0,-box_r,0), Vec3d(0,-1,0)) ));
-			
-
-	// Left and right wall
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(box_r,0,0), Vec3d(1,0,0)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(-box_r,0,0), Vec3d(-1,0,0)) ));
-
-	// Front back wall
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(0,0,box_r), Vec3d(0,0,1)) ));
-	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
-				new Plane(Vec3d(0,0, -box_r), Vec3d(0,0,-1)) ));
-
-	return coll_geom_vec;
+	test_coll_vec = v;
 }
 
 
@@ -381,7 +298,57 @@ std::vector< cg_ptr > Particle::build_plane_test()
 
 
 
+// old code I want so save for later
 
 
+#if 0
+int Particle::check_for_simultaneous_collisions(std::vector< intersections > v, particle_state state)
+{
+		
+
+	int simultaneous_collisions=0;
+	double tol = 0.0001;
+	if(v.size() != 0)
+	{
+		intersections I = v[0];
+
+		Vec3d contact_point = state.pos - _r * I.cs.n;	
+		double dt = I.geom->line_intersection_point(contact_point, state.vel);
 
 
+		if(dt == 0)
+		{
+			std::cerr << "Particle::check_for_simultaneous_collisions::Collision Normal "<< I.cs.n.transpose() << std::endl;
+			std::cerr << "Particle::check_for_simultaneous_collisions::Contact Point "<< contact_point.transpose() << std::endl;
+		}
+
+		for(int i = 1; i<v.size(); i++)
+		{
+			intersections I_compare = v[i];
+
+			Vec3d contact_point_compare = state.pos - _r * I_compare.cs.n;	
+			double dt_compare = I_compare.geom->line_intersection_point(contact_point, state.vel);
+
+			if( std::abs(dt_compare-dt) < tol )
+			{
+				simultaneous_collisions++;
+
+				// Handle by adding together all collision normals into an
+				// "effective normal" and use that when evaluating collisions
+				/*
+				intersections tmp_i = collisions.front();
+				tmp_i = align_normal(tmp_i, vp);
+				tmp_i.effective_n = tmp_i.cs.n;
+				tmp_i.effective_n = (tmp_i.effective_n + it->cs.n).normalized();
+				
+				tmp_i.composite = true;
+
+				add effective_n to I and return it somehow 
+				*/
+			}
+		}
+
+	}
+	return simultaneous_collisions;
+}
+#endif

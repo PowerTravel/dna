@@ -52,7 +52,7 @@ class Distance: public Simulation
 		void write_to_file();
 
 		// Tests 
-		std::vector< cg_ptr > run_plane_test(); // A box containing the particle
+		void run_plane_test(); // A box containing the particle
 };
 
 #endif // MEAN_DISTANCE_HPP

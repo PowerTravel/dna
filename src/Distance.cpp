@@ -102,9 +102,9 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-	run();
+	//run();
 	
-	//run_plane_test();
+	run_plane_test();
 }
 
 void Distance::run()
@@ -334,6 +334,8 @@ void Distance::print(std::ostream& os)
 		Can we do collisiondetection at the beginning of each timestep instead and 
 		always only handle one collision each timestep? 
 
+		// TRY THIS FIRST
+
 	We need four collision tests per geometry:
 		1 - Max One registered intersection per timestep
 		2 - Two or more registered intersections in a time step
@@ -343,16 +345,48 @@ void Distance::print(std::ostream& os)
 */
 
 
-std::vector< cg_ptr > Distance::run_plane_test()
+void Distance::run_plane_test()
 {
+
+
+	double box_r = 5;
+	std::vector< cg_ptr > coll_geom_vec;
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(0,box_r,0), Vec3d(0,1,0)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(0,-box_r,0), Vec3d(0,-1,0)) ));
+			
+
+	// Left and right wall
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(box_r,0,0), Vec3d(1,0,0)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(-box_r,0,0), Vec3d(-1,0,0)) ));
+
+	// Front back wall
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(0,0,box_r), Vec3d(0,0,1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(0,0, -box_r), Vec3d(0,0,-1)) ));
+
 	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 
 	// One bounce per timestep case:
-	_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
-	_particle_v_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
+	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
+	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
 	
 
-	Eigen::ArrayXXd trajectory = run_simulation_once();
+	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	p.set_test_collision_vector(coll_geom_vec);
+
+	int N = int(_tot_time/_dt);
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+	for(int i = 0; i < N; i++)
+	{
+		p.update(_dt);
+		trajectory.block(0,i,3,1) = p.get_position();
+	}
+
 	std::ofstream file;
 	file.open("../matlab/Distance/particle_trajectory.dna", 
 					std::fstream::out | std::fstream::trunc);

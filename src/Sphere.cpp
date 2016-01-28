@@ -236,7 +236,7 @@ double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 
 	if(p2 < q)
 	{
-		std::cerr << "Sphere::line_intersection_point" << std::cerr;
+		std::cerr << "Sphere::line_intersection_point" << std::endl;
 		std::cerr << "	Immaginary solution" << std::endl;
 		std::cerr << "	Sphere center: " << sphere_center.transpose() << std::endl;
 		std::cerr << "	Sphere radius: " << sphere_radius << std::endl;
