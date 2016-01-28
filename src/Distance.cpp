@@ -102,7 +102,13 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
+	run();
+	
+	//run_plane_test();
+}
 
+void Distance::run()
+{
 	print_pre_info();
 	if(!_valid)
 	{
@@ -128,9 +134,6 @@ void Distance::apply()
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
-	if(_nr_simulations==1){
-		_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
-	}
 
 	int T = int( _tot_time /_dt);
 	int start_point = 10;
@@ -228,8 +231,6 @@ void Distance::apply()
 	{
 		print_post_info();
 	}
-
-	
 }
 
 void Distance::write_to_terminal(int i, int j)
@@ -270,18 +271,6 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 		p.update(_dt);
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
-	if(_nr_simulations == 1)
-	{
-		std::ofstream file;
-		file.open("../matlab/Distance/particle_trajectory.dna", 
-						std::fstream::out | std::fstream::trunc);
-		if(file.is_open()){
-			file << trajectory.transpose() << std::endl;
-		}else{
-			std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
-		}
-		file.close();
-	}
 
 	return trajectory;
 }
@@ -315,3 +304,63 @@ void Distance::print(std::ostream& os)
 		os << "Simulation failed to load.";
 	}
 };
+
+/*
+	Collisions are currently handled in the following way:
+		At the start of a timestep a particle is assumed not to be intersecting 
+		another geometry.
+
+		1:  move the particle acording to Euler Leap Frog dt forward in time
+		2:  do broad phase collision detection, if none detected, save new position
+			and return, else move to 3
+		3: 	do narrow phase collision detection, if none are detected save new 
+			position and return, else move to 4
+		4: 	draw check when in the timestep all intersectiond occured and sort them
+			in order from earliest collision to latest.
+		5: 	handle the earliest collision, the case where the two earliest
+			collisions happened simultaneously is an edge case which is handled by
+			aligning their collision normals and adding them together then treating
+			them as one collision.
+		6:  A collision is handled by moving the particle back to the time when
+			the collision occured, reflecting velocity around the collision
+			normal and forwarding the time back to the time dt.
+		7:	Start from 2 again and make sure that the time in step 5 that the 
+			time is never reverted further back than the previous pass.
+			Time can never be reverted past a handled collision
+		8: 	A particle is considered stuck if it cant end it's timestep without 
+			having intersections.
+
+		// TODO
+		Can we do collisiondetection at the beginning of each timestep instead and 
+		always only handle one collision each timestep? 
+
+	We need four collision tests per geometry:
+		1 - Max One registered intersection per timestep
+		2 - Two or more registered intersections in a time step
+		3 - Stuck particle
+			If a particle ends its timestep without being free its 
+			counted as bing stuck.
+*/
+
+
+std::vector< cg_ptr > Distance::run_plane_test()
+{
+	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
+
+	// One bounce per timestep case:
+	_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
+	_particle_v_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
+	
+
+	Eigen::ArrayXXd trajectory = run_simulation_once();
+	std::ofstream file;
+	file.open("../matlab/Distance/particle_trajectory.dna", 
+					std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << trajectory.transpose() << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
+	}
+	file.close();
+
+}

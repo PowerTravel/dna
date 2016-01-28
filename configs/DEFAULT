@@ -14,7 +14,7 @@ RUN: distance
 	DELTA_TIME: 0.1
 
 	STRIDES: 100
-	SAMPLES: 1
+	SAMPLES: 100
 	EXP: false
 
 	TYPE: fg

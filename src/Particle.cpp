@@ -252,7 +252,7 @@ void Particle::update(double dt)
 	double max_len = 2;
 	double min_len = 0;
 
-	bool use_brownian = true;
+	bool use_brownian = false;
 	Vec3d brownian  = Vec3d::Zero();
 	if(use_brownian)
 	{
@@ -369,35 +369,6 @@ std::vector< cg_ptr > Particle::build_plane_test()
 
 	return coll_geom_vec;
 }
-
-std::vector< cg_ptr > Particle::build_cylinder_test_A()
-{
-	// Test where all tops of the cylinders are facing eachother creating a box as in
-	// plane test
-	double cyl_r = 5;
-	double rad = 5;
-	std::vector< cg_ptr > coll_geom_vec;
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(0,cyl_r,0), Vec3d(0,2*cyl_r,0)) ));
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(0,-cyl_r,0), Vec3d(0,-2*cyl_r,0)) ));
-	
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(cyl_r,0,0), Vec3d(2*cyl_r,0,0)) ));
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(-cyl_r,0,0), Vec3d(-2*cyl_r,0,0)) ));
-	
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(0,0,cyl_r), Vec3d(0, 0,2*cyl_r))));
-	coll_geom_vec.push_back( cg_ptr( 
-		new Cylinder(rad, Vec3d(0,0,-cyl_r), Vec3d(0, 0,-2*cyl_r))));
-	
-
-	return coll_geom_vec;
-}
-
-
-
 
 
 

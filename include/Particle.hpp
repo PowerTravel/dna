@@ -74,8 +74,8 @@ class Particle{
 		std::vector<cg_ptr > remove_cylinders(std::vector<cg_ptr > vec);
 
 		// Collision test cases
-		std::vector< cg_ptr > build_plane_test();
-		std::vector< cg_ptr > build_cylinder_test_A();
+		std::vector< cg_ptr > build_plane_test(); // A box containing the particle
+
 		
 };
 		

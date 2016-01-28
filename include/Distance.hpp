@@ -17,6 +17,7 @@ class Distance: public Simulation
 		CollisionGrid _cg; 
 		Eigen::Vector3d _particle_x_ini; 
 		Eigen::Vector3d _particle_v_ini;
+		void run();
 		Eigen::ArrayXXd run_simulation_once();
 
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
@@ -49,6 +50,9 @@ class Distance: public Simulation
 
 		void write_to_terminal(int i, int j);
 		void write_to_file();
+
+		// Tests 
+		std::vector< cg_ptr > run_plane_test(); // A box containing the particle
 };
 
 #endif // MEAN_DISTANCE_HPP
