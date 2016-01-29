@@ -11,7 +11,7 @@
 			"file": "include/Distance.hpp",
 			"settings":
 			{
-				"buffer_size": 1112,
+				"buffer_size": 1214,
 				"line_ending": "Unix"
 			}
 		},
@@ -19,7 +19,7 @@
 			"file": "include/Particle.hpp",
 			"settings":
 			{
-				"buffer_size": 2017,
+				"buffer_size": 2002,
 				"line_ending": "Unix"
 			}
 		},
@@ -27,7 +27,7 @@
 			"file": "configs/DEFAULT",
 			"settings":
 			{
-				"buffer_size": 960,
+				"buffer_size": 962,
 				"line_ending": "Unix"
 			}
 		},
@@ -43,7 +43,7 @@
 			"file": "src/Distance.cpp",
 			"settings":
 			{
-				"buffer_size": 7208,
+				"buffer_size": 9139,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +51,7 @@
 			"file": "src/Particle.cpp",
 			"settings":
 			{
-				"buffer_size": 10573,
+				"buffer_size": 9720,
 				"line_ending": "Unix"
 			}
 		},
@@ -174,7 +174,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -183,15 +183,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1112,
+						"buffer_size": 1214,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								995,
-								995
+								1145,
+								1145
 							]
 						],
 						"settings":
@@ -200,10 +200,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 51.0,
+						"translation.y": 102.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
@@ -212,15 +212,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2017,
+						"buffer_size": 2002,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								947,
-								947
+								1931,
+								1931
 							]
 						],
 						"settings":
@@ -230,10 +230,10 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 918.0,
+						"translation.y": 1062.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -242,15 +242,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 960,
+						"buffer_size": 962,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								240,
-								240
+								286,
+								286
 							]
 						],
 						"settings":
@@ -262,7 +262,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -306,15 +306,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7208,
+						"buffer_size": 9139,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2382,
-								2382
+								1715,
+								1715
 							]
 						],
 						"settings":
@@ -323,10 +323,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1810.0,
+						"translation.y": 1496.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
@@ -335,15 +335,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10573,
+						"buffer_size": 9720,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6824,
-								6824
+								3388,
+								3388
 							]
 						],
 						"settings":
@@ -352,7 +352,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4266.0,
+						"translation.y": 1920.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -384,7 +384,7 @@
 						"translation.y": 153.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -413,7 +413,7 @@
 						"translation.y": 322.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 6,
 					"type": "text"
 				}
 			]

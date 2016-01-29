@@ -104,7 +104,8 @@ void Distance::apply()
 {
 	//run();
 	
-	run_plane_test();
+	run_box_test();
+	//run_diamond_test();
 }
 
 void Distance::run()
@@ -345,7 +346,7 @@ void Distance::print(std::ostream& os)
 */
 
 
-void Distance::run_plane_test()
+void Distance::run_box_test()
 {
 
 
@@ -374,6 +375,66 @@ void Distance::run_plane_test()
 	// One bounce per timestep case:
 	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
 	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
+	
+
+	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	p.set_test_collision_vector(coll_geom_vec);
+
+	int N = int(_tot_time/_dt);
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+	for(int i = 0; i < N; i++)
+	{
+		p.update(_dt);
+		trajectory.block(0,i,3,1) = p.get_position();
+	}
+
+	std::ofstream file;
+	file.open("../matlab/Distance/particle_trajectory.dna", 
+					std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << trajectory.transpose() << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
+	}
+	file.close();
+
+}
+
+void Distance::run_diamond_test()
+{
+
+
+	double box_r = 1;
+	std::vector< cg_ptr > coll_geom_vec;
+	// Top dome
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(box_r,box_r,box_r), Vec3d(-1,-1,-1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(box_r,box_r,-box_r), Vec3d(-1,-1,1)) ));
+			
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(-box_r,box_r,-box_r), Vec3d(1,-1,1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(-box_r,box_r,box_r), Vec3d(-1,1,1)) ));
+
+	// Bottom dome
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(box_r,-box_r,box_r), Vec3d(-1,1,-1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(box_r,-box_r,-box_r), Vec3d(-1,1,1)) ));
+			
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(-box_r,-box_r,-box_r), Vec3d(1,1,1)) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Plane(Vec3d(-box_r,-box_r,box_r), Vec3d(1,1,-1)) ));
+	
+
+
+	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
+
+	// One bounce per timestep case:
+	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
+	_particle_v_ini = Eigen::Vector3d(1, 0, 0);
 	
 
 	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
