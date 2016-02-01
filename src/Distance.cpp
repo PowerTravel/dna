@@ -104,7 +104,8 @@ void Distance::apply()
 {
 	//run();
 	
-	run_box_test();
+	//run_box_test();
+	run_sphere_test();
 	//run_diamond_test();
 }
 
@@ -126,19 +127,14 @@ void Distance::run()
 
 	_cg = CollisionGrid(_collision_box_size);
 	int  max_axis = get_max(_c->axis_length());
-	std::cout << _c->axis_length().transpose() << std::endl;
 	_cg.set_up(_c->get_collision_vec() , max_axis );
 	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
-
-
 
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
-
 	int T = int( _tot_time /_dt);
 	int start_point = 10;
-
 
 	_time_steps = Statistics::make_exponential_points_array(T, _nr_data_points, start_point );
 	_time_step_mean = (_time_steps.segment(0, _nr_data_points) + _time_steps.segment(1, _nr_data_points)) / 2;
@@ -171,7 +167,6 @@ void Distance::run()
 			binned_distance_data(j,3*i+1) = tmp_mat.row(1).mean();	
 			binned_distance_data(j,3*i+2) = tmp_mat.row(2).mean();
 
-
 		}
 		if(verbose){
 			write_to_terminal(i,_nr_data_points);	
@@ -182,7 +177,6 @@ void Distance::run()
 	D_var = Eigen::ArrayXd::Zero(_nr_data_points);
 	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
 	
-
 	P = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
 	P_var = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
 	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
@@ -264,12 +258,12 @@ void Distance::write_to_file()
 
 Eigen::ArrayXXd Distance::run_simulation_once()
 {
-	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
 	{
-		p.update(_dt);
+		p.update();
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
 
@@ -350,7 +344,7 @@ void Distance::run_box_test()
 {
 
 
-	double box_r = 5;
+	double box_r = 2;
 	std::vector< cg_ptr > coll_geom_vec;
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Plane(Vec3d(0,box_r,0), Vec3d(0,1,0)) ));
@@ -373,18 +367,18 @@ void Distance::run_box_test()
 	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 
 	// One bounce per timestep case:
-	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
-	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
+	_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
+//	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
 	
 
-	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	p.set_test_collision_vector(coll_geom_vec);
 
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
 	{
-		p.update(_dt);
+		p.update();
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
 
@@ -402,7 +396,6 @@ void Distance::run_box_test()
 
 void Distance::run_diamond_test()
 {
-
 
 	double box_r = 1;
 	std::vector< cg_ptr > coll_geom_vec;
@@ -434,17 +427,16 @@ void Distance::run_diamond_test()
 
 	// One bounce per timestep case:
 	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
-	_particle_v_ini = Eigen::Vector3d(1, 0, 0);
+	_particle_v_ini = Eigen::Vector3d(0, 1, 0);
 	
-
-	Particle p = Particle(_particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	p.set_test_collision_vector(coll_geom_vec);
 
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
 	{
-		p.update(_dt);
+		p.update();
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
 
@@ -458,4 +450,58 @@ void Distance::run_diamond_test()
 	}
 	file.close();
 
+}
+
+void Distance::run_sphere_test()
+{
+	double sphere_r = 1;
+	double sep_x = 0.99;
+	double sep_y = 2;
+	std::vector< cg_ptr > coll_geom_vec;
+
+
+
+	// Top dome
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(sep_x,-sep_y,-sep_x), sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(-sep_x,-sep_y,-sep_x), sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(sep_x, -sep_y, sep_x),sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(-sep_x, -sep_y, sep_x),  sphere_r) ));
+
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(sep_x,sep_y,-sep_x), sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(-sep_x,sep_y,-sep_x), sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(sep_x, sep_y, sep_x),sphere_r) ));
+	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
+				new Sphere(Vec3d(-sep_x, sep_y,sep_x),  sphere_r) ));
+
+	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
+	_particle_v_ini = Eigen::Vector3d(0.01, 1, 0);
+	//_particle_v_ini = Eigen::Vector3d(0, 1, 0);
+	
+	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	p.set_test_collision_vector(coll_geom_vec);
+
+	int N = int(_tot_time/_dt);
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+	for(int i = 0; i < N; i++)
+	{
+		p.update();
+		trajectory.block(0,i,3,1) = p.get_position();
+	}
+
+	std::ofstream file;
+	file.open("../matlab/Distance/particle_trajectory.dna", 
+					std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << trajectory.transpose() << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
+	}
+	file.close();
 }

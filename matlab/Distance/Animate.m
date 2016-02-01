@@ -4,6 +4,20 @@ N = size(data,1);
 animate = 1;
 x = 1:N;
 
+sep_x = 0.9;
+sep_y = 2;
+
+plot_epsiloid([sep_x, -sep_y, -sep_x], [1,1,1]);
+plot_epsiloid([-sep_x, -sep_y, -sep_x], [1,1,1]);
+plot_epsiloid([sep_x, -sep_y, sep_x], [1,1,1]);
+plot_epsiloid([-sep_x, -sep_y, sep_x], [1,1,1]);
+
+plot_epsiloid([sep_x, sep_y, -sep_x], [1,1,1]);
+plot_epsiloid([-sep_x, sep_y, -sep_x], [1,1,1]);
+plot_epsiloid([sep_x, sep_y, sep_x], [1,1,1]);
+plot_epsiloid([-sep_x, sep_y, sep_x], [1,1,1]);
+
+
 frame_jump = 1;
 if(animate==0)
     T = -10:0.1:10;
@@ -21,7 +35,7 @@ else
         if(mod(i,1)==0)
             hold on 
             plot3(data(i,1),data(i,2), data(i,3),'.', 'linewidth', 4);
-            axis([-r,r,-r,r]);
+            axis([-r,r,-r,r,-r,r]);
             pause(0.1);
         end
     end

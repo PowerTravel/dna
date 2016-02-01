@@ -10,13 +10,12 @@
 class Particle{
 
 	public:
-		Particle(double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionGrid* gr);
+		Particle(double dt, double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionGrid* gr);
 		virtual ~Particle();
 
 		Eigen::ArrayXXd debug_run(double dt, Eigen::Array3d a);
 
-
-		void update(double dt);
+		void update();
 
 		Eigen::Array3d get_position();
 		Eigen::Array3d get_velocity();
@@ -28,9 +27,9 @@ class Particle{
 
 		struct particle_state
 		{
-			double dt;		// where inside a timestep we are 
 			Eigen::Vector3d pos;
 			Eigen::Vector3d vel;
+			double dt;	// where inside a timestep we are
 
 		};
 
@@ -42,7 +41,7 @@ class Particle{
 
 		// Subfunctions for update:
 		particle_state handle_collisions(particle_state state);
-		collision get_earliest_collision(std::vector<cg_ptr > v, particle_state particle);
+		collision get_earliest_collision( particle_state particle);
 
 		Eigen::Vector3d get_random_vector(double min_len, double max_len);
 
@@ -50,6 +49,7 @@ class Particle{
 
 		CollisionGrid* grid;
 		double _r;
+		double _dt;
 		Eigen::Vector3d _v;
 		Eigen::Vector3d _x;
 		std::vector< Eigen::VectorXd > traj;
