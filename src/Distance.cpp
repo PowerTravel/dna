@@ -103,10 +103,38 @@ int Distance::get_max(Eigen::Array3d v)
 void Distance::apply()
 {
 	//run();
-	
 	//run_box_test();
-	run_sphere_test();
+	//run_sphere_test();
 	//run_diamond_test();
+
+	run_tests();
+}
+
+void Distance::run_tests()
+{
+	std::cerr << "TEST 1";
+	if(plane_one_collision_test_A())
+	{
+		 std::cerr <<"SUCCEEDED" << std::endl;
+	}else{
+		 std::cerr <<"FAILED" << std::endl;
+	}
+	
+	std::cerr << "TEST 2";
+	if(plane_one_collision_test_B())
+	{
+		 std::cerr <<"SUCCEEDED" << std::endl;
+	}else{
+		 std::cerr <<"FAILED" << std::endl;
+	}
+
+	std::cerr << "TEST 3";
+	if(plane_two_consecutive_collisions_test())
+	{
+		 std::cerr <<"SUCCEEDED" << std::endl;
+	}else{
+		 std::cerr <<"FAILED" << std::endl;
+	}
 }
 
 void Distance::run()
@@ -367,8 +395,8 @@ void Distance::run_box_test()
 	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 
 	// One bounce per timestep case:
-	_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
-//	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
+	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
+	_particle_v_ini = Eigen::Vector3d(1.01, 1, 1);
 	
 
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
@@ -426,7 +454,6 @@ void Distance::run_diamond_test()
 	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 
 	// One bounce per timestep case:
-	//_particle_v_ini = Eigen::Vector3d(1, 0.5, 0.7);
 	_particle_v_ini = Eigen::Vector3d(0, 1, 0);
 	
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
@@ -505,3 +532,145 @@ void Distance::run_sphere_test()
 	}
 	file.close();
 }
+
+
+bool Distance::plane_one_collision_test_A()
+{
+	double tol = 0.000000000001;
+	// Collision happens on the boundary of update one and two.
+	// at t = dt
+	Vec3d particle_position = Vec3d(0,0.4,0);
+	Vec3d particle_velocity = Vec3d(1,1,0);
+	double particle_radie = 0.5;
+	double dt = 0.1;
+	
+	Vec3d plane_point = Vec3d(0,1,0); 
+	Vec3d plane_normal = Vec3d(0,1,0);
+	
+	Particle particle = Particle(dt, particle_radie, 
+									 particle_position, 
+									 particle_velocity, NULL);
+
+	std::vector<cg_ptr> v = std::vector<cg_ptr>();
+	v.push_back(cg_ptr( new Plane(plane_point, plane_normal) ) );	
+	particle.set_test_collision_vector(v); 
+	
+	particle.update(); // No collision should be detected
+	particle.update(); // Collision should be detected and particle should be 
+					   // reflected
+	Vec3d p_prim = particle.get_position();
+	Vec3d v_prim = particle.get_velocity();
+
+	// What values should be
+	Vec3d post_collision_position(0.2,0.4,0);
+	Vec3d post_collision_velocity(1,-1,0);
+
+	if( std::abs(post_collision_position(0) - p_prim(0)) >= tol ||
+		std::abs(post_collision_position(1) - p_prim(1)) >= tol ||
+		std::abs(post_collision_position(2) - p_prim(2)) >= tol ||
+		std::abs(post_collision_velocity(0) - v_prim(0)) >= tol ||
+		std::abs(post_collision_velocity(1) - v_prim(1)) >= tol ||
+		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
+	{
+		return false;	
+	}
+	return true;
+}
+
+bool Distance::plane_one_collision_test_B()
+{
+	double tol = 0.000000000001;
+
+	// Collision happens at t=dt/2
+	Vec3d particle_position = Vec3d(0,0.35,0);
+	Vec3d particle_velocity = Vec3d(1,1,0);
+	double particle_radie = 0.5;
+	double dt = 0.1;
+	
+	Vec3d plane_point = Vec3d(0,1,0); 
+	Vec3d plane_normal = Vec3d(0,-1,0);
+	
+	Particle particle = Particle(dt, particle_radie, 
+									 particle_position, 
+									 particle_velocity, NULL);
+
+	std::vector<cg_ptr> v = std::vector<cg_ptr>();
+	v.push_back(cg_ptr( new Plane(plane_point, plane_normal) ) );	
+	particle.set_test_collision_vector(v); 
+	
+	particle.update(); // No collision should be detected
+	particle.update(); // Collision should be detected and particle should be 
+					   // reflected
+	Vec3d p_prim = particle.get_position();
+	Vec3d v_prim = particle.get_velocity();
+
+	// What values should be
+	Vec3d post_collision_position(0.2,0.45,0);
+	Vec3d post_collision_velocity(1,-1,0);
+
+	if( std::abs(post_collision_position(0) - p_prim(0)) >= tol ||
+		std::abs(post_collision_position(1) - p_prim(1)) >= tol ||
+		std::abs(post_collision_position(2) - p_prim(2)) >= tol ||
+		std::abs(post_collision_velocity(0) - v_prim(0)) >= tol ||
+		std::abs(post_collision_velocity(1) - v_prim(1)) >= tol ||
+		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
+	{
+		std::cerr << p_prim.transpose() << std::endl;
+		std::cerr << v_prim.transpose() << std::endl;
+		return false;	
+	}
+	return true;
+}
+
+bool Distance::plane_two_consecutive_collisions_test()
+{
+	// Orthogonal collisions within a timestep
+	double tol = 0.000000000001;
+
+	// Collision happens at t=dt/2
+	Vec3d particle_position = Vec3d(0,0,0);
+	Vec3d particle_velocity = Vec3d(1,1,0);
+	double particle_radie = 0.5;
+	double dt = 0.1;
+	
+	Particle particle = Particle(dt, particle_radie, 
+									 particle_position, 
+									 particle_velocity, NULL);
+
+	std::vector<cg_ptr> v = std::vector<cg_ptr>();
+	Vec3d plane_point_1 = Vec3d(0.52,0,0); 
+	Vec3d plane_normal_1 = Vec3d(1,0,0);
+	v.push_back(cg_ptr( new Plane(plane_point_1, plane_normal_1) ) );	
+
+	Vec3d plane_point_2 = Vec3d(0,0.58,0); 
+	Vec3d plane_normal_2 = Vec3d(0,-1,0);
+	v.push_back(cg_ptr( new Plane(plane_point_2, plane_normal_2) ) );	
+
+	particle.set_test_collision_vector(v); 
+	
+	particle.update(); // Collision should happen with plane 1 at t = 0.02
+					   // Collision should happen with plane 2 at t = 0.08 
+
+	Vec3d p_prim = particle.get_position();
+	Vec3d v_prim = particle.get_velocity();
+
+	// What values should be
+	Vec3d post_collision_position(-0.06, 0.06 ,0);
+	Vec3d post_collision_velocity(-1,-1,0);
+
+	if( std::abs(post_collision_position(0) - p_prim(0)) >= tol ||
+		std::abs(post_collision_position(1) - p_prim(1)) >= tol ||
+		std::abs(post_collision_position(2) - p_prim(2)) >= tol ||
+		std::abs(post_collision_velocity(0) - v_prim(0)) >= tol ||
+		std::abs(post_collision_velocity(1) - v_prim(1)) >= tol ||
+		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
+	{
+		std::cerr << p_prim.transpose() << std::endl;
+		std::cerr << v_prim.transpose() << std::endl;
+		return false;	
+	}
+	return true;
+}
+bool Distance::plane_two_simultaneous_collisions_test(){}
+bool Distance::plane_four_mixed_collisions_test(){}
+bool Distance::plane_stuck_particle(){}

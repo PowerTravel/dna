@@ -116,46 +116,59 @@ std::vector<cg_ptr > Particle::remove_cylinders(std::vector<cg_ptr > vec)
 Particle::particle_state Particle::handle_collisions(particle_state state)
 {
 
-	std::cerr << "BAJS!" << std::endl;
 	collision coll =  get_earliest_collision(state);
-	std::cerr << "BAJS!" << std::endl;
 
 	double time_left = _dt;
-
+	double last_collision_time = 0;
 	particle_state collision_state = {};
 	particle_state post_collision_state = state;
 	while(coll.t != 0){
-
 		// Find collision state
 		collision_state.dt = post_collision_state.dt + coll.t; 
 		collision_state.pos = post_collision_state.pos + 
 								coll.t * post_collision_state.vel;
+		if( (last_collision_time  == 0) && (collision_state.dt <= _dt) )
+		{
+			// The case where we are dealing with the first collision we
+			// require that the collision happened somewhere inside dt
+			last_collision_time = collision_state.dt;
+			std::cerr << "FIRST_COLLISION! " << collision_state.dt << std::endl;
+			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+		}else if( (last_collision_time  < collision_state.dt) && 
+						(collision_state.dt <= _dt)  )
+		{
+			// The case where we are dealing with consecutive collisions inside
+			// the timestep we require that the collision happened in the time
+			// between the last treated collision and the end of the timestep
+			last_collision_time = collision_state.dt;
+			std::cerr << "NEXT_COLLISION! " << collision_state.dt << std::endl;
+			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+		}else{
+			// if not we have some sort of error and should investigate what is 
+			// going on.
 
+			std::cerr << "Particle::handle_collisions" << std::endl;
+			std::cerr << "	The collision happened at a weird time" << std::endl;
+			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+			std::cerr << "	exiting"<< std::endl;
+			exit(1);
+
+		}
 		// Reflect Velocity
 		double len = post_collision_state.vel.transpose() * coll.n;
 		Vec3d v_normal_to_plane  = len * coll.n;
 		Vec3d v_paralell_to_plane  = post_collision_state.vel - v_normal_to_plane;
 		collision_state.vel = v_paralell_to_plane - v_normal_to_plane;
 
-		time_left = time_left - collision_state.dt;
-		std::cerr << "TIMELEFT = " << time_left <<std::endl;
-
 		double remaining_dt = -coll.t;
-		std::cerr << "REMAINING_DT = " << remaining_dt <<std::endl;
 		post_collision_state.dt = _dt;
 		post_collision_state.vel = collision_state.vel;
 		post_collision_state.pos = collision_state.pos + remaining_dt*post_collision_state.vel;
 
-		if(time_left < 0)
-		{
-			std::cerr << "Particle::handle_collisions:" <<std::endl;
-			std::cerr << "	particle is stuck" <<std::endl;
-			std::cerr << "	exiting" <<std::endl;
-			exit(1);
-		}
-		std::cerr << "KISS!" << std::endl;
 		coll =  get_earliest_collision(post_collision_state);
-		std::cerr << "KISS!" << std::endl;
 	}
 
 	return post_collision_state;
@@ -164,7 +177,7 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 Particle::collision Particle::get_earliest_collision(particle_state particle)
 {
 	std::vector<cg_ptr > v;
-	if(test_coll_vec.size() == 0)
+	if( (test_coll_vec.size() == 0) && (grid != NULL) )
 	{
 		cg_ptr S = cg_ptr(new Sphere(particle.pos,_r));
 		v = grid->get_collision_bodies(S);
@@ -178,7 +191,6 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 
 	for(int i = 0; i != v.size(); ++i)
 	{
-		//Plane P = Plane(Vec3d(0,0,0), Vec3d(0,1,0));
 		CollisionGeometry::coll_struct cs;
 		std::shared_ptr<CollisionGeometry> c = v[i];
 		double collision_time = 0;
@@ -211,29 +223,34 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 				std::cerr << "	Error: collision_time evaluated to " <<collision_time<< "which is smaller than than dt="<< (-particle.dt ) <<std::endl;
 				std::cerr << "	This should never happen since dt is the beginning of a timestep where a collision is assumed never to happen" <<std::endl;
 				std::cerr << "	exiting"  <<std::endl;
-
 				exit(1);
 
 			}
 
 			double diff = collision_time - ret.t;
-			//if( diff <  (-tol) )
-			if( diff <  0 )
+			if( diff <  (-tol) )
 			{
-				std::cerr << "Overriding" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+	//			std::cerr << "Overriding" << std::endl;
+	//			std::cerr << collision_time << std::endl;
+	//			std::cerr << ret.t << std::endl;
+	//			std::cerr << cs.p << std::endl;
 				ret.n = collision_normal;
 				ret.t = collision_time;
-			}else if(std::abs(diff) < tol){
-				std::cerr << "Adding" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+			//}else if(std::abs(diff) < tol){
+			}else if(std::abs(diff) < 0){
+	//			std::cerr << "Adding" << std::endl;
+	//			std::cerr << collision_time << std::endl;
+	//			std::cerr << ret.t << std::endl;
+	//			std::cerr << cs.p << std::endl;
 				ret.n = ret.n + collision_normal;
 			}else{
-				std::cerr << "Ignoring" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+				// Do nothing
+
+
+	//			std::cerr << "Ignoring" << std::endl;
+	//			std::cerr << collision_time << std::endl;
+	//			std::cerr << ret.t << std::endl;
+	//			std::cerr << cs.p << std::endl;
 			
 			}
 		}

@@ -22,7 +22,7 @@ class Particle{
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
 		
 		void set_test_collision_vector(std::vector<cg_ptr> v );
-		
+
 	private:
 
 		struct particle_state

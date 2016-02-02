@@ -55,6 +55,14 @@ class Distance: public Simulation
 		void run_box_test(); // A box containing the particle, testing basic collision with plane
 		void run_diamond_test(); // A diamond containing the particle testing simultaneous collisions with plane
 		void run_sphere_test();
+
+		void run_tests();
+		bool plane_one_collision_test_A();
+		bool plane_one_collision_test_B();
+		bool plane_two_consecutive_collisions_test();
+		bool plane_two_simultaneous_collisions_test();
+		bool plane_four_mixed_collisions_test();
+		bool plane_stuck_particle();
 };
 
 #endif // MEAN_DISTANCE_HPP
