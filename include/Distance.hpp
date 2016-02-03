@@ -61,6 +61,7 @@ class Distance: public Simulation
 		bool plane_one_collision_test_B();
 		bool plane_two_consecutive_collisions_test();
 		bool plane_two_simultaneous_collisions_test();
+		bool three_simultaneous_collisions();
 		bool plane_four_mixed_collisions_test();
 		bool plane_stuck_particle();
 };
