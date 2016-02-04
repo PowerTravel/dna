@@ -133,9 +133,10 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 			// The case where we are dealing with the first collision we
 			// require that the collision happened somewhere inside dt
 			last_collision_time = collision_state.dt;
-			std::cerr << "FIRST_COLLISION! " << collision_state.dt << std::endl;
-			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
-			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+
+//			std::cerr << "FIRST_COLLISION! " << collision_state.dt << std::endl;
+//			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+//			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
 		}else if( (last_collision_time  < collision_state.dt) && 
 						(collision_state.dt <= _dt)  )
 		{
@@ -143,9 +144,10 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 			// the timestep we require that the collision happened in the time
 			// between the last treated collision and the end of the timestep
 			last_collision_time = collision_state.dt;
-			std::cerr << "NEXT_COLLISION! " << collision_state.dt << std::endl;
-			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
-			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+
+//			std::cerr << "NEXT_COLLISION! " << collision_state.dt << std::endl;
+//			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+//			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
 		}else{
 			// if not we have some sort of error and should investigate what is 
 			// going on.
@@ -209,82 +211,7 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 			{
 				collision_normal = -cs.n;
 			}
-			Vec3d contact_point = Vec3d::Zero();
-
-			if( (c->text_type().compare("Sphere")==0) && (penetration_depth > 0.00000000000001) )
-			{
-				Sphere* sp = (Sphere*)c.get(); 
-				double a = _r;
-				Vec3d cp = -collision_normal;
-				double cosA = cp.dot(particle.vel)/
-													particle.vel.norm();
-				double C = _r - penetration_depth;
-				std::cerr << _r << std::endl;
-				// cosinussatsen + pq formeln
-				// a^2 = b^2+c^2 - 2bc Cos A
-				// --->
-				// 	b^2 + (-2c CosA) b + (c^2 - b^2) = 0
-				//  (2c CosA) = p
-				//  (c^2 - a^2) = q
-				// --->
-				//  b^2 - pb + q = 0
-				// --->
-				//  b = ((p/2) +- sqrt( (p/2)^2 - q) )
-
-				double p = -2*C*cosA;
-				double p_half = p/2;
-				double q = C*C-a*a;
-				double sqrt_part = p_half*p_half - q;
-					
-				double b1 = 0;
-				double b2 = 0;
-				if(sqrt_part >= 0)
-				{
-					b1 = p_half - sqrt( sqrt_part );
-					b2 = p_half + sqrt( sqrt_part );
-				}else{
-					std::cerr << "Particle::get_earliest_collision" << std::endl;
-					std::cerr << "	Got immaginary roots to a pq formula" << std::endl;
-					std::cerr << "	Should not happen, exiting." << std::endl;
-				
-					std::cerr << "collision normal  = " << cp.transpose() <<std::endl;
-					std::cerr << "velocity = " << particle.vel.transpose() << std::endl;
-					std::cerr << "N dot V / |V| = " << cosA << std::endl;
-
-					std::cerr << "Penetration depth = " << penetration_depth <<std::endl;
-					std::cerr << "Radius = " << _r << std::endl;
-					std::cerr << "C = " << C << std::endl;
-
-					std::cerr << "p = " << p << std::endl;
-					std::cerr << "q = " << q  << std::endl;						
-						exit(0);
-				}
-				std::cout << std::endl <<"b1 = " << b1 << "  "<<"b2 = "  << b2 << std::endl;
-
-				std::cerr << "p = " << p << std::endl;
-				std::cerr << "q = " << q  << std::endl;
-
-				double scale;
-				if(std::abs(b1)<std::abs(b2))
-				{
-					scale = b1;
-				}else{
-					scale = b2;
-				}
-
-				contact_point = (particle.pos + C * cp) + scale*particle.vel.normalized();
-
-				std::cout << "New cp: " << contact_point.transpose() << std::endl;
-				std::cout << "New cp norm: " << contact_point.transpose().norm()-_r << std::endl;
-			
-				//contact_point << std::sqrt(2),std::sqrt(2),0;	
-
-		//		contact_point = particle.pos - _r * collision_normal;
-		//		std::cout << "old cp: " << contact_point.transpose() << std::endl;
-		//		std::cout << "old cp: " << contact_point.transpose().norm()-_r << std::endl;
-			}else{
-				contact_point = particle.pos - _r * collision_normal;	
-			} 
+			Vec3d contact_point = particle.pos - _r * collision_normal;	
 			collision_time = c->line_intersection_point(
 									contact_point, particle.vel);
 			double tol =  0.0000001;
@@ -307,26 +234,26 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 			double diff = collision_time - ret.t;
 			if( diff <  (-tol) )
 			{
-				std::cerr << "Overriding" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+//				std::cerr << "Overriding" << std::endl;
+//				std::cerr << collision_time << std::endl;
+//				std::cerr << ret.t << std::endl;
 
 
 				ret.n = collision_normal;
 				ret.t = collision_time;
 			}else if(std::abs(diff) < tol){
-				std::cerr << "Adding" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+//				std::cerr << "Adding" << std::endl;
+//				std::cerr << collision_time << std::endl;
+//				std::cerr << ret.t << std::endl;
 
 
 				ret.n = ret.n + collision_normal;
 				ret.n = (ret.n).normalized();
 			}else{
 				// Do nothing
-				std::cerr << "Ignoring" << std::endl;
-				std::cerr << collision_time << std::endl;
-				std::cerr << ret.t << std::endl;
+//				std::cerr << "Ignoring" << std::endl;
+//				std::cerr << collision_time << std::endl;
+//				std::cerr << ret.t << std::endl;
 			
 			}
 //			std::cout<< "N: " << ret.n.transpose() << std::endl;
