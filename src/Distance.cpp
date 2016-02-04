@@ -977,6 +977,10 @@ bool Distance::sphere_one_collision_test_A()
 		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
 	{
 		std::cerr << std::endl << "This simulation fails because of a small error (of size dt) having to do when we calculate collision normal in sphere-sphere collision which is position dependant (which has implications for first point of contact calculations). See comments in function definition Distance::sphere_one_collision_test_A()" << std::endl<< "Deferring fixing untill later since it's not a critical error." <<std::endl;
+
+		std::cerr << p_prim.transpose() << std::endl;
+		std::cerr << v_prim.transpose() << std::endl;
+			
 		return false;
 	}
 	return true;

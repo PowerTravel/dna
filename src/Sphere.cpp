@@ -177,7 +177,10 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 		return false;
 	}
 }
-
+double Sphere::get_radius()
+{
+	return _r;
+}
 
 bool Sphere::intersects(Sphere* s, coll_struct& cs)
 {

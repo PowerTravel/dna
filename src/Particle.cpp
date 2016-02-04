@@ -200,6 +200,7 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 		{
 			//std::cerr << "i = " << i << ",  ID = " << c->get_id() << std::endl;
 			Vec3d collision_normal = cs.n;
+			double penetration_depth = cs.p;
 
 			// Aligning the normal to be away from coll geom
 			Vec3d collision_geometry_center = c->get_center();
@@ -208,10 +209,84 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 			{
 				collision_normal = -cs.n;
 			}
-			Vec3d contact_point = particle.pos - _r * collision_normal;
+			Vec3d contact_point = Vec3d::Zero();
+
+			if( (c->text_type().compare("Sphere")==0) && (penetration_depth > 0.00000000000001) )
+			{
+				Sphere* sp = (Sphere*)c.get(); 
+				double a = _r;
+				Vec3d cp = -collision_normal;
+				double cosA = cp.dot(particle.vel)/
+													particle.vel.norm();
+				double C = _r - penetration_depth;
+				std::cerr << _r << std::endl;
+				// cosinussatsen + pq formeln
+				// a^2 = b^2+c^2 - 2bc Cos A
+				// --->
+				// 	b^2 + (-2c CosA) b + (c^2 - b^2) = 0
+				//  (2c CosA) = p
+				//  (c^2 - a^2) = q
+				// --->
+				//  b^2 - pb + q = 0
+				// --->
+				//  b = ((p/2) +- sqrt( (p/2)^2 - q) )
+
+				double p = -2*C*cosA;
+				double p_half = p/2;
+				double q = C*C-a*a;
+				double sqrt_part = p_half*p_half - q;
+					
+				double b1 = 0;
+				double b2 = 0;
+				if(sqrt_part >= 0)
+				{
+					b1 = p_half - sqrt( sqrt_part );
+					b2 = p_half + sqrt( sqrt_part );
+				}else{
+					std::cerr << "Particle::get_earliest_collision" << std::endl;
+					std::cerr << "	Got immaginary roots to a pq formula" << std::endl;
+					std::cerr << "	Should not happen, exiting." << std::endl;
+				
+					std::cerr << "collision normal  = " << cp.transpose() <<std::endl;
+					std::cerr << "velocity = " << particle.vel.transpose() << std::endl;
+					std::cerr << "N dot V / |V| = " << cosA << std::endl;
+
+					std::cerr << "Penetration depth = " << penetration_depth <<std::endl;
+					std::cerr << "Radius = " << _r << std::endl;
+					std::cerr << "C = " << C << std::endl;
+
+					std::cerr << "p = " << p << std::endl;
+					std::cerr << "q = " << q  << std::endl;						
+						exit(0);
+				}
+				std::cout << std::endl <<"b1 = " << b1 << "  "<<"b2 = "  << b2 << std::endl;
+
+				std::cerr << "p = " << p << std::endl;
+				std::cerr << "q = " << q  << std::endl;
+
+				double scale;
+				if(std::abs(b1)<std::abs(b2))
+				{
+					scale = b1;
+				}else{
+					scale = b2;
+				}
+
+				contact_point = (particle.pos + C * cp) + scale*particle.vel.normalized();
+
+				std::cout << "New cp: " << contact_point.transpose() << std::endl;
+				std::cout << "New cp norm: " << contact_point.transpose().norm()-_r << std::endl;
+			
+				//contact_point << std::sqrt(2),std::sqrt(2),0;	
+
+		//		contact_point = particle.pos - _r * collision_normal;
+		//		std::cout << "old cp: " << contact_point.transpose() << std::endl;
+		//		std::cout << "old cp: " << contact_point.transpose().norm()-_r << std::endl;
+			}else{
+				contact_point = particle.pos - _r * collision_normal;	
+			} 
 			collision_time = c->line_intersection_point(
 									contact_point, particle.vel);
-
 			double tol =  0.0000001;
 			if(collision_time > tol )
 			{

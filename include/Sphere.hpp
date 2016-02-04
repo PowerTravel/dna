@@ -16,6 +16,7 @@ class Sphere: public CollisionGeometry
 		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
 		Eigen::ArrayXd get_span();
 		Vec3d get_center();
+		double get_radius();
 		std::string text_type();
 
 		int nr_collisions=0;
