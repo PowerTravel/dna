@@ -232,26 +232,26 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 			double diff = collision_time - ret.t;
 			if( diff <  (-tol) )
 			{
-//				std::cerr << "Overriding" << std::endl;
-//				std::cerr << collision_time << std::endl;
-//				std::cerr << ret.t << std::endl;
+				std::cerr << "Overriding" << std::endl;
+				std::cerr << collision_time << std::endl;
+				std::cerr << ret.t << std::endl;
 
 
 				ret.n = collision_normal;
 				ret.t = collision_time;
 			}else if(std::abs(diff) < tol){
-//				std::cerr << "Adding" << std::endl;
-//				std::cerr << collision_time << std::endl;
-//				std::cerr << ret.t << std::endl;
+				std::cerr << "Adding" << std::endl;
+				std::cerr << collision_time << std::endl;
+				std::cerr << ret.t << std::endl;
 
 
 				ret.n = ret.n + collision_normal;
 				ret.n = (ret.n).normalized();
 			}else{
 				// Do nothing
-//				std::cerr << "Ignoring" << std::endl;
-//				std::cerr << collision_time << std::endl;
-//				std::cerr << ret.t << std::endl;
+				std::cerr << "Ignoring" << std::endl;
+				std::cerr << collision_time << std::endl;
+				std::cerr << ret.t << std::endl;
 			
 			}
 //			std::cout<< "N: " << ret.n.transpose() << std::endl;

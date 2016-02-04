@@ -178,6 +178,7 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	}
 }
 
+
 bool Sphere::intersects(Sphere* s, coll_struct& cs)
 {
 	Eigen::Vector3d R =  s->_x - this-> _x;

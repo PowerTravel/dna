@@ -61,9 +61,17 @@ class Distance: public Simulation
 		bool plane_one_collision_test_B();
 		bool plane_two_consecutive_collisions_test();
 		bool plane_two_simultaneous_collisions_test();
-		bool three_simultaneous_collisions();
+		bool plane_three_simultaneous_collisions();
 		bool plane_four_mixed_collisions_test();
-		bool plane_stuck_particle();
+//		bool plane_stuck_particle();
+
+		bool sphere_one_collision_test_A();
+		bool sphere_one_collision_test_B();
+		bool sphere_two_consecutive_collisions_test();
+		bool sphere_two_simultaneous_collisions_test();
+		bool sphere_three_simultaneous_collisions();
+		bool sphere_four_mixed_collisions_test();
+//		bool sphere_stuck_particle();
 };
 
 #endif // MEAN_DISTANCE_HPP
