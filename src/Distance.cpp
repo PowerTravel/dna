@@ -102,12 +102,12 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-	//run();
+	run();
 	//run_box_test();
 	//run_sphere_test();
 	//run_diamond_test();
 
-	run_tests();
+	//run_tests();
 }
 void Distance::run()
 {
@@ -131,7 +131,7 @@ void Distance::run()
 	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
-	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
+	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
 
 	int T = int( _tot_time /_dt);
 	int start_point = 10;
@@ -258,6 +258,10 @@ void Distance::write_to_file()
 
 Eigen::ArrayXXd Distance::run_simulation_once()
 {
+	if(_nr_simulations==1)
+	{
+		_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
+	}
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
@@ -266,6 +270,20 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 		p.update();
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
+
+	if(_nr_simulations==1)
+	{
+		std::ofstream traj_file;
+		traj_file.open("../matlab/Distance/debug/trajectory", std::fstream::out | std::fstream::trunc);
+		if(traj_file.is_open()){
+			traj_file << trajectory.transpose() << std::endl;
+		}else{
+			std::cerr << "../matlab/Distance/debug/trajectory" << std::endl;
+		}
+		traj_file.close();
+	
+	}
+
 
 	return trajectory;
 }
@@ -448,7 +466,6 @@ void Distance::run_diamond_test()
 		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
 	}
 	file.close();
-
 }
 
 void Distance::run_sphere_test()
@@ -1031,7 +1048,47 @@ bool Distance::sphere_one_collision_test_B()
 }
 bool Distance::sphere_two_consecutive_collisions_test()
 {
-	return false;
+	double tol = 0.000000000001;
+
+	Vec3d particle_position = Vec3d(0,0,0);
+	Vec3d particle_velocity = Vec3d(1,1,0);
+	double particle_radie = std::sqrt(2);
+	double dt = 0.1;
+
+	Particle particle = Particle(dt, particle_radie, 
+									 particle_position, 
+									 particle_velocity, NULL);
+
+
+	std::vector<cg_ptr> v = std::vector<cg_ptr>();
+	double sphere_radie = std::sqrt(2);
+	Vec3d sphere_point  = Vec3d(2.05,2.05,0);
+	v.push_back(cg_ptr( new Sphere(sphere_point, sphere_radie) ) );	
+
+	particle.set_test_collision_vector(v); 
+	
+	particle.update();
+
+	Vec3d p_prim = particle.get_position();
+	Vec3d v_prim = particle.get_velocity();
+
+	// What values should be
+	Vec3d post_collision_position( 0, 0 ,0);
+	Vec3d post_collision_velocity(-1,-1,0);
+
+	if( std::abs(post_collision_position(0) - p_prim(0)) >= tol ||
+		std::abs(post_collision_position(1) - p_prim(1)) >= tol ||
+		std::abs(post_collision_position(2) - p_prim(2)) >= tol ||
+		std::abs(post_collision_velocity(0) - v_prim(0)) >= tol ||
+		std::abs(post_collision_velocity(1) - v_prim(1)) >= tol ||
+		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
+	{
+
+		std::cerr << p_prim.transpose() << std::endl;
+		std::cerr << v_prim.transpose() << std::endl;
+		return false;
+	}
+	return true;
 }
 bool Distance::sphere_two_simultaneous_collisions_test()
 {

@@ -23,6 +23,8 @@ class Particle{
 		
 		void set_test_collision_vector(std::vector<cg_ptr> v );
 
+
+		bool use_brownian;
 	private:
 
 		struct particle_state
@@ -31,6 +33,20 @@ class Particle{
 			Eigen::Vector3d vel;
 			double dt;	// where inside a timestep we are
 
+		};
+
+		struct debug_snapshot
+		{
+			int i;					// The index of the vector where the error occured
+			std::vector<cg_ptr> v;	// The vector with the to be tested geometries
+			CollisionGeometry::coll_struct cs; // the derived collision struct of i
+			Vec3d collision_normal;
+			Vec3d contact_point;
+			double penetration_depth;
+			double collision_time;
+
+			particle_state state;	// The state of the particle
+			double radius;
 		};
 
 		struct collision{
@@ -62,6 +78,7 @@ class Particle{
 		std::vector<cg_ptr > remove_cylinders(std::vector<cg_ptr > vec);
 
 		
+		void dump_info( debug_snapshot ds );
 };
 		
 

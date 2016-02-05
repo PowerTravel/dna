@@ -15,6 +15,7 @@ Particle::Particle(double dt, double rad, Arr3d pos,Arr3d vel, CollisionGrid* gr
 	_v = vel.matrix();
 	_dt = dt;
 	first_step = true;
+	use_brownian = false;
 
 	traj = std::vector<Eigen::VectorXd>();
 }
@@ -46,7 +47,6 @@ void Particle::update()
 	double max_len = 2;
 	double min_len = 0;
 
-	bool use_brownian = false;
 	Vec3d brownian  = Vec3d::Zero();
 	if(use_brownian)
 	{
@@ -223,10 +223,21 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 				std::cerr << "	exiting" << std::endl;
 				exit(1);
 			}else if( (collision_time+tol) < (-particle.dt)) {
+
+				c->intersects(&S, cs);
 				std::cerr << "Particle::get_earliest_collision: " <<std::endl;
 				std::cerr << "	Error: collision_time evaluated to " <<collision_time<< "which is smaller than than dt="<< (-particle.dt ) <<std::endl;
 				std::cerr << "	This should never happen since dt is the beginning of a timestep where a collision is assumed never to happen" <<std::endl;
 				std::cerr << "	exiting"  <<std::endl;
+				std::cerr << v.size() << std::endl;
+				debug_snapshot dbss = 
+				{	
+					i, v, cs,collision_normal , contact_point, penetration_depth, collision_time, 
+					particle, _r
+				};
+
+				dump_info( dbss  );
+
 				exit(1);
 
 			}
@@ -261,6 +272,54 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 	}
 
 	return ret;
+}
+
+void Particle::dump_info( debug_snapshot ds )
+{
+	std::ofstream particle_file;
+	particle_file.open("../matlab/Distance/debug/particle_info", 
+					std::fstream::out | std::fstream::trunc);
+	if(particle_file.is_open()){
+		particle_file << "particle: " << std::endl; 
+		particle_file <<"\t" <<  ds.state.dt  << std::endl;
+		particle_file <<"\t" <<  ds.radius  << std::endl;
+		particle_file <<"\t" <<  ds.state.pos.transpose()  << std::endl;
+		particle_file <<"\t" <<  ds.state.vel.transpose()  << std::endl;
+			
+		particle_file << "Collision_struct" << std::endl;
+		particle_file << "\t" <<ds.cs.p << std::endl;
+		particle_file << "\t" <<ds.cs.n.transpose() << std::endl;
+		particle_file << "Derived values" << std::endl;
+		particle_file << "\t"<< "Collision Normal" << std::endl;
+		particle_file << "\t\t"<< ds.collision_normal.transpose() << std::endl;
+		particle_file << "\t"<< "Contact Point" << std::endl;
+		particle_file << "\t\t"<< ds.contact_point.transpose() << std::endl;
+		particle_file << "\t"<< "Penetration Depth" << std::endl;
+		particle_file << "\t\t"<< ds.penetration_depth << std::endl;
+		particle_file << "\t"<< "Collision_time" << std::endl;
+		particle_file << "\t\t"<< ds.collision_time << std::endl;
+
+		particle_file << "Collision bodies" << std::endl;
+		particle_file <<  "\t" <<ds.v.size()<< " "<< ds.i << std::endl;
+		for(int j = 0; j<ds.v.size(); j++)
+		{	
+			cg_ptr c = ds.v[j];
+			if(c->text_type().compare("Plane")==0)
+			{
+				particle_file << 0 << "\t";
+			}else if(c->text_type().compare("Sphere")==0){
+				particle_file << 1 << "\t";
+			}else if(c->text_type().compare("Cylinder")==0){
+				particle_file << 2 << "\t";
+			}
+			particle_file << c->get_span().transpose() << std::endl;
+		}
+
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/debug/particle_info") << std::endl;
+	}
+	particle_file.close();
+
 }
 
 std::ostream& operator<<(std::ostream& os, const Particle& p)

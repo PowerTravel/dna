@@ -1,6 +1,6 @@
 % Visualize the collisionGrid
 
-gr = load('grid.txt');
+gr = load('grid');
 gridsize = 1;
 
 pointsPerGeom = 20;
@@ -9,6 +9,8 @@ show_cyl = true;
 len = size(gr,1);
 figure(1)
 % parse the file
+draw_grid =true
+if draw_grid
 for i=1:len
     % gridbox
     if(gr(i,1)==0)
@@ -33,7 +35,7 @@ for i=1:len
         p = (gr(i,3:2:7) + gr(i,2:2:6))./2;
         w = (gr(i,3:2:7) - gr(i,2:2:6))./2;
         %draw_rect( p, w, 'b', 3 );
-      %  [x,y,z]=ellipsoid(p(1),p(2),p(3),w(1),w(2),w(3),pointsPerGeom);
+        [x,y,z]=ellipsoid(p(1),p(2),p(3),w(1),w(2),w(3),pointsPerGeom);
         hold on
         surf(x, y, z,'FaceColor','c');
         hold off
@@ -43,3 +45,12 @@ for i=1:len
     axis equal
      %pause(1)
 end
+end
+hold on
+data = load('trajectory');
+N = size(data,2);
+xlabel('x')
+ylabel('y')
+zlabel('z')
+plot3(data(:,1),data(:,2), data(:,3),'-', 'linewidth', 4);
+
