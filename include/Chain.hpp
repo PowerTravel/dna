@@ -42,6 +42,7 @@ class Chain
 
 		void set_radius(double r);
 		void set_link_length(double l);
+		void center_chain();
 		//link get_link(int i);
 
 		std::vector< cg_ptr > get_collision_vec();
@@ -61,7 +62,7 @@ class Chain
 		Eigen::ArrayXd _w;
 		double _rad;
 		double _link_len;
-		
+
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
 

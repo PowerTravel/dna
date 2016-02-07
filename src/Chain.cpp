@@ -190,3 +190,20 @@ std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 	return cv;
 
 }
+
+void Chain::center_chain()
+{
+	if(!_ok)
+	{
+		return;
+	}
+
+	Eigen::Array3d cm = this->cm(0, this->len());
+	cm(0) = std::round(cm(0));
+	cm(1) = std::round(cm(1));
+	cm(2) = std::round(cm(2));
+	for(int i = 0; i<this->len(); i++)
+	{
+		_chain.block(0,i,3,1) = _chain.block(0,i,3,1) - cm;
+	}
+}

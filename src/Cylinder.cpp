@@ -29,10 +29,10 @@ bool Cylinder::intersects(Sphere* s, coll_struct& cs)
 {
 	return s->intersects(this, cs);
 }
-double Cylinder::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
+double Cylinder::line_intersection_point(Vec3d x, Vec3d v)
 {
-	Eigen::Vector3d xv = x.matrix();		
-	Eigen::Vector3d vv = v.matrix();
+	Eigen::Vector3d xv = x;		
+	Eigen::Vector3d vv = v;
 
 	Eigen::Vector3d alpha = vv.cross(_d);
 	Eigen::Vector3d beta = (xv - _P);

@@ -216,7 +216,7 @@ bool Sphere::intersects(Plane* p, coll_struct& cs)
 	return false;
 }
 
-double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
+double Sphere::line_intersection_point( Vec3d x, Vec3d v )
 {
 	// Sphere data
 	Vec3d sphere_center = _x;
@@ -231,7 +231,7 @@ double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 	double ld_dot_ld = line_direction.transpose() * line_direction;
 	double ld_dot_separation =   (line_direction.transpose() * separation);
 	double sep_dot_sep = separation.transpose() * separation;
-	
+
 	double p =2.0 * ld_dot_separation / ld_dot_ld;
 	double q = (sep_dot_sep - sphere_radius*sphere_radius) / ld_dot_ld;
 
@@ -249,12 +249,24 @@ double Sphere::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
 		return 0;
 	}
 	
+
 	double intersection_scalar_1 = - p_half - std::sqrt( p2 - q );
 	double intersection_scalar_2 = - p_half + std::sqrt( p2 - q );
 
-	if(intersection_scalar_1 < intersection_scalar_2){
+	if(std::abs(intersection_scalar_1) < std::abs(intersection_scalar_2))
+	{
+		if(intersection_scalar_1>0)
+		{
+			std::cerr << "ret_val " <<  intersection_scalar_1 << std::endl;
+			std::cerr << "other val " <<  intersection_scalar_2 << std::endl;
+		}
 		return intersection_scalar_1;
 	}else{
+		if(intersection_scalar_2>0)
+		{
+			std::cerr << "ret_val " <<  intersection_scalar_2 << std::endl;
+			std::cerr << "other val " <<  intersection_scalar_1 << std::endl;
+		}
 		return intersection_scalar_2;
 	}
 }

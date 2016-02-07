@@ -15,7 +15,7 @@ class Cylinder: public CollisionGeometry
 		bool intersects(Sphere* s, coll_struct& cs);
 		std::string text_type();
 
-		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
+		double line_intersection_point(Vec3d x, Vec3d v);
 		Eigen::ArrayXd get_span();
 
 		Vec3d get_center();

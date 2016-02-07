@@ -13,7 +13,7 @@ class Sphere: public CollisionGeometry
 		bool intersects(Cylinder* c, coll_struct& cs);
 		bool intersects(Sphere* s, coll_struct& cs);
 		bool intersects(Plane* p, coll_struct& cs);
-		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
+		double line_intersection_point(Vec3d x, Vec3d v);
 		Eigen::ArrayXd get_span();
 		Vec3d get_center();
 		double get_radius();

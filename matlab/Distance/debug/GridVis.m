@@ -9,7 +9,8 @@ show_cyl = true;
 len = size(gr,1);
 figure(1)
 % parse the file
-draw_grid =true
+draw_grid = true;
+draw_traj = false;
 if draw_grid
 for i=1:len
     % gridbox
@@ -43,14 +44,15 @@ for i=1:len
     alpha(0.3)
     grid on
     axis equal
-     %pause(1)
+    %pause(1)
 end
 end
 hold on
+if draw_traj
 data = load('trajectory');
 N = size(data,2);
 xlabel('x')
 ylabel('y')
 zlabel('z')
 plot3(data(:,1),data(:,2), data(:,3),'-', 'linewidth', 4);
-
+end

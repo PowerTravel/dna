@@ -124,6 +124,7 @@ void Distance::run()
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	_c->build(_chain_size);
+	_c->center_chain();
 
 	_cg = CollisionGrid(_collision_box_size);
 	int  max_axis = get_max(_c->axis_length());
@@ -281,7 +282,7 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 			std::cerr << "../matlab/Distance/debug/trajectory" << std::endl;
 		}
 		traj_file.close();
-	
+		std::cout << "Distance::run_simulation_once: Printed grid and trajectory"  << std::endl;
 	}
 
 
@@ -360,8 +361,6 @@ void Distance::print(std::ostream& os)
 
 void Distance::run_box_test()
 {
-
-
 	double box_r = 2;
 	std::vector< cg_ptr > coll_geom_vec;
 	coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 

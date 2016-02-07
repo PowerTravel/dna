@@ -221,6 +221,13 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 				std::cerr << "	Error: collision_time evaluated to " <<collision_time<< "which is larger than 0 " <<std::endl;
 				std::cerr << "	This should never happen since collision_time is how long time since a collision has happened. IE negative " <<std::endl;
 				std::cerr << "	exiting" << std::endl;
+				debug_snapshot dbss = 
+				{	
+					i, v, cs,collision_normal , contact_point, penetration_depth, collision_time, 
+					particle, _r
+				};
+
+				dump_info( dbss  );
 				exit(1);
 			}else if( (collision_time+tol) < (-particle.dt)) {
 
@@ -239,7 +246,6 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 				dump_info( dbss  );
 
 				exit(1);
-
 			}
 
 			double diff = collision_time - ret.t;
@@ -248,7 +254,6 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 //				std::cerr << "Overriding" << std::endl;
 //				std::cerr << collision_time << std::endl;
 //				std::cerr << ret.t << std::endl;
-
 
 				ret.n = collision_normal;
 				ret.t = collision_time;
@@ -315,10 +320,27 @@ void Particle::dump_info( debug_snapshot ds )
 			particle_file << c->get_span().transpose() << std::endl;
 		}
 
+
+		particle_file.close();
 	}else{
 		std::cerr << "Failed to open " << std::string("../matlab/Distance/debug/particle_info") << std::endl;
 	}
-	particle_file.close();
+
+	std::ofstream traj_file;
+	traj_file.open("../matlab/Distance/debug/particle_traj_dump", 
+					std::fstream::out | std::fstream::trunc);
+	
+	if(traj_file.is_open())
+	{
+		for(int i = 0; i<traj.size(); i++)
+		{
+			traj_file  << traj[i].transpose() << std::endl;
+		}
+
+		traj_file.close();
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/debug/particle_traj_dump") << std::endl;
+	}
 
 }
 

@@ -1,0 +1,5 @@
+[33mcommit d916ff1694d8d93e4ba58dbfe7283d68c2eca8c1[m
+Author: Jakob Hariz <Jakob.Hariz@gmail.com>
+Date:   Fri Feb 5 18:52:50 2016 +0100
+
+    Created loads of debug tools, I can print out a snapshot of whats going on in Particle::Get_earliest_collision which can be visualized in matlab with the script debug_weird_time, bad name i know. Also if nr simulations is set to 1 I will print out the trajectory of the particle together with the grid which can be visualized using gridVis. Some weird bugs are introduced when brownian motion is switched on. Also what needs to be implemented is a periodic boundary condition and make it so that the particle always is placed within the interior of the grid, even for small sizes. Cylinders also needs to be introduced and debugged

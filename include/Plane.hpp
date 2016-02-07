@@ -13,7 +13,7 @@ class Plane: public CollisionGeometry{
 		virtual ~Plane();
 
 		bool intersects(Sphere* s, coll_struct& cs);
-		double line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v);
+		double line_intersection_point(Vec3d x, Vec3d v);
 		Eigen::ArrayXd get_span();
 		virtual Vec3d get_center();
 

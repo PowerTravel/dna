@@ -32,8 +32,8 @@ bool CollisionGeometry::intersects(Plane* p, coll_struct& cs)
 	std::cerr << "ERROR: Intersection not implemented." << std::endl;
 	return false;
 }
-double CollisionGeometry::line_intersection_point(Eigen::ArrayXd x, Eigen::ArrayXd v)
+double CollisionGeometry::line_intersection_point(Vec3d x, Vec3d v)
 {
 	std::cerr << "ERROR: Intersection not implemented." << std::endl;
-	return false;
+	return 0;
 }
