@@ -200,6 +200,7 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 		double collision_time = 0;
 		if(c->intersects(&S, cs))
 		{
+
 			//std::cerr << "i = " << i << ",  ID = " << c->get_id() << std::endl;
 			Vec3d collision_normal = cs.n;
 			double penetration_depth = cs.p;
