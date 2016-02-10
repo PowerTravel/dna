@@ -10,7 +10,7 @@ len = size(gr,1);
 figure(1)
 % parse the file
 draw_grid = true;
-draw_traj = false;
+draw_traj = true;
 if draw_grid
 for i=1:len
     % gridbox
@@ -54,5 +54,5 @@ N = size(data,2);
 xlabel('x')
 ylabel('y')
 zlabel('z')
-plot3(data(:,1),data(:,2), data(:,3),'-', 'linewidth', 4);
+plot3(data(:,1),data(:,2), data(:,3),'.', 'markersize', 4);
 end

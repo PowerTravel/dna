@@ -2,6 +2,8 @@ clear all
 
 addpath('..')
 
+anim=1;
+
 data = read_debug_data();
 
 dt = data{1,2};
@@ -28,16 +30,17 @@ hold on
 plot3(vel(1,:), vel(2,:), vel(3,:), 'linewidth', 4);
 hold off
 traj = load('particle_traj_dump');
-N = size(traj,2);
+N = size(traj,1);
 xlabel('x')
 ylabel('y')
 zlabel('z')
+if N~=0
 hold on
-plot3(traj(:,1),traj(:,2), traj(:,3),'-', 'linewidth', 4)
+plot3(traj(:,1),traj(:,2), traj(:,3),'.', 'markersize', 4)
 plot3(traj(1,1),traj(1,2), traj(1,3),'.g', 'markersize', 10)
 plot3(traj(N,1),traj(N,2), traj(N,3),'.r', 'markersize', 10)
 hold off
-
+end
 %% Plot Collision geoms
 for i = 3:(nr_coll_geoms+2)
     p = (data{4,i}(3:2:7) + data{4,i}(2:2:6))./2;
@@ -51,6 +54,9 @@ for i = 3:(nr_coll_geoms+2)
     end
     hold off
 end
+alpha(0.3)
+
+
 grid on
 axis equal
 

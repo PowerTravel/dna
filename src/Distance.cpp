@@ -102,7 +102,7 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-	//run();
+//	run();
 	//run_box_test();
 	run_sphere_test();
 	//run_diamond_test();
@@ -132,7 +132,7 @@ void Distance::run()
 	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
-	_particle_v_ini = Eigen::Vector3d(1, 1, 1);
+	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	int T = int( _tot_time /_dt);
 	int start_point = 10;
@@ -282,7 +282,7 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 			std::cerr << "../matlab/Distance/debug/trajectory" << std::endl;
 		}
 		traj_file.close();
-		std::cout << "Distance::run_simulation_once: Printed grid and trajectory"  << std::endl;
+		std::cout << "Distance::run_simulation_once: Printed grid and trajectory to '../matlab/Distance/debug/trajectory' and '../matlab/Distance/debug/grid'"  << std::endl;
 	}
 
 
@@ -469,17 +469,18 @@ void Distance::run_diamond_test()
 
 void Distance::run_sphere_test()
 {
-	double sphere_r = 0.3;
-	double particle_r = 0.3;
+	
+	double sphere_r = _chain_radius;
+	double particle_r = _particle_radius;
 	std::vector< cg_ptr > coll_geom_vec;
-	int I = 20;
-	int J = 20;
-	int K = 20;
-	for(int i=-I; i<I; i++)
+	int I = 2;
+	int J = 2;
+	int K = 2;
+	for(int i=-I; i<=I; i++)
 	{
-		for(int j=-J; j<J; j++)
+		for(int j=-J; j<=J; j++)
 		{
-			for(int k=-K; k<K; k++)
+			for(int k=-K; k<=K; k++)
 			{
 				coll_geom_vec.push_back( std::shared_ptr<CollisionGeometry>( 
 				new Sphere(Vec3d(i,j,k), sphere_r) ));	
@@ -487,9 +488,14 @@ void Distance::run_sphere_test()
 		}
 	}
  	
+	_cg = CollisionGrid(_collision_box_size);
+	_cg.set_up(coll_geom_vec , I );
+	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
+
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
-	_particle_v_ini = Eigen::Vector3d(1, 0.4, -0.1);
+	_particle_v_ini = Eigen::Vector3d(0.01, 0.1, 0.04);
 	
+	//Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, &_cg);
 	Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, NULL);
 	p.set_test_collision_vector(coll_geom_vec);
 
@@ -497,17 +503,16 @@ void Distance::run_sphere_test()
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
 	{	
-		std::cerr << "AXAX" << std::endl;
 		p.update();
 		trajectory.block(0,i,3,1) = p.get_position();
 	}
 
 	std::ofstream file;
-	file.open("../matlab/Distance/particle_trajectory.dna", 
+	file.open("../matlab/Distance/debug/trajectory", 
 					std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
 		std::cout << "Distance::run_sphere_test:" << std::endl;
-		std::cout << "	Writing to '../matlab/Distance/particle_trajectory.dna'" << std::endl;
+		std::cout << "	Writing to '../matlab/Distance/debug/trajectory'" << std::endl;
 		file << trajectory.transpose() << std::endl;
 	}else{
 		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;

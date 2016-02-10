@@ -24,7 +24,7 @@ void CollisionGrid::set_up(std::vector<cg_ptr> v, idx_type m_axis)
 {
 	geom_vec = v;
 	set_max_axis(m_axis);
-	std::cout << "Printed From CollisionGrid::set_up. Max axis is: " << m_axis << std::endl;
+	//std::cout << "Printed From CollisionGrid::set_up. Max axis is: " << m_axis << std::endl;
 
 	grid = std::map<idx_type, std::vector<int> >();
 	geoms = std::vector< geom_struct >();
@@ -39,7 +39,6 @@ void CollisionGrid::set_up(std::vector<cg_ptr> v, idx_type m_axis)
 			push_key_to_map(*key, i);
 		}
 	}
-
 	ok = true;
 }
 
@@ -75,8 +74,8 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<Colli
 {
 	Eigen::ArrayXd span = g->get_span(); // Get an AABB for the collision geometry
 	Eigen::ArrayXd idx = span/box_size; // Divide by the box size to get the box indexes 
-	idx = idx+max_idx +1/2.0; // Shift all the indices to be positive
-	//std::cout << idx.transpose() << std::endl;
+	idx = idx+max_idx +0.5; // Shift all the indices to be positive
+	//std::cout << idx.transpose()  << "\tCenter:  "<< g->get_center().transpose()  << "\tGeom ID " << g->get_id() <<"\t" << g->text_type() <<std::endl;
 	std::vector<idx_type> ret = std::vector<idx_type>();
 
 
@@ -122,7 +121,29 @@ std::vector<idx_type> CollisionGrid::get_intersection_keys(std::shared_ptr<Colli
 	}
 	return ret;
 }
+std::string CollisionGrid::print_active_geom()
+{
+	std::stringstream o;
+	o << "Active Geom" <<std::endl;
+	o << "\tGeometry id " << std::endl;
+	o << "\t" << active_geom.cg->get_id() << std::endl;
+	o << "\tGeometry span " << std::endl;
+	o << "\t" << active_geom.cg->get_span().transpose() << std::endl;
+	
+	o << "\tBox Size" << std::endl;
+	o << "\t"<< active_geom.s << std::endl;
+	o << "\tMax idx" << std::endl;
+	o << "\t"<< active_geom.m_idx << std::endl;
+	o << std::endl;
+	o << "\tKeys and idx" << std::endl;
+	o << "\t";
+	for(int i = 0; i<active_geom.key.size(); i++)
+	{
+		o << active_geom.key[i] << " " << active_geom.idx[i].transpose() << std::endl;
+	}
 
+	return o.str();
+}
 idx_type CollisionGrid::map_key(int i, int j, int k)
 {
 	return i + j*max_idx + k * max_idx * max_idx;
@@ -199,17 +220,12 @@ void CollisionGrid::print_intersecting_box_corners(cg_ptr g)
 	int len = active_geom.idx.size();
 	for(int i = 0; i < len; i++)
 	{
-			Eigen::Array3d ax = active_geom.idx[i];
-			// transpose the indices to actucal positions
-			ax = (ax - active_geom.m_idx-0.5)*active_geom.s;
-			// a box
-			std::cout << "0 "<< ax.transpose() << " 0 0 0 " <<std::endl;
-
-
-
-
-
-			//os << *key << std::endl;
+		Eigen::Array3d ax = active_geom.idx[i];
+		// transpose the indices to actucal positions
+		ax = (ax - active_geom.m_idx-0.5)*active_geom.s;
+		// a box
+		std::cout << "0 "<< ax.transpose() << " 0 0 0 " <<std::endl;
+		//os << *key << std::endl;
 	}
 //	return os;
 }

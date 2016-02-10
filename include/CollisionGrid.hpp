@@ -18,10 +18,12 @@ typedef unsigned int idx_type;
 #include <map>
 
 class CollisionGrid{
+
+
 	struct geom_struct{
 		// pointer to a collision geometry
 		std::shared_ptr<CollisionGeometry> cg;
-		// Key to all the boxes where it appears
+		// Key to <<std::endl;all the boxes where it appears
 		std::vector<idx_type> key;
 		// the lower left corners of the boxes
 		std::vector<Eigen::Vector3d> idx;
@@ -31,6 +33,7 @@ class CollisionGrid{
 		double m_idx;
 	};
 	public:
+	
 		CollisionGrid();
 		CollisionGrid(double bs);
 		virtual ~CollisionGrid();
@@ -47,6 +50,8 @@ class CollisionGrid{
 		void print_intersecting_box_corners(cg_ptr g);
 		geom_struct active_geom;
 		bool active;
+
+		std::string print_active_geom();
 		
 	private:
 		double box_size;	

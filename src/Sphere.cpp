@@ -257,17 +257,21 @@ double Sphere::line_intersection_point( Vec3d x, Vec3d v )
 	{
 		if(intersection_scalar_1>0)
 		{
-			std::cerr << "ret_val " <<  intersection_scalar_1 << std::endl;
-			std::cerr << "other val " <<  intersection_scalar_2 << std::endl;
+			//std::cerr << "ret_val " <<  intersection_scalar_1 << std::endl;
+			//std::cerr << "other val " <<  intersection_scalar_2 << std::endl;
+			return intersection_scalar_2;
+		}else{
+			return intersection_scalar_1;
 		}
-		return intersection_scalar_1;
 	}else{
 		if(intersection_scalar_2>0)
 		{
-			std::cerr << "ret_val " <<  intersection_scalar_2 << std::endl;
-			std::cerr << "other val " <<  intersection_scalar_1 << std::endl;
+			//std::cerr << "ret_val " <<  intersection_scalar_2 << std::endl;
+			//std::cerr << "other val " <<  intersection_scalar_1 << std::endl;
+			return intersection_scalar_1;
+		}else{
+			return intersection_scalar_2;
 		}
-		return intersection_scalar_2;
 	}
 }
 

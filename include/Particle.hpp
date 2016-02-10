@@ -62,15 +62,18 @@ class Particle{
 		Eigen::Vector3d get_random_vector(double min_len, double max_len);
 
 		bool first_step;
-
+		bool use_periodic_boundary;
+		bool particle_is_stuck;
 		CollisionGrid* grid;
 		double _r;
 		double _dt;
 		Eigen::Vector3d _v;
 		Eigen::Vector3d _x;
 		std::vector< Eigen::VectorXd > traj;
+		std::vector< Eigen::VectorXd > collisions_spots;
 		
 		static std::default_random_engine _generator;
+		int timestep = 0;
 
 
 		// Debug funcs and tests

@@ -15,8 +15,9 @@ Particle::Particle(double dt, double rad, Arr3d pos,Arr3d vel, CollisionGrid* gr
 	_v = vel.matrix();
 	_dt = dt;
 	first_step = true;
-	use_brownian = false;
-
+	use_brownian = true;
+	use_periodic_boundary = true;
+	particle_is_stuck = false;
 	traj = std::vector<Eigen::VectorXd>();
 }
 
@@ -38,44 +39,75 @@ Arr3d Particle::get_velocity()
 void Particle::update()
 {
 	static int timestep = 0;
-
-	particle_state old_state = {};
-	old_state.pos = _x;
-	old_state.vel = _v;
-
-	// Brownian Impulse
-	double max_len = 2;
-	double min_len = 0;
-
-	Vec3d brownian  = Vec3d::Zero();
-	if(use_brownian)
+	if(!particle_is_stuck)
 	{
-		brownian = get_random_vector(min_len,max_len); 
-	}
+		particle_state old_state = {};
+		old_state.pos = _x;
+		old_state.vel = _v;
 
-	particle_state new_state = {};
-	new_state.dt = _dt;
-	// Leapfrog Euler
-	if(first_step)
-	{
-		new_state.vel = old_state.vel + (_dt*0.5)*brownian;
-		first_step = false;
-	}else{
-		new_state.vel = old_state.vel + _dt*brownian;
-	}
-	new_state.pos = old_state.pos + _dt*new_state.vel;
-	new_state = handle_collisions(new_state);
+		// Brownian Impulse
+		double max_len = 2;
+		double min_len = 0;
 
-	if(new_state.dt != _dt)
-	{
-		std::cerr << "Particle::update" << std::endl;
-		std::cerr << "	Particle is stuck" << std::endl;
-		std::cerr << "	exiting" << std::endl;
-		exit(0);
-	}
+		Vec3d brownian  = Vec3d::Zero();
+		if(use_brownian)
+		{
+			brownian = get_random_vector(min_len,max_len); 
+		}
 
-	_x = new_state.pos;
-	_v = new_state.vel;
+		particle_state new_state = {};
+		new_state.dt = _dt;
+		// Leapfrog Euler
+		if(first_step)
+		{
+			new_state.vel = old_state.vel + (_dt*0.5)*brownian;
+			first_step = false;
+		}else{
+			new_state.vel = old_state.vel + _dt*brownian;
+		}
+		new_state.pos = old_state.pos + _dt*new_state.vel;
+		new_state = handle_collisions(new_state);
+
+		if(new_state.dt != _dt)
+		{
+			std::cerr << "Particle::update" << std::endl;
+			std::cerr << "	Particle is stuck" << std::endl;
+			std::cerr << "	exiting" << std::endl;
+			exit(0);
+		}
+	
+		_x = new_state.pos;
+		_v = new_state.vel;
+
+		// Periodic boundary
+		// This should be done in collision grid.
+		Vec3d max_dim = Vec3d(1.5,1.5,1.5);
+		if(use_periodic_boundary)
+		{
+			if(_x(0) > max_dim(0))
+			{
+				_x(0) = _x(0)-2*max_dim(0);
+			}else if(_x(0) < -max_dim(0)){
+				_x(0) = _x(0)+2*max_dim(0);
+				
+			}
+			
+			if(_x(1) > max_dim(1))
+			{
+				_x(1) = _x(1)-2*max_dim(1);
+			}else if(_x(1) < -max_dim(1)){
+				_x(1) = _x(1)+2*max_dim(1);
+				
+			}
+			
+			if(_x(2) > max_dim(2))
+			{
+				_x(2) = _x(2)-2*max_dim(2);
+			}else if(_x(2) < -max_dim(2)){
+				_x(2) = _x(2)+2*max_dim(2);
+			}
+		}
+	}
 
 	Eigen::VectorXd log = Eigen::VectorXd::Zero(6);
 	log.segment(0,3) = _x;
@@ -134,20 +166,24 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 			// require that the collision happened somewhere inside dt
 			last_collision_time = collision_state.dt;
 
-//			std::cerr << "FIRST_COLLISION! " << collision_state.dt << std::endl;
-//			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
-//			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
-		}else if( (last_collision_time  < collision_state.dt) && 
-						(collision_state.dt <= _dt)  )
+		//	std::cerr << "FIRST_COLLISION! " << collision_state.dt << std::endl;
+		//	std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+		//	std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+		}else if( (last_collision_time <= collision_state.dt+0.00000000000) && 
+						(collision_state.dt < _dt)  )
 		{
 			// The case where we are dealing with consecutive collisions inside
 			// the timestep we require that the collision happened in the time
 			// between the last treated collision and the end of the timestep
 			last_collision_time = collision_state.dt;
 
-//			std::cerr << "NEXT_COLLISION! " << collision_state.dt << std::endl;
-//			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
-//			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+		//	std::cerr << "NEXT_COLLISION! " << collision_state.dt << std::endl;
+		//	std::cerr << "	collision_time: " << collision_state.dt << std::endl;
+		//	std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
+		//	std::cerr << "	Post_collision_State: " <<  std::endl;
+		//	std::cerr << "	dt = "<< post_collision_state.dt << std::endl;
+		//	std::cerr << "	pos: "<< post_collision_state.pos.transpose() << std::endl;
+		//	std::cerr << "	vel: "<< post_collision_state.vel.transpose() << std::endl;
 		}else{
 			// if not we have some sort of error and should investigate what is 
 			// going on.
@@ -156,9 +192,12 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 			std::cerr << "	The collision happened at a weird time" << std::endl;
 			std::cerr << "	collision_time: " << collision_state.dt << std::endl;
 			std::cerr << "	previous collision_time: " << last_collision_time << std::endl;
-			std::cerr << "	exiting"<< std::endl;
-
-			exit(1);
+			std::cerr << "	previos collision_time - collision_time " << last_collision_time-collision_state.dt << std::endl;
+			
+			std::cerr << "	Setting Particle to stuck at tiemstep " << timestep << "or at time: "<< ((double) timestep )* _dt << std::endl;
+			particle_is_stuck=true;
+			break;
+		//	exit(1);
 
 		}
 		// Reflect Velocity
@@ -172,6 +211,35 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 		post_collision_state.vel = collision_state.vel;
 		post_collision_state.pos = collision_state.pos + remaining_dt*post_collision_state.vel;
 
+			/*
+		Vec3d max_dim = Vec3d(1.5,1.5,1.5);
+		if(use_periodic_boundary)
+		{
+			//std::cout << post_collision_state.pos.transpose()<< std::endl;
+			if(post_collision_state.pos(0) > max_dim(0))
+			{
+				post_collision_state.pos(0) = post_collision_state.pos(0)-2*max_dim(0);
+			}else if(post_collision_state.pos(0) < -max_dim(0)){
+				post_collision_state.pos(0) = post_collision_state.pos(0)+2*max_dim(0);
+				
+			}
+			
+			if(post_collision_state.pos(1) > max_dim(1))
+			{
+				post_collision_state.pos(1) = post_collision_state.pos(1)-2*max_dim(1);
+			}else if(post_collision_state.pos(1) < -max_dim(1)){
+				post_collision_state.pos(1) = post_collision_state.pos(1)+2*max_dim(1);
+			}
+			
+			if(post_collision_state.pos(2) > max_dim(2))
+			{
+				post_collision_state.pos(2) = post_collision_state.pos(2)-2*max_dim(2);
+			}else if(post_collision_state.pos(2) < -max_dim(2)){
+				post_collision_state.pos(2) = post_collision_state.pos(2)+2*max_dim(2);
+			}
+		}
+			*/
+		
 		coll =  get_earliest_collision(post_collision_state);
 	}
 
@@ -184,8 +252,10 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 	if( (test_coll_vec.size() == 0) && (grid != NULL) )
 	{
 		cg_ptr S = cg_ptr(new Sphere(particle.pos,_r));
+		grid->active = true;
 		v = grid->get_collision_bodies(S);
-		v = remove_cylinders(v);
+		grid->active = false;
+		//v = remove_cylinders(v);
 	}else{
 		v = test_coll_vec;
 	}
@@ -194,14 +264,13 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 	collision ret = {};
 
 	for(int i = 0; i != v.size(); ++i)
-	{
+	{	
 		CollisionGeometry::coll_struct cs;
 		std::shared_ptr<CollisionGeometry> c = v[i];
 		double collision_time = 0;
+
 		if(c->intersects(&S, cs))
 		{
-
-			//std::cerr << "i = " << i << ",  ID = " << c->get_id() << std::endl;
 			Vec3d collision_normal = cs.n;
 			double penetration_depth = cs.p;
 
@@ -219,7 +288,7 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 			if(collision_time > tol )
 			{
 				std::cerr << "Particle::get_earliest_collision: " <<std::endl;
-				std::cerr << "	Error: collision_time evaluated to " <<collision_time<< "which is larger than 0 " <<std::endl;
+				std::cerr << "	Error: collision_time evaluated to " <<collision_time<< " which is larger than 0 " <<std::endl;
 				std::cerr << "	This should never happen since collision_time is how long time since a collision has happened. IE negative " <<std::endl;
 				std::cerr << "	exiting" << std::endl;
 				debug_snapshot dbss = 
@@ -228,6 +297,8 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 					particle, _r
 				};
 
+				cg_ptr spp = cg_ptr(new Sphere(particle.pos,_r));
+				grid->print_intersecting_box_corners(spp);
 				dump_info( dbss  );
 				exit(1);
 			}else if( (collision_time+tol) < (-particle.dt)) {
@@ -244,10 +315,12 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 					particle, _r
 				};
 
+
 				dump_info( dbss  );
 
 				exit(1);
 			}
+		
 
 			double diff = collision_time - ret.t;
 			if( diff <  (-tol) )
