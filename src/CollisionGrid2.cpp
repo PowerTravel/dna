@@ -58,8 +58,7 @@ bool CollisionGrid::set_up(std::vector<cg_ptr> v)
 	}
 	_T <<  span(0), span(2), span(4);
 	_S <<  span(1)-span(0), span(3) - span(2), span(5) - span(4);
-	_max_axis_length = _S(0);
-	
+	double _max_axis_length = _S(0);	
 	if(_max_axis_length < _S(1))
 	{
 		_max_axis_length = _S(1);
@@ -68,11 +67,12 @@ bool CollisionGrid::set_up(std::vector<cg_ptr> v)
 	{
 		_max_axis_length = _S(2);
 	}
+	_max_box_idx = std::floor(_max_axis_length/_grid_box_size )+1;
 	
 	// TODO Check so that 
 	//		_max_axis_lengt + 
-	//		_max_axis_lengt*_max_axis_length + 
-	//		_max_axis_lengt*_max_axis_length * _max_axis_lengt
+	//		_max_axis_lengt*_max_box_idx + 
+	//		_max_axis_lengt*_max_box_idx * _max_axis_lengt
 	// does not overflow
 	
 	for(int collision_idx=0; collision_idx<N; collision_idx++)
@@ -117,31 +117,45 @@ std::vector< cg_ptr > CollisionGrid::get_collision_bodies(std::shared_ptr<Collis
 
 std::vector<unsigned int> CollisionGrid::get_keys(VecXd span)
 {
+	std::vector<Vec3i> idx_vec = get_idx(span);
+	
+	std::vector<unsigned int> key_chain;
+	for(int i = 0; i<idx_vec.size(); i++ )
+	{
+		Vec3i idx = idx_vec[i];
+		unsigned int key =idx(0)+idx(1)*_max_box_idx + idx(2)*_max_box_idx*_max_box_idx;
+		key_chain.push_back(key);
+	}
+
+	return key_chain;
+}
+
+std::vector<Vec3i> CollisionGrid::get_idx(VecXd span)
+{
 	Vec3d min_span, max_span, low_idx, high_idx;
+	std::vector<Vec3i> idx_vec;
 
 	min_span << span(0), span(2), span(4);
 	max_span << span(1), span(3), span(5);
 	min_span << clamp(min_span);
 	max_span << clamp(max_span);
 
-
 	low_idx = (min_span - _T)/_grid_box_size;
 	high_idx = (max_span - _T)/_grid_box_size;
-
-	std::vector<unsigned int> key_chain;
+	
 	for(int i = low_idx(0); i<high_idx(0); i++)
 	{
 		for(int j = low_idx(1); j<high_idx(1); j++)
 		{
 			for(int k = low_idx(2); k<high_idx(2); k++)
 			{
-				unsigned int key =i+j*_max_axis_length + k*_max_axis_length*_max_axis_length;
-				key_chain.push_back(key);
+				Vec3i idx = Vec3i(i,j,k);
+				idx_vec.push_back(idx);
 			}
 		}
 	}
 
-	return key_chain;
+	return idx_vec;
 }
 
 Vec3d CollisionGrid::clamp(Vec3d v)
@@ -201,3 +215,56 @@ bool CollisionGrid::collision_grid_test_one_sphere_A()
 	return true;
 
 }
+
+
+#include <fstream>
+void CollisionGrid::print_box_corners(std::string path)
+{
+	if(_collision_bodies.empty())
+	{
+		return;
+	}
+
+	std::ofstream file;
+	file.open(path, std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << _grid_box_size <<" 0 0 0 0 0 0" << std::endl;
+		for(int i = 0; i < _collision_bodies.size(); i++)
+		{
+			cg_ptr cgp =  _collision_bodies[i];
+			if(cgp->text_type().compare("Sphere")==0)
+			{
+				file <<"1 ";
+			}
+			if(cgp->text_type().compare("Cylinder")==0)
+			{
+				file  <<"2 ";
+			}
+
+			VecXd span = cgp->get_span();
+			VecXd span_translated = VecXd::Zero(6);
+			span_translated(0) = span(0);// - _T(0);
+			span_translated(1) = span(1);// - _T(0);
+			span_translated(2) = span(2);// - _T(1);
+			span_translated(3) = span(3);// - _T(1);
+			span_translated(4) = span(4);// - _T(2);
+			span_translated(5) = span(5);// - _T(2);
+			file << span_translated.transpose() << std::endl;
+
+			std::vector<Vec3i> idx_vec = get_idx(span);
+
+			for( int j = 0; j < idx_vec.size(); j++)
+			{
+				Vec3i idx = idx_vec[j];
+				Vec3d corner = Vec3d(idx(0),idx(1),idx(2));
+				corner = corner* _grid_box_size;
+				file << "0 " << corner.transpose() << " 0 0 0"  << std::endl;
+			}
+		}
+	}else{
+		std::cerr << "Failed to open " << path << std::endl;
+	}
+
+	file.close();
+}
+

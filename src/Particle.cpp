@@ -224,7 +224,7 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 		//grid->active = true;
 		v = grid->get_collision_bodies(S);
 		//grid->active = false;
-		v = remove_cylinders(v);
+	//	v = remove_cylinders(v);
 	}else{
 		v = test_coll_vec;
 	}

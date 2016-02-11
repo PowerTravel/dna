@@ -1,5 +1,5 @@
 
-for i=1:100
+for i=1:1
 %cd '../../../_build'
 %system('./dna')
 %cd '../matlab/Distance/debug'

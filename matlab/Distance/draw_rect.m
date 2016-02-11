@@ -24,7 +24,7 @@ Y = [y0, y0, y0, y1, y1, y1, y1, y0, ...    % lower
  
 Z = [z0, z0, z0, z0, z0, z0, z0, z0, ...    % lower
      z1, z1, z1, z1, z1, z1, z1, z1, ...    % upper
-     z0, z1, z0, z1, z0, z1, z0, z1];       % vertical
+     z0, z1, z0, z1, z0, z1, z0, z1];          % vertical
  
 hold on
 plot3( X(1:8),   Y(1:8),   Z(1:8)  , color, 'linewidth', linewidth )

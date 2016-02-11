@@ -102,14 +102,14 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-//	run();
+	run();
 	//run_box_test();
 	//run_sphere_test();
 
 	//CollisionGrid::run_tests();
 	//run_diamond_test();
 
-	run_tests();
+	//run_tests();
 }
 void Distance::run()
 {
@@ -133,10 +133,10 @@ void Distance::run()
 	//_cg.set_up(_c->get_collision_vec() , max_axis );
 
 	_cg.set_up(_c->get_collision_vec() );
-	// TODO implement thisi
+	// TODO implement this
 	//_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
-	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
+	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	int T = int( _tot_time /_dt);
@@ -267,7 +267,7 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 	if(_nr_simulations==1)
 	{
 		// TODO implement this
-		//_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
+		_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 	}
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	int N = int(_tot_time/_dt);

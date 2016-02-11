@@ -173,6 +173,8 @@ std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 		return std::vector< std::shared_ptr<CollisionGeometry> >();
 	}
 
+		std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
+		std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
 	// one for each site + each link
 	//int nr_geoms = 2*len() - 1;
 	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
@@ -183,7 +185,7 @@ std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 	{
 		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * l;
 		Eigen::Vector3d Q = _chain.block(0,i,3,1).matrix() * l;
-		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
+//		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
 		cv.push_back(std::shared_ptr<CollisionGeometry>(new Sphere( Q , r) ));
 	}
 
@@ -199,9 +201,9 @@ void Chain::center_chain()
 	}
 
 	Eigen::Array3d cm = this->cm(0, this->len());
-	cm(0) = std::round(cm(0));
-	cm(1) = std::round(cm(1));
-	cm(2) = std::round(cm(2));
+	cm(0) = std::round(cm(0))+0.5;
+	cm(1) = std::round(cm(1))+0.5;
+	cm(2) = std::round(cm(2))+0.5;
 	for(int i = 0; i<this->len(); i++)
 	{
 		_chain.block(0,i,3,1) = _chain.block(0,i,3,1) - cm;

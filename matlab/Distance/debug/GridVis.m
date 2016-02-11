@@ -1,7 +1,7 @@
 % Visualize the collisionGrid
 
 gr = load('grid');
-gridsize = 1;
+gridsize = gr(1,1);
 
 pointsPerGeom = 20;
 show_cyl = true;
@@ -10,9 +10,9 @@ len = size(gr,1);
 figure(1)
 % parse the file
 draw_grid = true;
-draw_traj = true;
+draw_traj = false;
 if draw_grid
-for i=1:len
+for i=2:len
     % gridbox
     if(gr(i,1)==0)
        w = [gridsize, gridsize, gridsize];
