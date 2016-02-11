@@ -104,10 +104,12 @@ void Distance::apply()
 {
 //	run();
 	//run_box_test();
-	run_sphere_test();
+	//run_sphere_test();
+
+	//CollisionGrid::run_tests();
 	//run_diamond_test();
 
-	//run_tests();
+	run_tests();
 }
 void Distance::run()
 {
@@ -128,8 +130,11 @@ void Distance::run()
 
 	_cg = CollisionGrid(_collision_box_size);
 	int  max_axis = get_max(_c->axis_length());
-	_cg.set_up(_c->get_collision_vec() , max_axis );
-	_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
+	//_cg.set_up(_c->get_collision_vec() , max_axis );
+
+	_cg.set_up(_c->get_collision_vec() );
+	// TODO implement thisi
+	//_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
 
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
@@ -261,7 +266,8 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 {
 	if(_nr_simulations==1)
 	{
-		_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
+		// TODO implement this
+		//_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 	}
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
 	int N = int(_tot_time/_dt);
@@ -469,13 +475,12 @@ void Distance::run_diamond_test()
 
 void Distance::run_sphere_test()
 {
-	
 	double sphere_r = _chain_radius;
 	double particle_r = _particle_radius;
 	std::vector< cg_ptr > coll_geom_vec;
-	int I = 2;
-	int J = 2;
-	int K = 2;
+	int I = 10;
+	int J = 10;
+	int K = 10;
 	for(int i=-I; i<=I; i++)
 	{
 		for(int j=-J; j<=J; j++)
@@ -489,15 +494,19 @@ void Distance::run_sphere_test()
 	}
  	
 	_cg = CollisionGrid(_collision_box_size);
-	_cg.set_up(coll_geom_vec , I );
-	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
+	//_cg.set_up(coll_geom_vec , I );
+
+
+	_cg.set_up(coll_geom_vec );
+	// TODO implement this
+	// _cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 
 	_particle_x_ini = Eigen::Vector3d(0.5, 0.5, 0.5);
 	_particle_v_ini = Eigen::Vector3d(0.01, 0.1, 0.04);
 	
-	//Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, &_cg);
-	Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, NULL);
-	p.set_test_collision_vector(coll_geom_vec);
+	Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, &_cg);
+	//Particle p = Particle(_dt, particle_r, _particle_x_ini, _particle_v_ini, NULL);
+	//p.set_test_collision_vector(coll_geom_vec);
 
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
@@ -643,6 +652,7 @@ bool Distance::plane_one_collision_test_A()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
 	v.push_back(cg_ptr( new Plane(plane_point, plane_normal) ) );	
@@ -665,6 +675,8 @@ bool Distance::plane_one_collision_test_A()
 		std::abs(post_collision_velocity(1) - v_prim(1)) >= tol ||
 		std::abs(post_collision_velocity(2) - v_prim(2)) >= tol )
 	{
+		std::cerr << p_prim.transpose() <<std::endl;
+		std::cerr << v_prim.transpose() <<std::endl;
 		return false;	
 	}
 	return true;
@@ -686,6 +698,7 @@ bool Distance::plane_one_collision_test_B()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
 	v.push_back(cg_ptr( new Plane(plane_point, plane_normal) ) );	
@@ -729,6 +742,8 @@ bool Distance::plane_two_consecutive_collisions_test()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+
+	particle.use_brownian=false;
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
 	Vec3d plane_point_1 = Vec3d(0.52,0,0); 
@@ -778,6 +793,8 @@ bool Distance::plane_two_simultaneous_collisions_test()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
 	Vec3d plane_point_1 = Vec3d(0.55,0,0); 
@@ -828,6 +845,8 @@ bool Distance::plane_three_simultaneous_collisions()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 	// Plane 1 and 2 make up the simultaneous collisions.
 	// They make up a slanted roof
@@ -892,6 +911,8 @@ bool Distance::plane_four_mixed_collisions_test()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 	// Plane 1 and 2 make up the simultaneous collisions.
 	// They make up a slanted roof
@@ -966,6 +987,8 @@ bool Distance::sphere_one_collision_test_A()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
@@ -1012,6 +1035,8 @@ bool Distance::sphere_one_collision_test_B()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
@@ -1056,6 +1081,8 @@ bool Distance::sphere_two_consecutive_collisions_test()
 	Particle particle = Particle(dt, particle_radie, 
 									 particle_position, 
 									 particle_velocity, NULL);
+	particle.use_brownian=false;
+
 
 
 	std::vector<cg_ptr> v = std::vector<cg_ptr>();
@@ -1100,3 +1127,5 @@ bool Distance::sphere_four_mixed_collisions_test()
 {
 	return false;
 }
+
+

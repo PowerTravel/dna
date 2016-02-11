@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <random>
-#include "CollisionGrid.hpp"
+#include "CollisionGrid2.hpp"
 #include "Sphere.hpp"
 #include "Plane.hpp"
 #include "Cylinder.hpp"

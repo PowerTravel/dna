@@ -1,8 +1,8 @@
 
 for i=1:100
-cd '../../../_build'
-system('./dna')
-cd '../matlab/Distance/debug'
+%cd '../../../_build'
+%system('./dna')
+%cd '../matlab/Distance/debug'
 
 data = load('trajectory');
 %data = load('../particle_trajectory.dna');

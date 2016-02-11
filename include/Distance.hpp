@@ -2,7 +2,7 @@
 #define MEAN_DISTANCE_HPP
 
 #include "Simulation.hpp"
-#include "CollisionGrid.hpp"
+#include "CollisionGrid2.hpp"
 #include "Particle.hpp"
 class Distance: public Simulation
 {
@@ -39,6 +39,7 @@ class Distance: public Simulation
 		int _chain_size;
 		double _chain_radius;
 
+
 		double _collision_box_size;
 		double _particle_radius;
 		double _tot_time = 100;
@@ -72,6 +73,16 @@ class Distance: public Simulation
 		bool sphere_three_simultaneous_collisions();
 		bool sphere_four_mixed_collisions_test();
 //		bool sphere_stuck_particle();
+
+		// Test CollisionGrid
+		bool collision_grid_test_one_sphere_A(); // One sphere in one box
+		bool collision_grid_test_one_sphere_B(); // One between 4 boxes
+		bool collision_grid_test_one_sphere_C(); // One sphere bigger than one box
+		bool collision_grid_test_two_spheres_A();// Two spheres in same box
+		bool collision_grid_test_two_spheres_B();// Two spheres in two boxes each where they share one
+		bool collision_grid_test_two_spheres_C();// Two spheres wich are totally separate
+		bool collision_grid_test_many_spheres();
+
 };
 
 #endif // MEAN_DISTANCE_HPP

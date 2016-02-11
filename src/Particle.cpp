@@ -1,8 +1,7 @@
 #include "Particle.hpp"
-
-
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 
 std::default_random_engine Particle::_generator = std::default_random_engine(time(NULL));
 
@@ -16,7 +15,7 @@ Particle::Particle(double dt, double rad, Arr3d pos,Arr3d vel, CollisionGrid* gr
 	_dt = dt;
 	first_step = true;
 	use_brownian = true;
-	use_periodic_boundary = true;
+	use_periodic_boundary = false;
 	particle_is_stuck = false;
 	traj = std::vector<Eigen::VectorXd>();
 }
@@ -81,7 +80,7 @@ void Particle::update()
 
 		// Periodic boundary
 		// This should be done in collision grid.
-		Vec3d max_dim = Vec3d(1.5,1.5,1.5);
+		Vec3d max_dim = Vec3d(7.5,7.5,7.5);
 		if(use_periodic_boundary)
 		{
 			if(_x(0) > max_dim(0))
@@ -89,7 +88,6 @@ void Particle::update()
 				_x(0) = _x(0)-2*max_dim(0);
 			}else if(_x(0) < -max_dim(0)){
 				_x(0) = _x(0)+2*max_dim(0);
-				
 			}
 			
 			if(_x(1) > max_dim(1))
@@ -211,35 +209,6 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 		post_collision_state.vel = collision_state.vel;
 		post_collision_state.pos = collision_state.pos + remaining_dt*post_collision_state.vel;
 
-			/*
-		Vec3d max_dim = Vec3d(1.5,1.5,1.5);
-		if(use_periodic_boundary)
-		{
-			//std::cout << post_collision_state.pos.transpose()<< std::endl;
-			if(post_collision_state.pos(0) > max_dim(0))
-			{
-				post_collision_state.pos(0) = post_collision_state.pos(0)-2*max_dim(0);
-			}else if(post_collision_state.pos(0) < -max_dim(0)){
-				post_collision_state.pos(0) = post_collision_state.pos(0)+2*max_dim(0);
-				
-			}
-			
-			if(post_collision_state.pos(1) > max_dim(1))
-			{
-				post_collision_state.pos(1) = post_collision_state.pos(1)-2*max_dim(1);
-			}else if(post_collision_state.pos(1) < -max_dim(1)){
-				post_collision_state.pos(1) = post_collision_state.pos(1)+2*max_dim(1);
-			}
-			
-			if(post_collision_state.pos(2) > max_dim(2))
-			{
-				post_collision_state.pos(2) = post_collision_state.pos(2)-2*max_dim(2);
-			}else if(post_collision_state.pos(2) < -max_dim(2)){
-				post_collision_state.pos(2) = post_collision_state.pos(2)+2*max_dim(2);
-			}
-		}
-			*/
-		
 		coll =  get_earliest_collision(post_collision_state);
 	}
 
@@ -249,13 +218,13 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 Particle::collision Particle::get_earliest_collision(particle_state particle)
 {
 	std::vector<cg_ptr > v;
-	if( (test_coll_vec.size() == 0) && (grid != NULL) )
+	if( (grid != NULL) )
 	{
 		cg_ptr S = cg_ptr(new Sphere(particle.pos,_r));
-		grid->active = true;
+		//grid->active = true;
 		v = grid->get_collision_bodies(S);
-		grid->active = false;
-		//v = remove_cylinders(v);
+		//grid->active = false;
+		v = remove_cylinders(v);
 	}else{
 		v = test_coll_vec;
 	}
@@ -298,7 +267,8 @@ Particle::collision Particle::get_earliest_collision(particle_state particle)
 				};
 
 				cg_ptr spp = cg_ptr(new Sphere(particle.pos,_r));
-				grid->print_intersecting_box_corners(spp);
+				// TODO implement this
+				//grid->print_intersecting_box_corners(spp);
 				dump_info( dbss  );
 				exit(1);
 			}else if( (collision_time+tol) < (-particle.dt)) {
