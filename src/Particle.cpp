@@ -32,7 +32,9 @@ Particle::~Particle()
 
 Arr3d Particle::get_position()
 {
-	return _x;
+	Eigen::VectorXd log = Eigen::VectorXd::Zero(6); 
+	Eigen::Array3d skips = boundary_leaps.array() * boundary_span.array();
+	return _x+skips.matrix();
 }
 
 Arr3d Particle::get_velocity()

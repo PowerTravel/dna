@@ -132,7 +132,7 @@ void Distance::run()
 	_cg = CollisionGrid(_collision_box_size);
 
 	_boundary = VecXd::Zero(6);
-	double box_size = 4 + (1-2*_chain_radius)/2.f;
+	double box_size = 2 + (1-2*_chain_radius)/4.f;
 	_boundary << -box_size,box_size,
 				-box_size,box_size,
 				-box_size,box_size;
