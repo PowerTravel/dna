@@ -15,8 +15,13 @@ Particle::Particle(double dt, double rad, Arr3d pos,Arr3d vel, CollisionGrid* gr
 	_dt = dt;
 	first_step = true;
 	use_brownian = true;
-	use_periodic_boundary = false;
 	particle_is_stuck = false;
+
+	use_periodic_boundary= false;
+	boundary = VecXd::Zero(6);
+	boundary_leaps =Vec3d(0,0,0);
+	boundary_span = Vec3d(0,0,0);
+
 	traj = std::vector<Eigen::VectorXd>();
 }
 
@@ -79,36 +84,41 @@ void Particle::update()
 		_v = new_state.vel;
 
 		// Periodic boundary
-		// This should be done in collision grid.
-		Vec3d max_dim = Vec3d(7.5,7.5,7.5);
 		if(use_periodic_boundary)
 		{
-			if(_x(0) > max_dim(0))
+			if(_x(0) < boundary(0))
 			{
-				_x(0) = _x(0)-2*max_dim(0);
-			}else if(_x(0) < -max_dim(0)){
-				_x(0) = _x(0)+2*max_dim(0);
+				_x(0) = _x(0)+ boundary_span(0);
+				boundary_leaps(0) = boundary_leaps(0)-1;
+			}else if(_x(0) > boundary(1)){
+				_x(0) = _x(0)-boundary_span(0);
+				boundary_leaps(0) = boundary_leaps(0)+1;
 			}
 			
-			if(_x(1) > max_dim(1))
+			if(_x(1) < boundary(2))
 			{
-				_x(1) = _x(1)-2*max_dim(1);
-			}else if(_x(1) < -max_dim(1)){
-				_x(1) = _x(1)+2*max_dim(1);
-				
+				_x(1) = _x(1)+boundary_span(1);
+				boundary_leaps(1) = boundary_leaps(1)-1;
+			}else if(_x(1) > boundary(3)){
+				_x(1) = _x(1)-boundary_span(1);
+				boundary_leaps(1) = boundary_leaps(1)+1;
 			}
 			
-			if(_x(2) > max_dim(2))
+			if(_x(2) < boundary(4))
 			{
-				_x(2) = _x(2)-2*max_dim(2);
-			}else if(_x(2) < -max_dim(2)){
-				_x(2) = _x(2)+2*max_dim(2);
+				_x(2) = _x(2)+boundary_span(2);
+				boundary_leaps(2) = boundary_leaps(2)-1;
+			}else if(_x(2) > boundary(5)){
+				_x(2) = _x(2)-boundary_span(2);
+				boundary_leaps(2) = boundary_leaps(2)+1;
 			}
+
 		}
 	}
 
-	Eigen::VectorXd log = Eigen::VectorXd::Zero(6);
-	log.segment(0,3) = _x;
+	Eigen::VectorXd log = Eigen::VectorXd::Zero(6); 
+	Eigen::Array3d skips = boundary_leaps.array() * boundary_span.array();
+	log.segment(0,3) = _x+skips.matrix();
 	log.segment(3,3) = _v;
 	traj.push_back(log);
 	timestep++;
@@ -146,7 +156,6 @@ std::vector<cg_ptr > Particle::remove_cylinders(std::vector<cg_ptr > vec)
 
 Particle::particle_state Particle::handle_collisions(particle_state state)
 {
-
 	collision coll =  get_earliest_collision(state);
 
 	double time_left = _dt;
@@ -215,16 +224,40 @@ Particle::particle_state Particle::handle_collisions(particle_state state)
 	return post_collision_state;
 }
 
+void Particle::set_periodic_boundary(VecXd bound)
+{
+	use_periodic_boundary= true;
+	boundary = bound;
+
+	boundary_span(0) = bound(1)-bound(0);
+	boundary_span(1) = bound(3)-bound(2);
+	boundary_span(2) = bound(5)-bound(4);
+}
+
 Particle::collision Particle::get_earliest_collision(particle_state particle)
 {
 	std::vector<cg_ptr > v;
+
 	if( (grid != NULL) )
 	{
 		cg_ptr S = cg_ptr(new Sphere(particle.pos,_r));
-		//grid->active = true;
-		v = grid->get_collision_bodies(S);
-		//grid->active = false;
-	//	v = remove_cylinders(v);
+
+		std::vector<cg_ptr > mirrors;
+		if(use_periodic_boundary)
+		{
+			mirrors = S->mirror(boundary);
+		}
+		mirrors.push_back(S);
+
+
+		for(int i = 0; i<mirrors.size(); i++)
+		{
+			std::vector<cg_ptr > tmp = grid->get_collision_bodies(mirrors[i]);
+			for(int j = 0; j<tmp.size(); j++)
+			{
+				v.push_back(tmp[j]);
+			}
+		}
 	}else{
 		v = test_coll_vec;
 	}
@@ -396,8 +429,6 @@ std::ostream& operator<<(std::ostream& os, const Particle& p)
 	}
 	return os;
 }
-
-
 
 
 void Particle::set_test_collision_vector(std::vector<cg_ptr> v )

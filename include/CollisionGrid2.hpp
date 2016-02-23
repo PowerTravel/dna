@@ -8,11 +8,17 @@ class CollisionGrid
 {
 
 	public:
+		struct collision_struct{
+			Vec3d n;
+			double t;
+		};
+
 		CollisionGrid();
 		CollisionGrid(double box_size);
 		virtual ~CollisionGrid();
 		bool set_up(std::vector<cg_ptr> v);
-		std::vector< cg_ptr > get_collision_bodies(std::shared_ptr<CollisionGeometry> g);
+		void set_periodic_boundary();
+		std::vector< cg_ptr > get_collision_bodies(cg_ptr g);
 
 		static bool run_tests();
 		void print_box_corners(std::string path);
@@ -31,7 +37,6 @@ class CollisionGrid
 		std::vector<unsigned int> get_keys(VecXd span);
 		std::vector<Vec3i> get_idx(VecXd span);
 		Vec3d clamp(Vec3d v);
-
 
 		static bool collision_grid_test_one_sphere_A();
 	

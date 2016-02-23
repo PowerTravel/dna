@@ -32,9 +32,11 @@ class CollisionGeometry
 		virtual bool intersects(Sphere* s, coll_struct& cs);
 		virtual bool intersects(Plane* p, coll_struct& cs);
 		virtual double line_intersection_point(Vec3d x, Vec3d v);
+		virtual std::vector<cg_ptr> mirror(VecXd span);
 		virtual Eigen::ArrayXd get_span() = 0;
 		virtual Vec3d get_center() = 0;
 		virtual std::string text_type() = 0;
+
 		int get_id();
 	private:
 		static int c_id;

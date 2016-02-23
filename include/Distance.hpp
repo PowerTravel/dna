@@ -45,7 +45,8 @@ class Distance: public Simulation
 		double _tot_time = 100;
 		double _dt = 0.01;
 		bool _exp = false;
-
+		
+		VecXd _boundary;
 
 		int get_max(Eigen::Array3d v);
 
@@ -82,6 +83,8 @@ class Distance: public Simulation
 		bool collision_grid_test_two_spheres_B();// Two spheres in two boxes each where they share one
 		bool collision_grid_test_two_spheres_C();// Two spheres wich are totally separate
 		bool collision_grid_test_many_spheres();
+		bool Vec3d_equals(Vec3d a, Vec3d b, double tol = 0);
+		bool sphere_test_mirror();
 
 };
 

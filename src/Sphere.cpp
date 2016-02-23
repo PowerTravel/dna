@@ -2,7 +2,7 @@
 #include "Plane.hpp"
 #include "Cylinder.hpp"
 #include <iostream>
-
+#include <map>
 Sphere::Sphere()
 {
 	_r = 0.5;
@@ -18,6 +18,123 @@ Sphere::Sphere(Eigen::Array3d xp, double rad)
 Sphere::~Sphere()
 {
 
+}
+
+
+// Assume the center of the sphere will always be within the region
+//		this means that we wont have to translate the sphere to lie witin
+//		the region, also, any returned sphere must have their center outside
+//		the region
+
+// Assume the region is big enough to house the whole sphere
+//		This means that if the lower part of the sphere lies outside the 
+//		region the top part must be within it
+std::vector<cg_ptr>  Sphere::mirror(VecXd region)
+{
+	VecXd sSpan = this->get_span();
+	Vec3d sphere_center = this->get_center();
+	double radius = this->get_radius();
+	
+	Vec3d region_min, region_max, sphere_min, sphere_max, region_span;
+	region_min  << region(0), region(2), region(4);
+	region_max  << region(1), region(3), region(5);
+	region_span << region_max(0) - region_min(0),
+				   region_max(1) - region_min(1),
+				   region_max(2) - region_min(2);
+
+
+	sphere_min << sSpan(0), sSpan(2), sSpan(4);
+	sphere_max << sSpan(1), sSpan(3), sSpan(5);
+
+
+	// Check whih borders are crossed;
+	// 1 means a lower border was crossed
+	// -1 means a higher border was crossed
+	Vec3i overlap = Vec3i(0,0,0);
+	for(int i = 0; i<3; i++)
+	{
+		if( sphere_min(i) < region_min(i) )
+		{
+			overlap(i) = 1;	
+		}else if( sphere_max(i) > region_max(i) ){	
+			overlap(i) = -1;
+		//	overlap(i) = 2;
+		}
+	}
+
+	std::map<int,Vec3i> overlap_space;
+	std::vector<cg_ptr> ret;
+	if( (overlap(0)!=0) || (overlap(1)!=0) || (overlap(2)!=0))
+	{
+		//Vec3d perm = Vec3d( overlap(0), overlap(1),	overlap(3) );
+		int x,y,z;
+		x = overlap(0);
+		y = overlap(1);
+		z = overlap(2);
+		int shift = 0;
+		int row=3;
+		int row2 = row*row;
+		int null_key = shift+shift*row+shift*row2;
+
+		// USE MAP AND KEY HERE
+		Vec3i perm = Vec3i( x,0,0);
+		int key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( 0,y,0);
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( x,y,0 );
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( 0,0,z);
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( x,0,z);
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( 0,y,z);
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		perm = Vec3i( x, y, z );
+		key = (perm(0)+shift)+(perm(1)+shift)*row+(perm(2)+shift)*row2;	
+		overlap_space[key] = perm;
+
+		auto it = overlap_space.begin();
+
+		while( it!=overlap_space.end() )
+		{
+			if( it->first != null_key)
+			{
+				Vec3i vi = it->second;
+				Vec3d vd = vi.cast<double>(); 
+				Vec3d new_center = Vec3d(0,0,0);
+				for(int i = 0; i<3; i++)
+				{
+				/*
+					if(vd(i)==0)
+					{
+						new_center(i) = sphere_center(i);
+					}else if(vd(i)==1)
+					{
+						new_center(i) = sphere_center(i) + region_span(i);
+					}else{
+						new_center(i) = sphere_center(i) - region_span(i);
+					}
+				*/
+				new_center(i) = sphere_center(i) + vd(i)*region_span(i);
+				}
+				ret.push_back(cg_ptr(new Sphere(new_center, radius)));
+			}
+			it++;
+		}
+	}
+	return ret;
 }
 
 std::string Sphere::text_type()

@@ -164,7 +164,7 @@ bool Chain::ok()
 }
 	
 
-std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
+std::vector< cg_ptr > Chain::get_collision_vec()
 {
 	double l = _link_len;
 	double r = _rad;
@@ -172,9 +172,8 @@ std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 	{
 		return std::vector< std::shared_ptr<CollisionGeometry> >();
 	}
-
-		std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
-		std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
+	std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
+	std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
 	// one for each site + each link
 	//int nr_geoms = 2*len() - 1;
 	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
@@ -183,10 +182,74 @@ std::vector< std::shared_ptr<CollisionGeometry> > Chain::get_collision_vec()
 				new Sphere(_chain.block(0,0,3,1).matrix(), r) ));
 	for( int i = 1; i < len(); i++ )
 	{
-		Eigen::Vector3d P = _chain.block(0,i-1,3,1).matrix() * l;
-		Eigen::Vector3d Q = _chain.block(0,i,3,1).matrix() * l;
+		Vec3d P = _chain.block(0,i-1,3,1).matrix() * l;
+		Vec3d Q = _chain.block(0,i,3,1).matrix() * l;
 //		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
 		cv.push_back(std::shared_ptr<CollisionGeometry>(new Sphere( Q , r) ));
+	}
+	
+	return cv;
+}
+
+std::vector< cg_ptr > Chain::get_collision_vec(VecXd boundary)
+{
+	double l = _link_len;
+	double r = _rad;
+	if(!_ok)
+	{
+		return std::vector< std::shared_ptr<CollisionGeometry> >();
+	}
+		std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
+		std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
+	// one for each site + each link
+	//int nr_geoms = 2*len() - 1;
+	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
+
+	// Only add geometries that completely fit the boundary
+	Vec3d P = _chain.block(0,0,3,1).matrix();
+	Vec3d Q = _chain.block(0,1,3,1).matrix() * l;
+	bool use_P = false;
+	bool use_Q = false;
+	
+	if( (P(0)-r >= boundary(0)) &&
+		(P(0)+r <= boundary(1)) &&
+		(P(1)-r >= boundary(2)) &&
+		(P(1)+r <= boundary(3)) &&
+		(P(2)-r >= boundary(4)) &&
+		(P(2)+r <= boundary(5)))
+	{
+		use_P = true;
+		cv.push_back( std::shared_ptr<CollisionGeometry>( new Sphere(P, r) ));
+	}
+
+	for( int i = 1; i < len(); i++ )
+	{ 
+		P = _chain.block(0,i-1,3,1).matrix() * l;
+		Q = _chain.block(0,i,3,1).matrix() * l;
+		
+		if( (Q(0)-r >= boundary(0)) &&
+			(Q(0)+r <= boundary(1)) &&
+			(Q(1)-r >= boundary(2)) &&
+			(Q(1)+r <= boundary(3)) &&
+			(Q(2)-r >= boundary(4)) &&
+			(Q(2)+r <= boundary(5)))
+		{
+			use_Q = true;
+		}else{
+			use_Q = false;
+		}
+	
+		if(use_Q)
+		{
+			cv.push_back(std::shared_ptr<CollisionGeometry>(new Sphere( Q , r) ));
+		}
+
+		// Skip cylinders for now
+		if(use_P && use_Q)
+		{
+		//	cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
+		}
+		use_P = use_Q;
 	}
 
 	return cv;

@@ -17,6 +17,8 @@ class Particle{
 
 		void update();
 
+		void set_periodic_boundary(VecXd bound);
+
 		Eigen::Array3d get_position();
 		Eigen::Array3d get_velocity();
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
@@ -52,7 +54,6 @@ class Particle{
 		struct collision{
 			Vec3d n;
 			double t;
-			
 		};
 
 		// Subfunctions for update:
@@ -63,6 +64,9 @@ class Particle{
 
 		bool first_step;
 		bool use_periodic_boundary;
+		VecXd boundary;
+		Vec3d boundary_leaps;
+		Vec3d boundary_span;
 		bool particle_is_stuck;
 		CollisionGrid* grid;
 		double _r;
@@ -74,7 +78,6 @@ class Particle{
 		
 		static std::default_random_engine _generator;
 		int timestep = 0;
-
 
 		// Debug funcs and tests
 		std::vector<cg_ptr> test_coll_vec;

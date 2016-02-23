@@ -46,6 +46,7 @@ class Chain
 		//link get_link(int i);
 
 		std::vector< cg_ptr > get_collision_vec();
+		std::vector< cg_ptr > get_collision_vec(VecXd boundary);
 
 
 		int len();

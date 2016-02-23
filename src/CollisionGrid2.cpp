@@ -3,6 +3,7 @@
 CollisionGrid::CollisionGrid()
 {
 	_grid_box_size  = 1;
+
 }
 
 CollisionGrid::CollisionGrid(double box_size)
@@ -160,16 +161,20 @@ std::vector<Vec3i> CollisionGrid::get_idx(VecXd span)
 
 Vec3d CollisionGrid::clamp(Vec3d v)
 {
+	Vec3d ret = v;
+	Vec3d bottom = _T;
+	Vec3d top = _T + _S; 
+
 	for(int i = 0; i<3; i++)
 	{
-		if(v(i)<_T(i))
+		if(ret(i)<bottom(i))
 		{
-			v(i)=_T(i);
-		}else if( v(i)>_S(i) ){
-			v(i)=_S(i);
+			ret(i)=bottom(i);
+		}else if( ret(i)>top(i) ){
+			ret(i)=top(i);
 		}
 	}
-	return v;
+	return ret;
 }
 
 
@@ -257,7 +262,7 @@ void CollisionGrid::print_box_corners(std::string path)
 			{
 				Vec3i idx = idx_vec[j];
 				Vec3d corner = Vec3d(idx(0),idx(1),idx(2));
-				corner = corner* _grid_box_size;
+				corner = corner* _grid_box_size + _T;
 				file << "0 " << corner.transpose() << " 0 0 0"  << std::endl;
 			}
 		}

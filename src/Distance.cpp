@@ -103,11 +103,12 @@ int Distance::get_max(Eigen::Array3d v)
 void Distance::apply()
 {
 	run();
-	//run_box_test();
+
+	//sphere_test_mirror();
+
 	//run_sphere_test();
 
 	//CollisionGrid::run_tests();
-	//run_diamond_test();
 
 	//run_tests();
 }
@@ -129,12 +130,15 @@ void Distance::run()
 	_c->center_chain();
 
 	_cg = CollisionGrid(_collision_box_size);
-	int  max_axis = get_max(_c->axis_length());
-	//_cg.set_up(_c->get_collision_vec() , max_axis );
 
-	_cg.set_up(_c->get_collision_vec() );
-	// TODO implement this
-	//_cg.print_box_corners(std::string("../matlab/Distance/grid.txt"));
+	_boundary = VecXd::Zero(6);
+	double box_size = 4 + (1-2*_chain_radius)/2.f;
+	_boundary << -box_size,box_size,
+				-box_size,box_size,
+				-box_size,box_size;
+
+	_cg.set_up(_c->get_collision_vec(_boundary) );
+	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 
 	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
@@ -264,12 +268,8 @@ void Distance::write_to_file()
 
 Eigen::ArrayXXd Distance::run_simulation_once()
 {
-	if(_nr_simulations==1)
-	{
-		// TODO implement this
-		_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
-	}
 	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	p.set_periodic_boundary(_boundary);
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
 	for(int i = 0; i < N; i++)
@@ -1129,3 +1129,184 @@ bool Distance::sphere_four_mixed_collisions_test()
 }
 
 
+
+bool Distance::Vec3d_equals(Vec3d a, Vec3d b, double tol)
+{
+	if((std::abs(a(0) - b(0))>tol)  ||
+	   (std::abs(a(1) - b(1))>tol)  ||
+	   (std::abs(a(2) - b(2))>tol) )
+	{
+		return false;
+	}
+
+	return true;
+}
+bool Distance::sphere_test_mirror()
+{
+	// Skapa alla 26 scenarios och testa dom
+	bool  failed = false;
+	VecXd region = VecXd::Zero(6);
+	double x_min = -6;
+	double x_max = 4;
+	double y_min = -10;
+	double y_max = -4;
+	double z_min = 4;
+	double z_max = 8;
+	region << x_min, x_max, y_min, y_max, z_min, z_max;
+	double radius = 1;
+	
+	// order of return is random ish
+	// x,y,z
+	// 0,y,z
+	// x,0,z
+	// 0,0,z
+	// x,y,0
+	// 0,y,0
+	// x,0,0
+
+	// Completely inside
+	Sphere S1 = Sphere(Vec3d(-3,-6,6), radius);
+
+	// inside but on the edge
+	Sphere S2 = Sphere(Vec3d(-5,-9,5), radius);
+
+	// overlapping one edge (z)
+	Sphere S3 = Sphere(Vec3d(0,-7,7.5), radius);
+	Vec3d S3_pos = Vec3d(0,-7,3.5);
+
+
+	// overlapping two edges (x+,y+) three returns
+	Sphere S4 = Sphere(Vec3d(3.5,-4.5,6), radius);
+	Vec3d S41_pos = Vec3d(-6.5,-10.5,6); // x,y
+	Vec3d S42_pos = Vec3d(3.5,-10.5,6);  // y
+	Vec3d S43_pos = Vec3d(-6.5,-4.5,6);  // x
+
+
+	// overlapping two edges (x+,z+) three returns
+	Sphere S5 = Sphere(Vec3d(3.1,-5.5,7.1), radius);
+	Vec3d S51_pos = Vec3d(-6.9,-5.5,3.1); // x,z
+	Vec3d S52_pos = Vec3d(3.1,-5.5,3.1);  // z
+	Vec3d S53_pos = Vec3d(-6.9,-5.5,7.1);  // x
+
+	// overlapping one corner,  seven returns
+	Sphere S6 = Sphere(Vec3d(-5.6,-9.7,7.7), radius);
+	Vec3d S61_pos = Vec3d(4.4, -3.7, 3.7);  // x-,y-,z+ // x-,0-,z+
+	Vec3d S62_pos = Vec3d(-5.6, -3.7, 3.7); // 0-,y-,z+ // 0-,y-,z+
+	Vec3d S63_pos = Vec3d(4.4, -9.7, 3.7);  // x-,0-,z+ // x-,0-,z+
+	Vec3d S64_pos = Vec3d(-5.6, -9.7, 3.7); // 0-,0-,z+ // 0-,0-,z+
+	Vec3d S65_pos = Vec3d(4.4, -3.7, 7.7);  // x-,y-,0+ // x-,y-,0+
+	Vec3d S66_pos = Vec3d(-5.6, -3.7, 7.7); // 0-,y-,0+ // 0-,y-,0+
+	Vec3d S67_pos = Vec3d(4.4, -9.7, 7.7);  // x-,0-,0+ // x-,0-,0+
+
+	// overlapping one corner, seven returns
+	Sphere S7 = Sphere(Vec3d(3.05,-9.01, 7.1), radius);
+	Vec3d S71_pos = Vec3d(-6.95,-3.01, 3.1); // x+,y-,z+
+	Vec3d S72_pos = Vec3d(3.05,-3.01, 3.1);  // 0+,y-,z+
+	Vec3d S73_pos = Vec3d(-6.95,-9.01, 3.1); // x+,0-,z+
+	Vec3d S74_pos = Vec3d(3.05,-9.01, 3.1);  // 0+,0-,z+
+	Vec3d S75_pos = Vec3d(-6.95,-3.01, 7.1); // x+,y-,0+
+	Vec3d S76_pos = Vec3d(3.05,-3.01, 7.1);  // 0+,y-,0+
+	Vec3d S77_pos = Vec3d(-6.95,-9.01, 7.1); // x+,0-,0+
+
+	std::vector<cg_ptr> ret = S1.mirror(region);
+	if(ret.size()!= 0)
+	{
+		failed=true;
+	}
+	
+	ret = S2.mirror(region);
+	if(ret.size()!= 0)
+	{
+		failed=true;
+	}
+	
+	ret = S3.mirror(region);
+	if(ret.size()!= 1)
+	{
+		failed=true;
+	}else{
+		if(!Vec3d_equals(S3_pos,ret[0]->get_center()))
+		{
+			failed=true;
+		}
+	}
+
+	ret = S4.mirror(region);
+	if(ret.size() != 3)
+	{
+		failed = true;
+	}else{
+		if( !Vec3d_equals(S41_pos, ret[0]->get_center()) ||
+			!Vec3d_equals(S42_pos, ret[1]->get_center()) ||
+			!Vec3d_equals(S43_pos, ret[2]->get_center()))
+		{
+			failed = true;
+		}
+	}
+	
+	ret = S5.mirror(region);
+	if(ret.size() != 3)
+	{
+		failed = true;
+	}else{
+		if( !Vec3d_equals(S51_pos, ret[0]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S52_pos, ret[1]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S53_pos, ret[2]->get_center(),0.0000000000001))
+		{
+			failed = true;
+		}
+	}
+	
+	ret = S6.mirror(region);
+	if(ret.size() != 7)
+	{
+		failed = true;
+	}else{
+		// order of return is random ish
+		// 0,0,z
+		// x,0,z
+		// 0,y,z
+		// x,y,z
+		// x,0,0
+		// 0,y,0
+		// x,y,0
+
+		if( !Vec3d_equals(S61_pos, ret[3]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S62_pos, ret[2]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S63_pos, ret[1]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S64_pos, ret[0]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S65_pos, ret[6]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S66_pos, ret[5]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S67_pos, ret[4]->get_center(),0.0000000000001))
+		{
+			failed = true;
+		}
+	}
+	
+	ret = S7.mirror(region);
+	if(ret.size() != 7)
+	{
+		failed = true;
+	}else{
+		if( !Vec3d_equals(S71_pos, ret[2]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S72_pos, ret[3]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S73_pos, ret[0]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S74_pos, ret[1]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S75_pos, ret[5]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S76_pos, ret[6]->get_center(),0.0000000000001) ||
+			!Vec3d_equals(S77_pos, ret[4]->get_center(),0.0000000000001))
+		{
+			failed = true;
+		}
+	}
+
+
+	if(failed)
+	{
+		std::cerr << "Distance::sphere_test_mirror" << std::endl; 
+		std::cerr << "\tMirror-test Failed" << std::endl; 
+		return false;	
+	}
+
+	return false;
+}
