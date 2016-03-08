@@ -10,6 +10,7 @@
 class Particle{
 
 	public:
+
 		Particle(double dt, double rad, Eigen::Array3d pos,Eigen::Array3d vel, CollisionGrid* gr);
 		virtual ~Particle();
 
@@ -59,6 +60,8 @@ class Particle{
 		// Subfunctions for update:
 		particle_state handle_collisions(particle_state state);
 		collision get_earliest_collision( particle_state particle);
+
+		Vec3d reflect_velocity(Vec3d v, Vec3d n);
 
 		Eigen::Vector3d get_random_vector(double min_len, double max_len);
 

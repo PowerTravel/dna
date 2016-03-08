@@ -128,14 +128,33 @@ void Distance::run()
 	_c->set_link_length(1.0);
 	_c->build(_chain_size);
 	_c->center_chain();
+	std::cout <<"span "  <<_c->span().transpose() << std::endl;
+	ArrXd span = _c->span();
+	int span_min  = (int) span(0);
+	int span_max  = (int) span(1);
+	int lowest_span = (int) std::floor(span_max-span_min);
+	if(lowest_span > (int) std::floor(span(3)-span(2)))
+	{
+		span_min  = (int) span(2);
+		span_max  = (int) span(3);
+	    lowest_span = (int) span_max-span_min;
+	}
+	if(lowest_span > (int) std::floor(span(5)-span(4)))
+	{
+		span_min  = (int) span(4);
+		span_max  = (int) span(5);
+	    lowest_span = (int) span_max-span_min;
+	}
 
 	_cg = CollisionGrid(_collision_box_size);
 
 	_boundary = VecXd::Zero(6);
-	double box_size = 2 + (1-2*_chain_radius)/4.f;
-	_boundary << -box_size,box_size,
-				-box_size,box_size,
-				-box_size,box_size;
+	//double box_size = 3 + (1-2*_chain_radius)/4.f;
+	_boundary << span_min, span_max,
+				 span_min, span_max,
+				 span_min, span_max;
+
+	std::cout << _boundary.transpose() << std::endl;
 
 	_cg.set_up(_c->get_collision_vec(_boundary) );
 	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
@@ -288,9 +307,20 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 			std::cerr << "../matlab/Distance/debug/trajectory" << std::endl;
 		}
 		traj_file.close();
-		std::cout << "Distance::run_simulation_once: Printed grid and trajectory to '../matlab/Distance/debug/trajectory' and '../matlab/Distance/debug/grid'"  << std::endl;
+		
+		std::ofstream chain_file;
+		chain_file.open("../matlab/Distance/debug/chain", std::fstream::out | std::fstream::trunc);
+		if(chain_file.is_open()){
+			chain_file << _c->as_array().transpose() << std::endl;
+		}else{
+			std::cerr << "../matlab/Distance/debug/chain" << std::endl;
+		}
+		chain_file.close();
+		std::cout << "Distance::run_simulation_once:"<<std::endl
+			<<"\tPrinted grid to '../matlab/Distance/debug/trajectory'"<<std::endl
+			<< "\tTrajectory to '../matlab/Distance/debug/grid'" << std::endl
+			<< "\tChain to '../matlab/Distance/debug/chain'" << std::endl;
 	}
-
 
 	return trajectory;
 }

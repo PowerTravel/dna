@@ -43,34 +43,39 @@ Eigen::ArrayXXd Chain::as_array()
 	return _chain;
 }
 
-Eigen::Array3d Chain::axis_length()
+ArrXd Chain::span()
 {
 	Eigen::ArrayXd sp = Eigen::ArrayXd::Zero(6);
 	for(int i = 0; i<len(); i++)
 	{
 		Eigen::Array3d x = _chain.block(0,i,3,1);
 
-		if( x(0) > sp(0) ){
+		if( x(0) < sp(0) ){
 			sp(0) = x(0);
-		}else if(  x(0) < sp(1) ){
+		}else if(  x(0) > sp(1) ){
 			sp(1) = x(0);
 		}
 		
-		if( x(1) > sp(2) ){
+		if( x(1) < sp(2) ){
 			sp(2) = x(1);
-		}else if(  x(1) < sp(3) ){
+		}else if(  x(1) > sp(3) ){
 			sp(3) = x(1);
 		}
 
-		if( x(2) > sp(4) ){
+		if( x(2) < sp(4) ){
 			sp(4) = x(2);
-		}else if(  x(2) < sp(5) ){
+		}else if(  x(2)> sp(5) ){
 			sp(5) = x(2);
 		}
 	}
-	Eigen::Array3d ret(sp(0)-sp(1), sp(2)-sp(3), sp(4)-sp(5)  );
-	return ret;
+	return sp;
+}
 
+Eigen::Array3d Chain::axis_length()
+{
+	ArrXd sp = span();
+	Arr3d ret(sp(1)-sp(0), sp(2)-sp(3), sp(5)-sp(4)  );
+	return ret;
 }
 
 void Chain::set_radius(double r)

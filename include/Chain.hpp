@@ -32,18 +32,18 @@ class Chain
 		void use_weights( bool as = true );
 	
 		virtual void build(int N) = 0;
-		Eigen::ArrayXXd as_array();
-		Eigen::ArrayXXd as_array(int start, int size);
-		Eigen::ArrayXd weights();
-		Eigen::Array3d axis_length();
+		ArrXXd as_array();
+		ArrXXd as_array(int start, int size);
+		ArrXd weights();
+		Arr3d axis_length();
+		ArrXd span();
 		double Rg(int start, int size);
 		double Rg();
-		Eigen::Array3d cm(int start, int size);
+		Arr3d cm(int start, int size);
 
 		void set_radius(double r);
 		void set_link_length(double l);
 		void center_chain();
-		//link get_link(int i);
 
 		std::vector< cg_ptr > get_collision_vec();
 		std::vector< cg_ptr > get_collision_vec(VecXd boundary);
