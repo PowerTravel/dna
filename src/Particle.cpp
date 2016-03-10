@@ -30,13 +30,6 @@ Particle::~Particle()
 
 }
 
-Arr3d Particle::get_position()
-{
-	Eigen::VectorXd log = Eigen::VectorXd::Zero(6); 
-	Eigen::Array3d skips = boundary_leaps.array() * boundary_span.array();
-	return _x+skips.matrix();
-}
-
 Arr3d Particle::get_velocity()
 {
 	return _v;
@@ -168,6 +161,7 @@ void Particle::update()
 	_x = new_state.pos;
 	_v = new_state.vel;
 
+
 	// Periodic boundary
 	if(use_periodic_boundary)
 	{
@@ -197,9 +191,9 @@ void Particle::update()
 			_x(2) = _x(2)-boundary_span(2);
 			boundary_leaps(2) = boundary_leaps(2)+1;
 		}
-
 	}
 	
+
 	Eigen::VectorXd log = Eigen::VectorXd::Zero(6); 
 	Eigen::Array3d skips = boundary_leaps.array() * boundary_span.array();
 	log.segment(0,3) = _x+skips.matrix();
@@ -208,12 +202,16 @@ void Particle::update()
 	timestep++;
 }
 
+Arr3d Particle::get_position()
+{
+	return traj.back().segment(0,3);
+}
 
 Vec3d Particle::get_random_vector(double min_len, double max_len)
 {
-	std::uniform_real_distribution<double> scale(min_len, max_len);
+	std::normal_distribution<double> scale(0, 1);
 	double s= scale(_generator);
-	std::uniform_real_distribution<double> direction(-1, 1);
+	std::uniform_real_distribution<double> direction(0, 1);
 	double x = direction(_generator);
 	double y = direction(_generator);
 	double z = direction(_generator);

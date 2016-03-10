@@ -177,8 +177,8 @@ std::vector< cg_ptr > Chain::get_collision_vec()
 	{
 		return std::vector< std::shared_ptr<CollisionGeometry> >();
 	}
-	std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
-	std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
+	//std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
+	//std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
 	// one for each site + each link
 	//int nr_geoms = 2*len() - 1;
 	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
@@ -189,7 +189,7 @@ std::vector< cg_ptr > Chain::get_collision_vec()
 	{
 		Vec3d P = _chain.block(0,i-1,3,1).matrix() * l;
 		Vec3d Q = _chain.block(0,i,3,1).matrix() * l;
-//		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
+		cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
 		cv.push_back(std::shared_ptr<CollisionGeometry>(new Sphere( Q , r) ));
 	}
 	
@@ -204,8 +204,8 @@ std::vector< cg_ptr > Chain::get_collision_vec(VecXd boundary)
 	{
 		return std::vector< std::shared_ptr<CollisionGeometry> >();
 	}
-		std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
-		std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
+	//	std::cerr << "Chain.cpp:get_collision_vec" <<std::endl;
+	//	std::cerr << "\tNOTE: Not adding cylinders untill spheres work"<<std::endl;
 	// one for each site + each link
 	//int nr_geoms = 2*len() - 1;
 	std::vector< std::shared_ptr<CollisionGeometry> > cv = std::vector< std::shared_ptr<CollisionGeometry> >( );
@@ -252,7 +252,7 @@ std::vector< cg_ptr > Chain::get_collision_vec(VecXd boundary)
 		// Skip cylinders for now
 		if(use_P && use_Q)
 		{
-		//	cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
+			cv.push_back(std::shared_ptr<CollisionGeometry>( new Cylinder( r, P , Q)));
 		}
 		use_P = use_Q;
 	}

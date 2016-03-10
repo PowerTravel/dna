@@ -2,8 +2,12 @@
 %system('../_build/dna');
 
 %data = load('../data/Visualize_Default.dna');
-data = load('Distance/debug/chain');
-N = size(data,1);
+globule = load('Distance/debug/chain');
+N = size(globule,1);
+
+traj = load('Distance/debug/trajectory');
+plot_traj = true;
+
 plot_steps = 10;
 animate = true;
 
@@ -11,12 +15,11 @@ lim = floor(N^(1/3));
 dt = 0.01;
 dn = floor(N/plot_steps);
 
-data(N,:);
 
-sp=15;
+sp=3.025;
 spans = [-sp, sp, -sp, sp, -sp, sp];
 tic
-[Nc , reduced_globule] = cut_globule(data,spans);
+[Nc , reduced_globule] = cut_globule(globule,spans);
 toc
 if animate
     nrColors = 6;
@@ -27,7 +30,7 @@ if animate
  for i =[1:nrColors]
 
         
-        sub_segment = data((i-1)*dp+1 : i*dp,:);
+        sub_segment = globule((i-1)*dp+1 : i*dp,:);
         N2 = size(sub_segment,1);
         dn2 = floor(N2/plot_steps);
         
@@ -49,12 +52,13 @@ else
     dp = floor(N/nrColors);
     for i =[1:nrColors]
         hold on
-        plot3(data((i-1)*dp+1:i*dp,1),data((i-1)*dp+1:i*dp,2),...
-            data((i-1)*dp+1:i*dp,3),'.-', 'color', c(i,:), ...
+        plot3(globule((i-1)*dp+1:i*dp,1),globule((i-1)*dp+1:i*dp,2),...
+            globule((i-1)*dp+1:i*dp,3),'.-', 'color', c(i,:), ...
             'LineWidth',3);
         hold off
     end
 end
+
 xlabel('X')
 ylabel('Y')
 zlabel('Z')
@@ -69,12 +73,17 @@ for k = 1:Nc
     plot3(p_gl(:,1),p_gl(:,2), p_gl(:,3),'.-','LineWidth',3);
     hold off
 end
-    
+   
+    axis(spans) 
     
     
     xlabel('X')
     ylabel('Y')
     zlabel('Z')
-
-    %axis([-lim,lim, -lim,lim, -lim,lim])
+if plot_traj
+    axis equal;
+hold on
+plot3(traj(:,1),traj(:,2),traj(:,3),'.');
+hold off
+end
 

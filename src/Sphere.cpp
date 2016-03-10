@@ -127,7 +127,7 @@ std::vector<cg_ptr>  Sphere::mirror(VecXd region)
 						new_center(i) = sphere_center(i) - region_span(i);
 					}
 				*/
-				new_center(i) = sphere_center(i) + vd(i)*region_span(i);
+					new_center(i) = sphere_center(i) + vd(i)*region_span(i);
 				}
 				ret.push_back(cg_ptr(new Sphere(new_center, radius)));
 			}
@@ -235,6 +235,10 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 		}else{
 			cs.n = c->_d;
 		}
+	
+//		int* a = NULL;
+//		*a = 10;
+		return false;
 	// B->P->Q
 	}else if(PQPA < 0){
 //		std::cout <<"A = " << A.transpose()<< std::endl;
@@ -265,6 +269,10 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 			cs.n = -c->_d;
 		}
 
+//		int* a = NULL;
+//		*a = 10;
+		return false;
+
 	// P->B->Q
 	}else{
 	//std::cout << _x.transpose() << std::endl; 
@@ -281,12 +289,12 @@ bool Sphere::intersects(Cylinder* c, coll_struct& cs)
 	//	std::cout << delta << std::endl;
 	if(delta < rho_sp +rho_c)
 	{
-		std::cout <<"A = " << A.transpose();
-		std::cout <<"; P = " << P.transpose();
-		std::cout <<"; B = " << B.transpose();
-		std::cout <<"; Q = " << Q.transpose() << std::endl;
+//		std::cout <<"A = " << A.transpose();
+//		std::cout <<"; P = " << P.transpose();
+//		std::cout <<"; B = " << B.transpose();
+//		std::cout <<"; Q = " << Q.transpose() << std::endl;
 		cs.p = (rho_sp + rho_c) - delta;
-		std::cout << "cs.p = " << cs.p << " cs.n =  " << cs.n.transpose() << std::endl;
+//		std::cout << "cs.p = " << cs.p << " cs.n =  " << cs.n.transpose() << std::endl;
 		return true;
 	}else{
 		cs.p = 0;

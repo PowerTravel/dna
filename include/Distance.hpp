@@ -57,23 +57,8 @@ class Distance: public Simulation
 		void run_box_test(); // A box containing the particle, testing basic collision with plane
 		void run_diamond_test(); // A diamond containing the particle testing simultaneous collisions with plane
 		void run_sphere_test();
+		void run_cylinder_test();
 
-		void run_tests();
-		bool plane_one_collision_test_A();
-		bool plane_one_collision_test_B();
-		bool plane_two_consecutive_collisions_test();
-		bool plane_two_simultaneous_collisions_test();
-		bool plane_three_simultaneous_collisions();
-		bool plane_four_mixed_collisions_test();
-//		bool plane_stuck_particle();
-
-		bool sphere_one_collision_test_A();
-		bool sphere_one_collision_test_B();
-		bool sphere_two_consecutive_collisions_test();
-		bool sphere_two_simultaneous_collisions_test();
-		bool sphere_three_simultaneous_collisions();
-		bool sphere_four_mixed_collisions_test();
-//		bool sphere_stuck_particle();
 
 		// Test CollisionGrid
 		bool collision_grid_test_one_sphere_A(); // One sphere in one box
