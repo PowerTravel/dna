@@ -47,6 +47,7 @@ class Chain
 
 		std::vector< cg_ptr > get_collision_vec();
 		std::vector< cg_ptr > get_collision_vec(VecXd boundary);
+		VecXd get_density_boundary(double density);
 
 
 		int len();
@@ -66,6 +67,8 @@ class Chain
 
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
+		
+		int get_3d_array_index(int i, int j, int k, int I, int J, int K);
 
 };
 

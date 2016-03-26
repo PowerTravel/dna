@@ -76,6 +76,7 @@ bool CollisionGrid::set_up(std::vector<cg_ptr> v)
 	//		_max_axis_lengt*_max_box_idx * _max_axis_lengt
 	// does not overflow
 	
+	
 	for(int collision_idx=0; collision_idx<N; collision_idx++)
 	{
 		VecXd span = _collision_bodies[collision_idx]->get_span();

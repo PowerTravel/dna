@@ -7,6 +7,7 @@ Distance::Distance()
 {
 
 }
+
 Distance::~Distance()
 {
 
@@ -128,7 +129,7 @@ void Distance::run()
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	_c->build(_chain_size);
-	_c->center_chain();
+	//_c->center_chain();
 	std::cout <<"span "  <<_c->span().transpose() << std::endl;
 	ArrXd span = _c->span();
 	int span_min  = (int) span(0);
@@ -158,10 +159,15 @@ void Distance::run()
 	
 	std::cout << _boundary.transpose() << std::endl;
 
+	_boundary =_c->get_density_boundary(0.95);
+
 	_cg.set_up(_c->get_collision_vec(_boundary) );
 	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 
-	_particle_x_ini = Eigen::Vector3d(0, 0, 0);
+	_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
+   									  floor(_boundary(3)-_boundary(2))+0.5, 
+									  floor(_boundary(5)-_boundary(4))+0.5);
+	std::cout << _particle_x_ini.transpose()<<std::endl;
 	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	int T = int( _tot_time/_dt);
@@ -173,7 +179,6 @@ void Distance::run()
 		_time_steps = Statistics::make_linear_points_array(T, _nr_data_points, start_point );
 	}
 	_time_step_mean = (_time_steps.segment(0, _nr_data_points) + _time_steps.segment(1, _nr_data_points)) / 2;
-
 
 	Eigen::ArrayXXd binned_distance_data = 
 							Eigen::ArrayXXd::Zero(_nr_data_points, 3*_nr_simulations);

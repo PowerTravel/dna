@@ -123,6 +123,17 @@ void Particle::update()
 
 void Particle::update()
 {
+	if(	_x(0) < boundary(0) &&
+		_x(0) > boundary(1) &&
+		_x(1) < boundary(2) &&
+		_x(1) < boundary(3) &&
+		_x(2) < boundary(4) &&
+		_x(2) < boundary(5) )
+	{
+		std::cerr << "Particl::update" << std::endl;
+		std::cerr << "	Exiting" << std::endl;
+		exit(1);
+	}
 	static int timestep = 0;
 	particle_state old_state = {};
 	old_state.dt = _dt;

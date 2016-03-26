@@ -1,6 +1,6 @@
 #ifndef EIGEN_LIBS_HPP
 #define EIGEN_LIBS_HPP
-
+#define Assert(Expression) if(!(Expression)){*(int*) 0 = 0;}
 #include <Eigen/Dense>
 
 typedef Eigen::Vector2i Vec2i;

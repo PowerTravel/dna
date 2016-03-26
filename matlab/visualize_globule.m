@@ -9,15 +9,17 @@ traj = load('Distance/debug/trajectory');
 plot_traj = true;
 
 plot_steps = 10;
-animate = true;
+animate = false;
 
 lim = floor(N^(1/3));
 dt = 0.01;
 dn = floor(N/plot_steps);
 
 
-sp=3.025;
+%sp=3.025;
+sp=10;
 spans = [-sp, sp, -sp, sp, -sp, sp];
+spans = [-11.5, 0.5, 22.5, 37.5, 12.5, 23.5];
 tic
 [Nc , reduced_globule] = cut_globule(globule,spans);
 toc
@@ -67,11 +69,11 @@ zlabel('Z')
 figure(2)
 for k = 1:Nc
         
-    p_gl = reduced_globule{k};
-    N2 = size(p_gl,1);
-    hold on
-    plot3(p_gl(:,1),p_gl(:,2), p_gl(:,3),'.-','LineWidth',3);
-    hold off
+   p_gl = reduced_globule{k};
+   N2 = size(p_gl,1);
+   hold on
+   plot3(p_gl(:,1),p_gl(:,2), p_gl(:,3),'.-','LineWidth',3);
+   hold off
 end
    
     axis(spans) 
