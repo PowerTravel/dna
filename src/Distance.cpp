@@ -129,38 +129,10 @@ void Distance::run()
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	_c->build(_chain_size);
-	//_c->center_chain();
-	std::cout <<"span "  <<_c->span().transpose() << std::endl;
-	ArrXd span = _c->span();
-	int span_min  = (int) span(0);
-	int span_max  = (int) span(1);
-	int lowest_span = (int) std::floor(span_max-span_min);
-	if(lowest_span > (int) std::floor(span(3)-span(2)))
-	{
-		span_min  = (int) span(2);
-		span_max  = (int) span(3);
-	    lowest_span = (int) span_max-span_min;
-	}
-	if(lowest_span > (int) std::floor(span(5)-span(4)))
-	{
-		span_min  = (int) span(4);
-		span_max  = (int) span(5);
-	    lowest_span = (int) span_max-span_min;
-	}
-
 	_cg = CollisionGrid(_collision_box_size);
 
 	_boundary = VecXd::Zero(6);
-	double box_size = 3 + (1-2*_chain_radius)/4.f;
-	_boundary << span_min, span_max,
-				 span_min, span_max,
-				 span_min, span_max;
-	_boundary << -box_size,box_size,-box_size,box_size,-box_size,box_size;
-	
-	std::cout << _boundary.transpose() << std::endl;
-
 	_boundary =_c->get_density_boundary(0.95);
-
 	_cg.set_up(_c->get_collision_vec(_boundary) );
 	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 
@@ -182,7 +154,6 @@ void Distance::run()
 
 	Eigen::ArrayXXd binned_distance_data = 
 							Eigen::ArrayXXd::Zero(_nr_data_points, 3*_nr_simulations);
-
 
 	for(int i = 0; i < _nr_simulations; i++)
 	{

@@ -134,6 +134,7 @@ void Particle::update()
 		std::cerr << "	Exiting" << std::endl;
 		exit(1);
 	}
+	
 	static int timestep = 0;
 	particle_state old_state = {};
 	old_state.dt = _dt;
@@ -147,7 +148,7 @@ void Particle::update()
 	}
 
 	// Brownian Impulse
-	double max_len = 2;
+	double max_len = 1;
 	double min_len = 0;
 
 	Vec3d brownian  = Vec3d::Zero();
@@ -161,10 +162,10 @@ void Particle::update()
 	// Leapfrog Euler
 	if(first_step)
 	{
-		new_state.vel = old_state.vel + (_dt*0.5)*brownian;
+		new_state.vel = old_state.vel + std::sqrt(2*_dt*0.5)*brownian;
 		first_step = false;
 	}else{
-		new_state.vel = old_state.vel + _dt*brownian;
+		new_state.vel = old_state.vel + std::sqrt(2*_dt)*brownian;
 	}
 
 	new_state.pos = old_state.pos + _dt*new_state.vel;
@@ -221,7 +222,7 @@ Arr3d Particle::get_position()
 Vec3d Particle::get_random_vector(double min_len, double max_len)
 {
 	std::normal_distribution<double> scale(0, 1);
-	double s= scale(_generator);
+	double s = scale(_generator);
 	std::uniform_real_distribution<double> direction(0, 1);
 	double x = direction(_generator);
 	double y = direction(_generator);
