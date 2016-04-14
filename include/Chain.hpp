@@ -67,8 +67,27 @@ class Chain
 
 		Eigen::Array3d int_to_coord(int i);
 		static std::default_random_engine _generator;
-		
+		struct side_density{
+			int* wMin;
+			int* wMax;
+			int* hMin;
+			int* hMax;
+			int* offset;
+
+			int CO;
+			int EO;
+			int BO;
+	
+			int Vol;
+
+			double Density;
+	
+			bool dirty;
+		};		
 		int get_3d_array_index(int i, int j, int k, int I, int J, int K);
+		int GetSideIdx(int side, int offset, int width, int height, int I,int J, int K);
+		void CalcSideDensity(int* box, int I, int J, int K, side_density* s, int CalcSide);
+
 
 };
 

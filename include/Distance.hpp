@@ -23,13 +23,10 @@ class Distance: public Simulation
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		void print(std::ostream& os);
 
-
-
 		Eigen::ArrayXXd P;		// Position
 		Eigen::ArrayXXd P_var;	// Position variance
 		Eigen::ArrayXd D;		// Distance
 		Eigen::ArrayXd D_var;	// Distance Variance
-
 
 		Eigen::ArrayXd _time_steps;
 		Eigen::ArrayXd _time_step_mean;
@@ -42,6 +39,9 @@ class Distance: public Simulation
 
 		double _collision_box_size;
 		double _particle_radius;
+		double _particle_radius_max;
+		double _particle_radius_min;
+		int _particle_radius_step;
 		double _tot_time = 100;
 		double _dt = 0.01;
 		bool _exp = false;

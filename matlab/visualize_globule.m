@@ -5,6 +5,11 @@ clear all
 globule = load('Distance/debug/chain');
 N = size(globule,1);
 
+offset = [-0,-0,-0];
+globule(:,1) = globule(:,1) - offset(1);
+globule(:,2) = globule(:,2) - offset(2);
+globule(:,3) = globule(:,3) - offset(3);
+
 traj = load('Distance/debug/trajectory');
 plot_traj = true;
 
@@ -26,10 +31,11 @@ glob = zeros(s,3);
 %              0,1,0;
 %              0,1,1;
 %              0,0,1];
-color_grad = [0,0,1
-              0,1,0
+color_grad = [0,0,1;
+              0,1,0;
               1,0,0];
-              ,0,1];col = zeros(N,3);
+
+col = zeros(N,3);
 col_size = size(color_grad,1)-1;
 for i = 1:col_size
     d_size = floor(N/col_size);
@@ -58,7 +64,7 @@ axis equal
 %sp=3.025;
 sp=10;
 spans = [-sp, sp, -sp, sp, -sp, sp];
-spans = [-11.5, 0.5, 22.5, 37.5, 12.5, 23.5];
+spans = [-4.5, 6.5, -2.5, 7.5, 0.5, 15.5];
 tic
 [Nc , reduced_globule] = cut_globule(globule,spans);
 toc
@@ -68,25 +74,25 @@ ylabel('Y')
 zlabel('Z')
     
     
-% figure(2)
-% for k = 1:Nc     
-%    p_gl = reduced_globule{k};
-%    N2 = size(p_gl,1);
-%    hold on
-%    plot3(p_gl(:,1),p_gl(:,2), p_gl(:,3),'.-','LineWidth',3);
-%    hold off
-% end
-%    
-%     axis(spans) 
-%     
-%     
-%     xlabel('X')
-%     ylabel('Y')
-%     zlabel('Z')
-% if plot_traj
-%     axis equal;
-% hold on
-% plot3(traj(:,1),traj(:,2),traj(:,3),'.');
-% hold off
-% end
+figure(2)
+for k = 1:Nc     
+   p_gl = reduced_globule{k};
+   N2 = size(p_gl,1);
+   hold on
+   plot3(p_gl(:,1),p_gl(:,2), p_gl(:,3),'.-','LineWidth',3);
+   hold off
+end
+   
+    axis(spans) 
+    
+    
+    xlabel('X')
+    ylabel('Y')
+    zlabel('Z')
+if plot_traj
+    axis equal;
+hold on
+plot3(traj(:,1),traj(:,2),traj(:,3),'.');
+hold off
+end
 

@@ -174,6 +174,7 @@ int Chain::get_3d_array_index(int i, int j, int k, int I, int J, int K)
 	return k+K*j+J*K*i;
 }
 #include<cmath>
+#if 0
 VecXd Chain::get_density_boundary(double density)
 {
 	double l = _link_len;
@@ -448,6 +449,264 @@ VecXd Chain::get_density_boundary(double density)
 	Boundary[3] += Yoffset + 0.5;
 	Boundary[4] += Zoffset - 0.5;
 	Boundary[5] += Zoffset + 0.5;
+//	std::cout<< Boundary[0] << ", "<< Boundary[1] << ", "<< Boundary[2] << ", "<< Boundary[3] << ", "<< Boundary[4] << ", "<< Boundary[5] << ", " << std::endl;
+	delete [] box;	
+	
+	VecXd b = VecXd::Zero(6);
+	b << Boundary[0] , Boundary[1] , Boundary[2] , Boundary[3] , Boundary[4] , Boundary[5];
+	
+	return(b);
+}
+#else
+// Six funciton, one for each side.
+
+
+int Chain::GetSideIdx(int side, int offset, int width, int height, int I,int J, int K)
+{
+	int idx = 0;
+	switch(side)
+	{
+		// offset = -X, Width = Y, Height = Z
+		case 0:
+		{
+			idx = get_3d_array_index( offset, width, height, I, J, K);
+		}break;
+		
+		// offset = X, Width = Y, Height = Z
+		case 1:
+		{
+			idx = get_3d_array_index( offset, width, height, I, J, K);
+		}break;
+		
+		// offset = -Y, Width = X, Height = Z
+		case 2:
+		{
+			idx = get_3d_array_index( width, offset, height, I, J, K);
+		}break;
+		
+		// offset = X, Width = Y, Height = Z
+		case 3:
+		{
+			idx = get_3d_array_index( width, offset, height, I, J, K);
+		}break;
+		
+		// offset = -Z, Width = Y, Height = X
+		case 4:
+		{
+			idx = get_3d_array_index( height, width, offset, I, J, K);
+		}break;
+		
+		// offset = X, Width = Y, Height = Z
+		case 5:
+		{
+			idx = get_3d_array_index( height, width, offset, I, J, K);		
+		}break;
+		default:{
+			
+		}break;
+	}
+	return idx;
+}
+void Chain::CalcSideDensity(int* box, int I, int J, int K, side_density* s, int CalcSide)
+{
+
+	int s1Min = *s[CalcSide].wMin;
+	int s1Max = *s[CalcSide].wMax;
+	int s2Min = *s[CalcSide].hMin;
+	int s2Max = *s[CalcSide].hMax;
+	int offset = *s[CalcSide].offset;
+	
+	// Corner Occupancy;
+	s[CalcSide].CO = 0;
+	s[CalcSide].EO = 0;
+	s[CalcSide].BO = 0;
+	s[CalcSide].Vol = 0;
+	
+	
+	// interior
+	for(int width = s1Min; width < s1Max+1; ++width )
+	{
+		for(int height = s2Min; height < s2Max+1; ++height )
+		{
+			int idx = GetSideIdx(CalcSide,offset,width,height,I,J,K);
+			int occupied = box[idx];
+			// Corners
+			if( ( (width == s1Min) && (height == s2Min) ) ||
+				( (width == s1Min) && (height == s2Max) ) ||
+				( (width == s1Max) && (height == s2Min) ) ||
+				( (width == s1Max) && (height == s2Max) ))
+			{
+				s[CalcSide].CO += occupied;
+
+			// Edges
+			}else if( ( (width > s1Min) && (width < s1Max ) && (height == s2Min)   ) ||
+					  ( (width > s1Min) && (width < s1Max ) && (height == s2Max)   ) ||
+					  ( (height > s2Min) && (height < s2Max ) && (width == s1Min)  ) ||
+					  ( (height > s2Min) && (height < s2Max ) && (width == s1Max) )){	
+			
+				s[CalcSide].EO += occupied;
+				
+			// Body	
+			}else{	
+				s[CalcSide].BO += occupied;	
+				
+			}
+
+			s[CalcSide].Vol++; 
+		}
+	}
+	s[CalcSide].Density = double(s[CalcSide].CO+s[CalcSide].EO+s[CalcSide].BO)/double(s[CalcSide].Vol);
+	
+}
+
+VecXd Chain::get_density_boundary(double density)
+{	
+	double l = _link_len;
+	double r = _rad;
+	if(!_ok)
+	{
+		return VecXd::Zero(6);
+	}
+	
+	ArrXd axis = span();
+	int d = axis(1) - axis(0);
+	int w = axis(3) - axis(2);
+	int h = axis(5) - axis(4);
+	int d0 =0;
+	int w0 = 0;
+	int h0 = 0;
+	int I = std::ceil( d )+1;
+	int J = std::ceil( w )+1;
+	int K = std::ceil( h )+1;
+	
+	std::cout <<"Axis: " <<axis.transpose() << std::endl;
+	std::cout << I << " " << J << " " << K << std::endl;
+	
+	side_density sides[6] = {};
+	
+	// Xnegative, width = Y, Height = Z
+	side_density xn = {};
+	xn.wMin = &w0;
+	xn.wMax = &w;
+	xn.hMin = &h0;
+	xn.hMax = &h;
+	xn.offset = &d0;
+	
+	sides[0] = xn;
+	
+	// Xpositive, width = Y, Height = Z;
+	side_density xp = xn;
+	xp.offset = &d;
+	
+	sides[1] = xp;
+
+	// Ynegative, width = Y, Height = Z
+	side_density yn = {};
+	yn.wMin = &d0;
+	yn.wMax = &d;
+	yn.hMin = &h0;
+	yn.hMax = &h;
+	yn.offset = &w0;
+	
+	sides[2] = yn;
+	
+	// Ypositive, width = X, Height = Z;
+	side_density yp = yn;
+	yp.offset = &w;
+	
+	sides[3] = yp;
+
+	// Znegative, width = Y, Height = X
+	side_density zn = {};
+	zn.wMin = &w0;
+	zn.wMax = &w;
+	zn.hMin = &d0;
+	zn.hMax = &d;
+	zn.offset = &h0;
+	sides[4] = zn;
+	
+	// Zpositive, width = Y, Height = X;
+	side_density zp = zn;
+	zp.offset = &h;
+	sides[5] = zp;
+
+
+	// we are gonna use the particles position as an index in our int array
+	double Xoffset = axis(0);
+	double Yoffset = axis(2);
+	double Zoffset = axis(4);
+//	int Xmiddle = I/2.f;
+//	int Ymiddle = J/2.f;
+//	int Zmiddle = K/2.f;
+	int* box = new int[I*J*K]();
+	Arr3d CM = Arr3d();
+
+	int ones = len();
+//	int zeroes = I*J*K - ones;
+	for(int i = 0; i<len(); i++)
+	{
+		int px = std::round(_chain(0,i) - Xoffset);
+		int py = std::round(_chain(1,i) - Yoffset);
+		int pz = std::round(_chain(2,i) - Zoffset);
+		int idx = get_3d_array_index(px,py,pz,I,J,K);
+		box[idx] = 1;
+	}
+
+	int bound[6] = {(int)axis(0),(int)axis(1),(int)axis(2),(int)axis(3),(int)axis(4),(int)axis(5)};
+	double vol =I*J*K;
+	double dens = double(ones)/double(vol);
+	while(dens < density)
+	{
+		for(int CalcSide = 0; CalcSide<6; CalcSide++)
+		{
+			CalcSideDensity(box, I, J, K, sides, CalcSide);
+			
+		}
+		
+		int lowestDensityIdx = 0;
+		double LowestDensity = sides[0].Density; 
+	
+	//	std::cout << "Side " << 0 << ":" <<std::endl;
+	//	std::cout << "\t" <<  *sides[0].offset << ", " << *sides[0].wMin <<", "<< *sides[0].wMax <<", "
+	//		<< *sides[0].hMin <<", "<< *sides[0].hMax << ", "<<sides[0].Density <<std::endl;
+		for(int CalcSide = 1; CalcSide<6; CalcSide++)
+		{
+			if(sides[CalcSide].Density < LowestDensity)
+			{
+				LowestDensity = sides[CalcSide].Density;
+				lowestDensityIdx = CalcSide;
+			}
+			
+		
+	//		std::cout << "Side " << CalcSide << ":" <<std::endl;
+	//		std::cout << "\t" <<  *sides[CalcSide].offset << ", " << *sides[CalcSide].wMin <<", "<< *sides[CalcSide].wMax <<", "
+	//			<< *sides[CalcSide].hMin <<", "<< *sides[CalcSide].hMax<<", "<<sides[CalcSide].Density  <<std::endl;
+			
+		}
+		
+		int onesOnSide = (sides[lowestDensityIdx].CO + sides[lowestDensityIdx].EO+sides[lowestDensityIdx].BO);
+//		int zerosOnSide = sides[lowestDensityIdx].Vol - onesOnSide;
+		ones -= onesOnSide;
+		vol -= sides[lowestDensityIdx].Vol;
+		dens = double(ones)/double(vol);
+		
+		int addNr = ( ( ( lowestDensityIdx % 2 ) == 0 ) ? 1:-1 );
+		*sides[lowestDensityIdx].offset += addNr;
+		
+	//	std::cout << "Changing " << lowestDensityIdx << std::endl;
+		
+	}
+
+	double Boundary[6] = {(double) *sides[0].offset,(double) *sides[1].offset, (double) *sides[2].offset,
+						  (double) *sides[3].offset,(double) *sides[4].offset, (double) *sides[5].offset };
+	std::cout<< "Bound: " << Boundary[0] << ", "<< Boundary[1] << ", "<< Boundary[2] << ", "<< Boundary[3] << ", "<< Boundary[4] << ", "<< Boundary[5] << ", " << std::endl;
+	
+	Boundary[0] += Xoffset - 0.5;
+	Boundary[1] += Xoffset + 0.5;
+	Boundary[2] += Yoffset - 0.5;
+	Boundary[3] += Yoffset + 0.5;
+	Boundary[4] += Zoffset - 0.5;
+	Boundary[5] += Zoffset + 0.5;
 	std::cout<< Boundary[0] << ", "<< Boundary[1] << ", "<< Boundary[2] << ", "<< Boundary[3] << ", "<< Boundary[4] << ", "<< Boundary[5] << ", " << std::endl;
 	delete [] box;	
 	
@@ -457,6 +716,10 @@ VecXd Chain::get_density_boundary(double density)
 	return(b);
 }
 
+
+
+
+#endif
 
 std::vector< cg_ptr > Chain::get_collision_vec()
 {

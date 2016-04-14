@@ -223,7 +223,7 @@ Vec3d Particle::get_random_vector(double min_len, double max_len)
 {
 	std::normal_distribution<double> scale(0, 1);
 	double s = scale(_generator);
-	std::uniform_real_distribution<double> direction(0, 1);
+	std::uniform_real_distribution<double> direction(-1, 1);
 	double x = direction(_generator);
 	double y = direction(_generator);
 	double z = direction(_generator);

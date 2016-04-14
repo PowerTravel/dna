@@ -42,9 +42,23 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 		_valid = false;
 	}
 
-	if( sm.find("PARTICLE_RADIUS") != sm.end() )
+	if( sm.find("PARTICLE_RADIUS_MIN") != sm.end() )
 	{
-		_particle_radius  = text_to_double(sm["PARTICLE_RADIUS"]);
+		_particle_radius_min  = text_to_double(sm["PARTICLE_RADIUS_MIN"]);
+	}else{
+		_valid = false;
+	}
+
+	if( sm.find("PARTICLE_RADIUS_MAX") != sm.end() )
+	{
+		_particle_radius_max  = text_to_double(sm["PARTICLE_RADIUS_MAX"]);
+	}else{
+		_valid = false;
+	}
+
+	if( sm.find("PARTICLE_RADIUS_STEP") != sm.end() )
+	{
+		_particle_radius_step  = text_to_int(sm["PARTICLE_RADIUS_STEP"]);
 	}else{
 		_valid = false;
 	}
@@ -82,6 +96,19 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 		_exp  = text_to_bool(sm["EXP"]);
 	}else{
 		_valid = false;
+	}
+	
+	if( (_particle_radius_min <= 0) || (_particle_radius_min >_particle_radius_max) || (_particle_radius_step<= 0))
+	{
+		_valid = false;
+	}
+	
+	if(_valid == false)
+	{
+		std::cerr << "ERROR: Distance::init_simulaition_parameters"<<std::endl;
+		std::cerr << "	Invalid simulation parameters" <<std::endl;
+		std::cerr << "	EXITITNG" <<std::endl;
+		exit(1);
 	}
 
 }
@@ -125,22 +152,7 @@ void Distance::run()
 	if(verbose){
 		std::cout << this << std::endl;
 	}
-	
-	_c->set_radius(_chain_radius);
-	_c->set_link_length(1.0);
-	_c->build(_chain_size);
-	_cg = CollisionGrid(_collision_box_size);
 
-	_boundary = VecXd::Zero(6);
-	_boundary =_c->get_density_boundary(0.95);
-	_cg.set_up(_c->get_collision_vec(_boundary) );
-	_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
-
-	_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
-   									  floor(_boundary(3)-_boundary(2))+0.5, 
-									  floor(_boundary(5)-_boundary(4))+0.5);
-	std::cout << _particle_x_ini.transpose()<<std::endl;
-	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 
 	int T = int( _tot_time/_dt);
 	int start_point = 10;
@@ -151,9 +163,9 @@ void Distance::run()
 		_time_steps = Statistics::make_linear_points_array(T, _nr_data_points, start_point );
 	}
 	_time_step_mean = (_time_steps.segment(0, _nr_data_points) + _time_steps.segment(1, _nr_data_points)) / 2;
-
+	
 	Eigen::ArrayXXd binned_distance_data = 
-							Eigen::ArrayXXd::Zero(_nr_data_points, 3*_nr_simulations);
+							Eigen::ArrayXXd::Zero(_nr_data_points * _particle_radius_step, 3*_nr_simulations);
 
 	for(int i = 0; i < _nr_simulations; i++)
 	{
@@ -168,69 +180,82 @@ void Distance::run()
 				len = 1;
 			}
 
-			Eigen::ArrayXXd tmp_mat = 
-				trajectory.block(0, start, 3, len);
-			tmp_mat.row(0) = tmp_mat.row(0) - _particle_x_ini(0);
-			tmp_mat.row(1) = tmp_mat.row(1) - _particle_x_ini(1);
-			tmp_mat.row(2) = tmp_mat.row(2) - _particle_x_ini(2);
-
-			binned_distance_data(j,3*i+0) = tmp_mat.row(0).mean();
-			binned_distance_data(j,3*i+1) = tmp_mat.row(1).mean();	
-			binned_distance_data(j,3*i+2) = tmp_mat.row(2).mean();
-
+			for( int p_step = 0; p_step < _particle_radius_step; p_step++)
+			{
+				Eigen::ArrayXXd tmp_mat = 
+					trajectory.block(3*p_step, start, 3, len);
+				tmp_mat.row(0) = tmp_mat.row(0);
+				tmp_mat.row(1) = tmp_mat.row(1);
+				tmp_mat.row(2) = tmp_mat.row(2);
+				
+	//			std::cerr << j+p_step*_nr_data_points << " " << 3*i+0 << std::endl;
+					
+				binned_distance_data(j+p_step*_nr_data_points,3*i+0) = tmp_mat.row(0).mean();
+				binned_distance_data(j+p_step*_nr_data_points,3*i+1) = tmp_mat.row(1).mean();	
+				binned_distance_data(j+p_step*_nr_data_points,3*i+2) = tmp_mat.row(2).mean();
+			}
 		}
 		if(verbose){
 			write_to_terminal(i,_nr_data_points);	
 		}
 	}
 
-	D = Eigen::ArrayXd::Zero(_nr_data_points);
-	D_var = Eigen::ArrayXd::Zero(_nr_data_points);
-	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
-	
-	P = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
-	P_var = Eigen::ArrayXXd::Zero(_nr_data_points, 3);
-	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
-	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
-	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(_nr_data_points, _nr_simulations);
+//	std::cout << binned_distance_data << std::endl;
 
-	for(int i = 0; i < _nr_data_points; i++)
+	D = Eigen::ArrayXd::Zero(_nr_data_points * _particle_radius_step);
+	D_var = Eigen::ArrayXd::Zero(_nr_data_points * _particle_radius_step);
+	
+	Eigen::ArrayXXd D_tmp = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
+	
+	P = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, 3);
+	P_var = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, 3);
+	
+	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
+	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
+	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
+	
+	for(int p_step = 0; p_step < _particle_radius_step; p_step++)
 	{
-		for(int j = 0; j < _nr_simulations; j++)
+		for(int i = 0; i < _nr_data_points; i++)
 		{
-			Eigen::Vector3d pos  = binned_distance_data.block(i,3*j,1,3).transpose();
-	
-			P_tmp_x(i,j) = pos(0);
-			P_tmp_y(i,j) = pos(1);
-			P_tmp_z(i,j) = pos(2);
+			int sim_stride = p_step*_nr_data_points;
+			for(int j = 0; j < _nr_simulations; j++)
+			{
+				Eigen::Vector3d pos = binned_distance_data.block(sim_stride+i,3*j,1,3).transpose();
 
-			D_tmp(i,j) = pos.norm();
+				P_tmp_x(sim_stride+i,j) = pos(0);
+				P_tmp_y(sim_stride+i,j) = pos(1);
+				P_tmp_z(sim_stride+i,j) = pos(2);
+
+				D_tmp(sim_stride+i,j) = pos.norm();
+			}
 		}
 	}
 	
-
-	for(int i = 0; i<_nr_data_points; i++)
+	for(int p_step = 0; p_step < _particle_radius_step; p_step++)
 	{
-	
-		Eigen::Vector2d mv;
+		for(int i = 0; i<_nr_data_points; i++)
+		{
+			int sim_stride = p_step*_nr_data_points;
+			Eigen::Vector2d mv;
 
-		mv = Statistics::get_mean_and_variance(P_tmp_x.row(i));
-		P(i,0) = mv(0); 
-		P_var(i,0) = mv(1);
+			mv = Statistics::get_mean_and_variance(P_tmp_x.row(sim_stride+i));
+			P(sim_stride+i,0) = mv(0); 
+			P_var(sim_stride+i,0) = mv(1);
 
-		mv = Statistics::get_mean_and_variance(P_tmp_y.row(i));
-		P(i,1) = mv(0); 
-		P_var(i,1) = mv(1);
+			mv = Statistics::get_mean_and_variance(P_tmp_y.row(sim_stride+i));
+			P(sim_stride+i,1) = mv(0); 
+			P_var(sim_stride+i,1) = mv(1);
 
-		mv = Statistics::get_mean_and_variance(P_tmp_z.row(i));
-		P(i,2) = mv(0); 
-		P_var(i,2) = mv(1);
+			mv = Statistics::get_mean_and_variance(P_tmp_z.row(sim_stride+i));
+			P(sim_stride+i,2) = mv(0); 
+			P_var(sim_stride+i,2) = mv(1);
 
-		mv = Statistics::get_mean_and_variance(D_tmp.row(i));
-		D(i) = mv(0);
-		D_var(i) = mv(1);
+			mv = Statistics::get_mean_and_variance(D_tmp.row(sim_stride+i));
+			D(sim_stride+i) = mv(0);
+			D_var(sim_stride+i) = mv(1);
+		}
 	}
-
 	write_to_file();
 
 	if(verbose)
@@ -247,10 +272,12 @@ void Distance::write_to_terminal(int i, int j)
 }
 void Distance::write_to_file()
 {
-	int idx = _time_steps.size()-1;
+	int idx = (_time_steps.size()-1) * _particle_radius_step;
 	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 9);
-
-	result.block(0,0,idx,1) = _time_step_mean*_dt;
+	for(int i=0; i<_particle_radius_step; i++)
+	{
+		result.block(i*_time_step_mean.size(),0,_time_step_mean.size(),1) = _time_step_mean*_dt;
+	}
 	result.block(0,1,idx,1) = D;
 	result.block(0,2,idx,1) = D_var;
 	result.block(0,3,idx,3) = P;
@@ -269,14 +296,44 @@ void Distance::write_to_file()
 
 Eigen::ArrayXXd Distance::run_simulation_once()
 {
-	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
-	p.set_periodic_boundary(_boundary);
 	int N = int(_tot_time/_dt);
-	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
-	for(int i = 0; i < N; i++)
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3*_particle_radius_step,N);
+	double stepdx=_particle_radius_min;
+	if(_particle_radius_step>1){
+		stepdx = (_particle_radius_max - _particle_radius_min)/double(_particle_radius_step-1);
+	}
+
+	_c->set_radius(_chain_radius);
+	_c->set_link_length(1.0);
+	
+	double vol = 0;
+
+	_c->build(_chain_size);
+				
+	_cg = CollisionGrid(_collision_box_size);
+		
+	_boundary = VecXd::Zero(6);
+	_boundary =_c->get_density_boundary(0.90);
+	
+	_cg.set_up(_c->get_collision_vec(_boundary) );
+
+	_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
+   									  floor(_boundary(3)-_boundary(2))+0.5, 
+									  floor(_boundary(5)-_boundary(4))+0.5);
+
+	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
+	
+	for(int size_idx = 0; size_idx < _particle_radius_step; size_idx++)
 	{
-		p.update();
-		trajectory.block(0,i,3,1) = p.get_position();
+		_particle_radius = _particle_radius_min + size_idx*stepdx;
+		Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+	//	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, NULL);
+		p.set_periodic_boundary(_boundary);
+		for(int i = 0; i < N; i++)
+		{
+			p.update();
+			trajectory.block(3*size_idx,i,3,1) = p.get_position()-_particle_x_ini.array();
+		}
 	}
 
 	if(_nr_simulations==1)
@@ -289,6 +346,8 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 			std::cerr << "../matlab/Distance/debug/trajectory" << std::endl;
 		}
 		traj_file.close();
+		
+		_cg.print_box_corners(std::string("../matlab/Distance/debug/grid"));
 		
 		std::ofstream chain_file;
 		chain_file.open("../matlab/Distance/debug/chain", std::fstream::out | std::fstream::trunc);
@@ -315,7 +374,9 @@ void Distance::print(std::ostream& os)
 		os <<"Chain Size = " << _chain_size<< std::endl;
 		os <<"Chain Radius = " << _chain_radius << std::endl;
 
-		os <<"Particle Radius = " << _particle_radius << std::endl;
+		os <<"Particle Radius Min = " << _particle_radius_min << std::endl;
+		os <<"Particle Radius Max = " << _particle_radius_max << std::endl;
+		os <<"Particle Radius Steps = " << _particle_radius_step << std::endl;
 		
 		os <<"Collision box-size = " << _collision_box_size << std::endl;
 
@@ -337,44 +398,6 @@ void Distance::print(std::ostream& os)
 	}
 };
 
-/*
-	Collisions are currently handled in the following way:
-		At the start of a timestep a particle is assumed not to be intersecting 
-		another geometry.
-
-		1:  move the particle acording to Euler Leap Frog dt forward in time
-		2:  do broad phase collision detection, if none detected, save new position
-			and return, else move to 3
-		3: 	do narrow phase collision detection, if none are detected save new 
-			position and return, else move to 4
-		4: 	draw check when in the timestep all intersectiond occured and sort them
-			in order from earliest collision to latest.
-		5: 	handle the earliest collision, the case where the two earliest
-			collisions happened simultaneously is an edge case which is handled by
-			aligning their collision normals and adding them together then treating
-			them as one collision.
-		6:  A collision is handled by moving the particle back to the time when
-			the collision occured, reflecting velocity around the collision
-			normal and forwarding the time back to the time dt.
-		7:	Start from 2 again and make sure that the time in step 5 that the 
-			time is never reverted further back than the previous pass.
-			Time can never be reverted past a handled collision
-		8: 	A particle is considered stuck if it cant end it's timestep without 
-			having intersections.
-
-		// TODO
-		Can we do collisiondetection at the beginning of each timestep instead and 
-		always only handle one collision each timestep? 
-
-		// TRY THIS FIRST
-
-	We need four collision tests per geometry:
-		1 - Max One registered intersection per timestep
-		2 - Two or more registered intersections in a time step
-		3 - Stuck particle
-			If a particle ends its timestep without being free its 
-			counted as bing stuck.
-*/
 
 
 void Distance::run_box_test()
