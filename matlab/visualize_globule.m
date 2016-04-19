@@ -5,7 +5,7 @@ clear all
 globule = load('Distance/debug/chain');
 N = size(globule,1);
 
-offset = [-0,-0,-0];
+offset = [11.5,-16.5,-22.3];
 globule(:,1) = globule(:,1) - offset(1);
 globule(:,2) = globule(:,2) - offset(2);
 globule(:,3) = globule(:,3) - offset(3);
@@ -92,7 +92,7 @@ end
 if plot_traj
     axis equal;
 hold on
-plot3(traj(:,1),traj(:,2),traj(:,3),'.');
+plot3(traj(:,1),traj(:,2),traj(:,3));
 hold off
 end
 

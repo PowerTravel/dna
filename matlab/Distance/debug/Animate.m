@@ -28,7 +28,7 @@ sep_y = 2;
 frame_jump = 1;
 if(animate==0)
     T = -10:0.1:10;
-    plot3(data(:,1),data(:,2),data(:,3),'.');
+    plot3(data(:,1),data(:,2),data(:,3));
     hold on
     T = -10:0.1:10;
     xlabel('x')

@@ -63,12 +63,12 @@ for i=2:len
                wid = w(3); 
                cyl_idx = 3;
             end
-            cyl_line = zeros(2,3);
+            cyl_line = zeros(3,2);
             cyl_line(:,1) = p;
             cyl_line(:,2) = p;
             
-            cyl_line(wid_idx,1) = p(wid_idx) - wid/2; 
-            cyl_line(wid_idx,2) = p(wid_idx) + wid/2; 
+            cyl_line(cyl_idx,1) = p(cyl_idx) - wid/2; 
+            cyl_line(cyl_idx,2) = p(cyl_idx) + wid/2; 
             plot3(cyl_line(1,:),cyl_line(2,:),cyl_line(3,:),'color','c', '-', 'linewidth', 4);
         end
         hold off

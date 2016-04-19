@@ -130,7 +130,7 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-	run();
+	//run();
 
 	//sphere_test_mirror();
 
@@ -139,7 +139,7 @@ void Distance::apply()
 	//CollisionGrid::run_tests();
 
 	//run_tests();
-	//run_cylinder_test();
+	run_cylinder_test();
 }
 void Distance::run()
 {
@@ -227,7 +227,7 @@ void Distance::run()
 				P_tmp_y(sim_stride+i,j) = pos(1);
 				P_tmp_z(sim_stride+i,j) = pos(2);
 
-				D_tmp(sim_stride+i,j) = pos.norm();
+				D_tmp(sim_stride+i,j) = pos.transpose() * pos;
 			}
 		}
 	}
@@ -306,28 +306,32 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	
-	double vol = 0;
-
-	_c->build(_chain_size);
-				
-	_cg = CollisionGrid(_collision_box_size);
-		
-	_boundary = VecXd::Zero(6);
-	_boundary =_c->get_density_boundary(0.90);
 	
-	_cg.set_up(_c->get_collision_vec(_boundary) );
+	_boundary = VecXd::Zero(6);
 
-	_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
+#if 1
+		_c->build(_chain_size);
+				
+		_cg = CollisionGrid(_collision_box_size);
+		
+		_boundary =_c->get_density_boundary(0.90);
+		std::cout << "Boundary: "<<_boundary(1) - _boundary(0) << ", " <<_boundary(3) - _boundary(2) << ", "<<_boundary(5) - _boundary(4) << std::endl;
+		_cg.set_up(_c->get_collision_vec(_boundary) );
+#endif
+		_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
    									  floor(_boundary(3)-_boundary(2))+0.5, 
 									  floor(_boundary(5)-_boundary(4))+0.5);
 
-	_particle_v_ini = Eigen::Vector3d(0, 0, 0);
+		_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 	
 	for(int size_idx = 0; size_idx < _particle_radius_step; size_idx++)
 	{
 		_particle_radius = _particle_radius_min + size_idx*stepdx;
+#if 1
 		Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
-	//	Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, NULL);
+#else
+		Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, NULL);
+#endif
 		p.set_periodic_boundary(_boundary);
 		for(int i = 0; i < N; i++)
 		{
@@ -606,6 +610,7 @@ void Distance::run_cylinder_test()
 	p.set_test_collision_vector(test_vec);
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+
 	for(int i = 0; i<N; i++)
 	{
 		p.update();
@@ -620,7 +625,7 @@ void Distance::run_cylinder_test()
 		std::cout << "	Writing to '../matlab/Distance/debug/trajectory'" << std::endl;
 		file << trajectory.transpose() << std::endl;
 	}else{
-		std::cerr << "Failed to open " << std::string("../matlab/Distance/particle_trajectory.dna") << std::endl;
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/debug/trajectory") << std::endl;
 	}
 }
 

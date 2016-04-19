@@ -21,12 +21,9 @@ class Particle{
 		void set_periodic_boundary(VecXd bound);
 
 		Eigen::Array3d get_position();
-		Eigen::Array3d get_velocity();
 		friend std::ostream& operator<<(std::ostream& os, const Particle& p);
 		
 		void set_test_collision_vector(std::vector<cg_ptr> v );
-
-
 		bool use_brownian;
 	private:
 
@@ -58,12 +55,9 @@ class Particle{
 		};
 
 		// Subfunctions for update:
-		particle_state handle_collisions(particle_state state);
-		collision get_earliest_collision( particle_state particle);
-
+		collision get_earliest_collision( Vec3d particle_position);
 		Vec3d reflect_velocity(Vec3d v, Vec3d n);
-
-		Eigen::Vector3d get_random_vector(double min_len, double max_len);
+		Eigen::Vector3d get_random_vector();
 
 		bool first_step;
 		bool use_periodic_boundary;
@@ -84,7 +78,6 @@ class Particle{
 
 		// Debug funcs and tests
 		std::vector<cg_ptr> test_coll_vec;
-		std::vector<cg_ptr > remove_cylinders(std::vector<cg_ptr > vec);
 
 		
 		void dump_info( debug_snapshot ds );

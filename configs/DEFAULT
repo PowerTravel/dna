@@ -10,19 +10,19 @@ RUN: distance
 
 	%PARTICLE_RADIUS: 0.1
 	PARTICLE_RADIUS_MIN: 0.1
-	PARTICLE_RADIUS_MAX: 0.2
+	PARTICLE_RADIUS_MAX: 0.3
 	PARTICLE_RADIUS_STEP: 1
 
-	SIMULATION_TIME: 200
+	SIMULATION_TIME: 100
 	DELTA_TIME: 0.01
 
 	STRIDES: 100
-	SAMPLES: 100
-	EXP: false
+	SAMPLES: 1
+	EXP: true
 
 	TYPE: fg
 	VERBOSE: true
-	OUTFILE: ../matlab/Distance/distance_3.dna
+	OUTFILE: ../matlab/Distance/distance_1.dna
 
 
 %RUN: distance
