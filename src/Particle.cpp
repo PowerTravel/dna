@@ -44,23 +44,35 @@ void Particle::update()
 		exit(1);
 	}
 
-	collision coll =  get_earliest_collision(_x);
-	Vec3d new_vel = Vec3d(0,0,0);
-	if(coll.t != 0)
-	{
-		new_vel = reflect_velocity(_v, coll.n);
+	
+	Vec3d new_pos = _x;
+	if(!particle_is_stuck)
+	{	
+		double Diff_constant = 1;
+		Vec3d brownian  = get_random_vector();
+		Vec3d new_vel = std::sqrt(2*Diff_constant*_dt)*brownian;
+		new_pos = _x + new_vel;
+		
+		int stuck_count = 1000;
+		int coll_count = 0;
+		collision coll =  get_earliest_collision(new_pos);
+		while(coll.t != 0)
+		{
+			brownian = get_random_vector(); 
+			new_vel = std::sqrt(2*Diff_constant*_dt)*brownian;
+			new_pos = _x + new_vel;
+			coll =  get_earliest_collision(new_pos);
+			if(coll_count > stuck_count )
+			{
+				std::cerr << "Particle got stuck" << std::endl;
+				particle_is_stuck = true;
+				break;
+			}
+			coll_count ++;
+		}
 	}
 	
-	Vec3d brownian  = Vec3d::Zero();
-	if(use_brownian)
-	{
-		brownian = get_random_vector(); 
-	}
-	double Diff_constant = 1;
-	double Dimensions = 3;
-	new_vel = new_vel +  std::sqrt(2*Dimensions*Diff_constant*_dt)*brownian;
-	_x = _x + new_vel;
-  	_v = new_vel;
+	_x = new_pos;
  
 	// Periodic boundary
 	if(use_periodic_boundary)
@@ -107,15 +119,12 @@ Arr3d Particle::get_position()
 
 Vec3d Particle::get_random_vector()
 {
-	std::normal_distribution<double> scale(0, 1);
-	double s = scale(_generator);
-	std::uniform_real_distribution<double> direction(-1, 1);
-	double x =direction(_generator);
-	double y =direction(_generator);
-	double z =direction(_generator);
+	std::normal_distribution<double> norm(0, 1);
+	double x =norm(_generator);
+	double y =norm(_generator);
+	double z =norm(_generator);
 	Vec3d dir = Vec3d(x,y,z);
-	dir.normalize();
-	return dir*s;
+	return dir;
 }
 
 Vec3d Particle::reflect_velocity(Vec3d v, Vec3d n)

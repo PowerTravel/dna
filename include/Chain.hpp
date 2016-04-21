@@ -31,6 +31,7 @@ class Chain
 		void allow_selfintersection( bool as = true);
 		void use_weights( bool as = true );
 	
+		void set_chain_manually(Eigen::ArrayXXd c, bool rad);
 		virtual void build(int N) = 0;
 		ArrXXd as_array();
 		ArrXXd as_array(int start, int size);

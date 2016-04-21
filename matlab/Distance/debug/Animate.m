@@ -3,12 +3,12 @@ for i=1:1
 %cd '../../../_build'
 %system('./dna')
 %cd '../matlab/Distance/debug'
-
+ 
 data = load('trajectory');
 %data = load('../particle_trajectory.dna');
 
 N = size(data,1);
-animate = 0;
+animate = 1;
 x = 1:N;
 
 sep_x = 0.9;
@@ -26,11 +26,9 @@ sep_y = 2;
         
 
 frame_jump = 1;
-if(animate==0)
-    T = -10:0.1:10;
-    plot3(data(:,1),data(:,2),data(:,3));
+if(animate==1)
+    plot3(data(:,1),data(:,2),data(:,3),'.');
     hold on
-    T = -10:0.1:10;
     xlabel('x')
     ylabel('y')
 else
@@ -38,12 +36,16 @@ else
     xlabel('x')
     ylabel('y')
     zlabel('z')
-    for i = 1:N
+    for i = 2:N
         if(mod(i,1)==0)
-            hold on 
-            plot3(data(i,1),data(i,2), data(i,3),'.-', 'linewidth', 4);
+            hold on
+            if (abs(data(i,1) - data(i-1,1)) < 1) & ...
+                (abs(data(i,2) - data(i-1,2)) < 1) & ... 
+                (abs(data(i,3) - data(i-1,3)) < 1) 
+                plot3(data(i-1:i,1),data(i-1:i,2), data(i-1:i,3), 'linewidth', 1);
+            end
             axis([-r,r,-r,r,-r,r]);
-            pause(0.01);
+            %pause(0.1);
         end
     end
     hold off

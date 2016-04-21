@@ -14,11 +14,15 @@ class Distance: public Simulation
 
 	private:
 
+		std::string _outfile_info;
+		std::string _outfile_data;
+		std::string _outfile_span;
+
 		CollisionGrid _cg; 
 		Eigen::Vector3d _particle_x_ini; 
 		Eigen::Vector3d _particle_v_ini;
 		void run();
-		Eigen::ArrayXXd run_simulation_once();
+		Eigen::ArrayXXd run_simulation_once(double* spans);
 
 		void init_simulaition_parameters(std::map<std::string, std::string> sm);
 		void print(std::ostream& os);
@@ -27,9 +31,14 @@ class Distance: public Simulation
 		Eigen::ArrayXXd P_var;	// Position variance
 		Eigen::ArrayXd D;		// Distance
 		Eigen::ArrayXd D_var;	// Distance Variance
-
+		
+		Eigen::ArrayXXd span_data;
+		Vec3d span_mean;
+		Vec3d span_var;
+		
 		Eigen::ArrayXd _time_steps;
 		Eigen::ArrayXd _time_step_mean;
+		Eigen::ArrayXXd binned_distance_data;
 		
 		int _nr_simulations;
 		int _nr_data_points;
@@ -42,9 +51,10 @@ class Distance: public Simulation
 		double _particle_radius_max;
 		double _particle_radius_min;
 		int _particle_radius_step;
-		double _tot_time = 100;
-		double _dt = 0.01;
-		bool _exp = false;
+		double _target_density;
+		double _tot_time;
+		double _dt;
+		bool _exp;
 		
 		VecXd _boundary;
 
@@ -59,6 +69,7 @@ class Distance: public Simulation
 		void run_sphere_test();
 		void run_cylinder_test();
 
+		void run_snake_test();
 
 		// Test CollisionGrid
 		bool collision_grid_test_one_sphere_A(); // One sphere in one box

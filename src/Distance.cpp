@@ -97,6 +97,29 @@ void Distance::init_simulaition_parameters(std::map<std::string, std::string> sm
 	}else{
 		_valid = false;
 	}
+
+	if(sm.find("DENSITY") != sm.end())
+	{
+		_target_density = text_to_double(sm["DENSITY"]);
+	}
+
+	if(sm.find("NAME") != sm.end())
+	{
+		std::string name = sm["NAME"];
+		std::string place = "../data/";
+		place += name;
+
+		_outfile_info = place;
+		std::string info = "_info.dna";
+		_outfile_info += info;
+		_outfile_data = place;
+		_outfile_data += "_data.dna";
+		_outfile_span = place;
+		_outfile_span += "_span.dna";
+
+	}else{
+		_valid = false;
+	}
 	
 	if( (_particle_radius_min <= 0) || (_particle_radius_min >_particle_radius_max) || (_particle_radius_step<= 0))
 	{
@@ -130,7 +153,8 @@ int Distance::get_max(Eigen::Array3d v)
 
 void Distance::apply()
 {
-	//run();
+	run();
+//	run_snake_test();
 
 	//sphere_test_mirror();
 
@@ -139,7 +163,7 @@ void Distance::apply()
 	//CollisionGrid::run_tests();
 
 	//run_tests();
-	run_cylinder_test();
+//	run_cylinder_test();
 }
 void Distance::run()
 {
@@ -152,8 +176,7 @@ void Distance::run()
 	if(verbose){
 		std::cout << this << std::endl;
 	}
-
-
+	
 	int T = int( _tot_time/_dt);
 	int start_point = 10;
 
@@ -164,12 +187,19 @@ void Distance::run()
 	}
 	_time_step_mean = (_time_steps.segment(0, _nr_data_points) + _time_steps.segment(1, _nr_data_points)) / 2;
 	
-	Eigen::ArrayXXd binned_distance_data = 
-							Eigen::ArrayXXd::Zero(_nr_data_points * _particle_radius_step, 3*_nr_simulations);
-
+	binned_distance_data = 
+				Eigen::ArrayXXd::Zero(_nr_data_points * _particle_radius_step, 3*_nr_simulations);
+	
+	Eigen::ArrayXXd span_data = Eigen::ArrayXXd::Zero(_nr_simulations, 3);
+	
 	for(int i = 0; i < _nr_simulations; i++)
 	{
-		Eigen::ArrayXXd trajectory = run_simulation_once();
+		double spans[3] = {};
+		Eigen::ArrayXXd trajectory = run_simulation_once(spans);
+		
+		span_data(i,0) = spans[0];
+		span_data(i,1) = spans[1];
+		span_data(i,2) = spans[2];
 
 		for(int j = 0; j<_nr_data_points; j++)
 		{
@@ -213,6 +243,7 @@ void Distance::run()
 	Eigen::ArrayXXd P_tmp_x = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
 	Eigen::ArrayXXd P_tmp_y = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
 	Eigen::ArrayXXd P_tmp_z = Eigen::ArrayXXd::Zero(_nr_data_points*_particle_radius_step, _nr_simulations);
+
 	
 	for(int p_step = 0; p_step < _particle_radius_step; p_step++)
 	{
@@ -231,6 +262,18 @@ void Distance::run()
 			}
 		}
 	}
+	
+	Eigen::Vector2d meva = Statistics::get_mean_and_variance(span_data.col(0));
+	span_mean(0) = meva(0);
+	span_var(0) = meva(1);
+	
+	meva = Statistics::get_mean_and_variance(span_data.col(1));
+	span_mean(1) = meva(0);
+	span_var(1) = meva(1);
+
+	meva = Statistics::get_mean_and_variance(span_data.col(2));
+	span_mean(2) = meva(0);
+	span_var(2) = meva(1);
 	
 	for(int p_step = 0; p_step < _particle_radius_step; p_step++)
 	{
@@ -254,6 +297,7 @@ void Distance::run()
 			mv = Statistics::get_mean_and_variance(D_tmp.row(sim_stride+i));
 			D(sim_stride+i) = mv(0);
 			D_var(sim_stride+i) = mv(1);
+
 		}
 	}
 	write_to_file();
@@ -273,7 +317,7 @@ void Distance::write_to_terminal(int i, int j)
 void Distance::write_to_file()
 {
 	int idx = (_time_steps.size()-1) * _particle_radius_step;
-	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 9);
+	Eigen::MatrixXd result = Eigen::MatrixXd::Zero(idx, 9 +3 * _nr_simulations);
 	for(int i=0; i<_particle_radius_step; i++)
 	{
 		result.block(i*_time_step_mean.size(),0,_time_step_mean.size(),1) = _time_step_mean*_dt;
@@ -282,11 +326,31 @@ void Distance::write_to_file()
 	result.block(0,2,idx,1) = D_var;
 	result.block(0,3,idx,3) = P;
 	result.block(0,6,idx,3) = P_var;
-	
+	result.block(0,9, idx,3*_nr_simulations) = binned_distance_data;
 	std::ofstream file;
-	file.open(_outfile, std::fstream::out | std::fstream::trunc);
+	file.open(_outfile_data, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
 		file << result << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
+	}
+	file.close();
+	
+	Eigen::MatrixXd span = Eigen::MatrixXd::Zero(_nr_simulations+2,3);
+	span.block(0,0,1,3) = span_mean.transpose();
+	span.block(1,0,1,3) = span_var.transpose();
+	span.block(2,0,_nr_simulations,3) = span_data;
+	file.open(_outfile_span, std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << span << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
+	}
+	file.close();
+	
+	file.open(_outfile_info, std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		file << this << std::endl;
 	}else{
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
 	}
@@ -294,7 +358,7 @@ void Distance::write_to_file()
 }
 
 
-Eigen::ArrayXXd Distance::run_simulation_once()
+Eigen::ArrayXXd Distance::run_simulation_once(double* span)
 {
 	int N = int(_tot_time/_dt);
 	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3*_particle_radius_step,N);
@@ -306,7 +370,6 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	
-	
 	_boundary = VecXd::Zero(6);
 
 #if 1
@@ -314,13 +377,20 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 				
 		_cg = CollisionGrid(_collision_box_size);
 		
-		_boundary =_c->get_density_boundary(0.90);
-		std::cout << "Boundary: "<<_boundary(1) - _boundary(0) << ", " <<_boundary(3) - _boundary(2) << ", "<<_boundary(5) - _boundary(4) << std::endl;
+		_boundary =_c->get_density_boundary(_target_density);
+	//	std::cout << "Boundary: " << _boundary.transpose() << std::endl;
+		if(span)
+		{
+			span[0] = _boundary(1) - _boundary(0);
+			span[1] = _boundary(3) - _boundary(2); 
+			span[2] = _boundary(5) - _boundary(4);
+		}
 		_cg.set_up(_c->get_collision_vec(_boundary) );
 #endif
-		_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)-_boundary(0))+0.5, 
-   									  floor(_boundary(3)-_boundary(2))+0.5, 
-									  floor(_boundary(5)-_boundary(4))+0.5);
+		_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)+_boundary(0))+0.5, 
+   									  floor(_boundary(3)+_boundary(2))+0.5, 
+									  floor(_boundary(5)+_boundary(4))+0.5);
+	//	std::cout << "InitPos: "<< _particle_x_ini.transpose() <<std::endl;
 
 		_particle_v_ini = Eigen::Vector3d(0, 0, 0);
 	
@@ -329,10 +399,11 @@ Eigen::ArrayXXd Distance::run_simulation_once()
 		_particle_radius = _particle_radius_min + size_idx*stepdx;
 #if 1
 		Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, &_cg);
+
+		p.set_periodic_boundary(_boundary);
 #else
 		Particle p = Particle(_dt, _particle_radius, _particle_x_ini, _particle_v_ini, NULL);
 #endif
-		p.set_periodic_boundary(_boundary);
 		for(int i = 0; i < N; i++)
 		{
 			p.update();
@@ -377,6 +448,7 @@ void Distance::print(std::ostream& os)
 	{
 		os <<"Chain Size = " << _chain_size<< std::endl;
 		os <<"Chain Radius = " << _chain_radius << std::endl;
+		os <<"Target Globule Density = " << _target_density << std::endl;
 
 		os <<"Particle Radius Min = " << _particle_radius_min << std::endl;
 		os <<"Particle Radius Max = " << _particle_radius_max << std::endl;
@@ -396,7 +468,9 @@ void Distance::print(std::ostream& os)
 		}else{
 			os << "false" << std::endl;
 		}
-		os <<"Out File   = " << _outfile << std::endl;
+		os <<"Out File info  = " <<_outfile_info << std::endl;
+		os <<"Out File data  = " <<_outfile_data << std::endl;
+		os <<"Out File span  = " <<_outfile_span << std::endl;
 	}else{
 		os << "Simulation failed to load.";
 	}
@@ -568,7 +642,73 @@ void Distance::run_sphere_test()
 	file.close();
 }
 
+void Distance::run_snake_test()
+{
+	VecXd Region =VecXd::Zero(6); 
+#if 1
+	_c->build(40);
+				
+	Region =_c->get_density_boundary(0.90);
+	Vec3d init_pos = Vec3d( floor((Region(0)+Region(1))/2)+0.5,
+							floor((Region(2)+Region(3))/2)+0.5,
+							floor((Region(4)+Region(5))/2)+0.5	);
+	std::cout << "Boundary: " << Region.transpose() << std::endl;
+	std::cout << "InitPos: " << init_pos.transpose() << std::endl;
+	
+	CollisionGrid g = CollisionGrid();
+	g.set_up(_c->get_collision_vec(Region) );
 
+	Particle p = Particle(0.01, 0.2,  init_pos, Vec3d(0,0,0), &g);
+#else
+
+	Region << -3,3,-3,3,-3,3;
+	std::vector<cg_ptr> v = std::vector<cg_ptr>();
+	for(int i = Region(0); i<=Region(1); i++)
+	{
+		for(int j = Region(2); j<=Region(3); j++)
+		{
+			for(int k = Region(4); k<=Region(5); k++)
+			{
+				v.push_back(cg_ptr(new Sphere(Vec3d(i,j,k),0.3)));
+			}
+		}
+	}
+	Particle p = Particle(0.01, 0.2,  Vec3d(0.5,0.5,0.5), Vec3d(0,0,0), NULL);
+	//p.set_test_collision_vector(v);
+	g.set_up(v);		
+
+	Region(0) = Region(0)-0.5;
+	Region(1) = Region(1)+0.5;
+	Region(2) = Region(2)-0.5;
+	Region(3) = Region(3)+0.5;
+	Region(4) = Region(4)-0.5;
+	Region(5) = Region(5)+0.5;
+#endif
+
+	p.set_periodic_boundary(Region);
+	int N = int(_tot_time/_dt);
+	Eigen::ArrayXXd trajectory = Eigen::ArrayXXd::Zero(3,N);
+
+	for(int i = 0; i<N; i++)
+	{
+		p.update();
+		trajectory.block(0,i,3,1) = p.get_position();
+		std::cout << double(i)/double(N) << std::endl;
+	}
+
+	std::ofstream file;
+	file.open("../matlab/Distance/debug/trajectory", 
+					std::fstream::out | std::fstream::trunc);
+	if(file.is_open()){
+		std::cout << "Distance::run_snake_test:" << std::endl;
+		std::cout << "	Writing to '../matlab/Distance/debug/trajectory'" << std::endl;
+		file << trajectory.transpose() << std::endl;
+	}else{
+		std::cerr << "Failed to open " << std::string("../matlab/Distance/debug/trajectory") << std::endl;
+	}
+	std::cout << "Boundary: " << Region.transpose() << std::endl;
+	std::cout << "InitPos: " << init_pos.transpose() << std::endl;
+}
 
 void Distance::run_cylinder_test()
 {

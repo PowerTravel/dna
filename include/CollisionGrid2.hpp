@@ -17,7 +17,7 @@ class CollisionGrid
 		CollisionGrid(double box_size);
 		virtual ~CollisionGrid();
 		bool set_up(std::vector<cg_ptr> v);
-		void set_periodic_boundary();
+//		void set_periodic_boundary();
 		std::vector< cg_ptr > get_collision_bodies(cg_ptr g);
 
 		static bool run_tests();
