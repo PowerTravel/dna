@@ -1,7 +1,8 @@
 hold off
 clear all
-DData = load('distance_1.dna');
 
+%DData = load('distance_1.dna');
+DData = load('data/Sim001_data.dna');
 f = fittype('a*x+b');
 
 tmpt1 = DData(1,1);
@@ -19,11 +20,10 @@ if( N ~= size(DData,1))
     N = i-2
 end
 NrN = size(DData,1)/N
-NrN  = 1;
 
 slopes = zeros(NrN,1);
 for SimulationRun = 1:NrN
-
+    SimulationRun
     RunIdx = SimulationRun-1;
     NStart = 1+RunIdx*N;
     Nend = NStart + N-1;
@@ -89,23 +89,26 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
     xy = min(y):0.01:max(y);
     xz = min(z):0.01:max(z);
     
-    figure(2)
+    figure(3*SimulationRun-1)
     hold on
     bar(sx,P(1,:))
     plot(xx,pedf(xx,time(end),1), 'linewidth', 2)
+    title(['X Simulation ', num2str(SimulationRun)])
     xlabel('X')
     ylabel('Px')
     
-    figure(3)
+    figure(3*SimulationRun)
     hold on
     bar(sy, P(2,:))
     plot(xy,pedf(xy,time(end),1), 'linewidth', 2)
+    title(['Y Simulation ', num2str(SimulationRun)])
     xlabel('Y')
     ylabel('Py')
-    figure(4)
+    figure(3*SimulationRun+1)
     hold on
     bar(sz, P(3,:))
     plot(xz,pedf(xz,time(end),1), 'linewidth', 2)
+    title(['Z Simulation ', num2str(SimulationRun)])
     xlabel('Z')
     ylabel('Pz')
 

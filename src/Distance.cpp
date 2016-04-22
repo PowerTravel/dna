@@ -190,7 +190,7 @@ void Distance::run()
 	binned_distance_data = 
 				Eigen::ArrayXXd::Zero(_nr_data_points * _particle_radius_step, 3*_nr_simulations);
 	
-	Eigen::ArrayXXd span_data = Eigen::ArrayXXd::Zero(_nr_simulations, 3);
+	span_data = Eigen::ArrayXXd::Zero(_nr_simulations, 3);
 	
 	for(int i = 0; i < _nr_simulations; i++)
 	{
@@ -304,7 +304,7 @@ void Distance::run()
 
 	if(verbose)
 	{
-		print_post_info();
+//		print_post_info();
 	}
 }
 
@@ -335,11 +335,12 @@ void Distance::write_to_file()
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
 	}
 	file.close();
-	
+
 	Eigen::MatrixXd span = Eigen::MatrixXd::Zero(_nr_simulations+2,3);
 	span.block(0,0,1,3) = span_mean.transpose();
 	span.block(1,0,1,3) = span_var.transpose();
 	span.block(2,0,_nr_simulations,3) = span_data;
+
 	file.open(_outfile_span, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
 		file << span << std::endl;
@@ -348,6 +349,7 @@ void Distance::write_to_file()
 	}
 	file.close();
 	
+	
 	file.open(_outfile_info, std::fstream::out | std::fstream::trunc);
 	if(file.is_open()){
 		file << this << std::endl;
@@ -355,6 +357,7 @@ void Distance::write_to_file()
 		std::cerr << "Failed to open " << std::string(_outfile) << std::endl;
 	}
 	file.close();
+
 }
 
 

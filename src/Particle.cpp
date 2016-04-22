@@ -64,7 +64,7 @@ void Particle::update()
 			coll =  get_earliest_collision(new_pos);
 			if(coll_count > stuck_count )
 			{
-				std::cerr << "Particle got stuck" << std::endl;
+				std::cerr << "Particle with radius "<< _r <<" got stuck" << std::endl;
 				particle_is_stuck = true;
 				break;
 			}

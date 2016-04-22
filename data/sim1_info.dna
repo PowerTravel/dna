@@ -1,0 +1,17 @@
+Simulation = Distance
+Chain Size = 3000
+Chain Radius = 0.4
+Target Globule Density = 0.95
+Particle Radius Min = 0.01
+Particle Radius Max = 0.3
+Particle Radius Steps = 3
+Collision box-size = 1
+Number of Simulations  = 300
+Simulation time = 100
+Timestep Size = 0.01
+Plot points = 100
+Exponential = true
+Out File info  = ../data/sim1_info.dna
+Out File data  = ../data/sim1_data.dna
+Out File span  = ../data/sim1_span.dna
+
