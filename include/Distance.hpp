@@ -36,6 +36,8 @@ class Distance: public Simulation
 		Vec3d span_mean;
 		Vec3d span_var;
 		
+		bool chain_built = false;
+
 		Eigen::ArrayXd _time_steps;
 		Eigen::ArrayXd _time_step_mean;
 		Eigen::ArrayXXd binned_distance_data;

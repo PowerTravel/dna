@@ -370,6 +370,8 @@ Eigen::ArrayXXd Distance::run_simulation_once(double* span)
 		stepdx = (_particle_radius_max - _particle_radius_min)/double(_particle_radius_step-1);
 	}
 
+//	if(!chain_built){
+//	chain_built = true;
 	_c->set_radius(_chain_radius);
 	_c->set_link_length(1.0);
 	
@@ -389,6 +391,7 @@ Eigen::ArrayXXd Distance::run_simulation_once(double* span)
 			span[2] = _boundary(5) - _boundary(4);
 		}
 		_cg.set_up(_c->get_collision_vec(_boundary) );
+//		}
 #endif
 		_particle_x_ini = Eigen::Vector3d(floor(_boundary(1)+_boundary(0))+0.5, 
    									  floor(_boundary(3)+_boundary(2))+0.5, 

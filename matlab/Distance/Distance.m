@@ -1,8 +1,8 @@
 hold off
 clear all
 
-%DData = load('distance_1.dna');
-DData = load('data/Sim001_data.dna');
+%DData = load('distance_1.dna');Sim10000Globules_data.dna
+DData = load('Sim10000Globules_data.dna');
 f = fittype('a*x+b');
 
 tmpt1 = DData(1,1);
@@ -81,9 +81,9 @@ annotation('textbox', [.2 .8 .1 .1], 'String', ...
     
     pedf = @(x,t,D)(1./sqrt(4*pi*D.*t)).*exp(-(x.*x)./(4*D.*t));
     
-    sx = min(x)+dx(1)/2:dx(1):max(x)-dx(1)/2;
-    sy = min(y)+dx(2)/2:dx(2):max(y)-dx(2)/2;
-    sz = min(z)+dx(3)/2:dx(3):max(z)-dx(3)/2;
+    sx = min(x)+dx(1)/2:dx(1):max(x);%-dx(1)/2;
+    sy = min(y)+dx(2)/2:dx(2):max(y);%-dx(2)/2;
+    sz = min(z)+dx(3)/2:dx(3):max(z);%-dx(3)/2;
     
     xx = min(x):0.01:max(x);
     xy = min(y):0.01:max(y);

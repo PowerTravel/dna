@@ -5,7 +5,7 @@ clear all
 globule = load('Distance/debug/chain');
 N = size(globule,1);
 
-offset = [11.5,-16.5,-22.3];
+offset = [0,0,0];
 globule(:,1) = globule(:,1) - offset(1);
 globule(:,2) = globule(:,2) - offset(2);
 globule(:,3) = globule(:,3) - offset(3);
@@ -31,9 +31,9 @@ glob = zeros(s,3);
 %              0,1,0;
 %              0,1,1;
 %              0,0,1];
-color_grad = [0,0,1;
-              0,1,0;
-              1,0,0];
+color_grad = [0,0,0;
+              0,0,0;
+              0,0,0];
 
 col = zeros(N,3);
 col_size = size(color_grad,1)-1;
@@ -44,7 +44,10 @@ for i = 1:col_size
     col_interpolation = interpolate_l(color_grad( i, : ),color_grad( i+1, : ), d_size-1, 0.5);
     col(col_start:col_end , : ) = col_interpolation;
 end
+figure(5)
+plot3(globule(:,1),globule(:,2),globule(:,3), 'LineWidth',3);
 
+figure(1)
 for i = 1:N-1
     st = globule(i,:);
     ed = globule(i+1,:);
@@ -55,10 +58,10 @@ for i = 1:N-1
 %    
     plot3(tmp(:,1),tmp(:,2),tmp(:,3), 'color', col(i,:),  'LineWidth',10);
     hold on
-    plot3(globule(i,1),globule(i,2),globule(i,3), '.','color', col(i,:),  'MarkerSize',60);
+    plot3(globule(i,1),globule(i,2),globule(i,3), '.','color', col(i,:),  'MarkerSize',10);
     glob(startind :endind , :) = tmp(1:intN,:);
 end
-plot3(globule(end,1),globule(end,2),globule(end,3), '.','color', col(end,:),  'MarkerSize',60);
+plot3(globule(end,1),globule(end,2),globule(end,3), '.','color', col(end,:),  'MarkerSize',10);
 
 axis equal
 %sp=3.025;
